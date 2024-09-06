@@ -1,0 +1,172 @@
+"use client";
+
+import React, { useState, useRef } from 'react';
+import ReactCrop, { Crop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import Toolbar from '../../../components/dashboard/toolbar';
+
+export default function ImageCropPage() {
+  const [src, setSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState<Crop>({ unit: '%', width: 30, aspect: 16 / 9 });
+  const [completedCrop, setCompletedCrop] = useState<Crop | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<string>('16:9');
+  const [zoom, setZoom] = useState<number>(1);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<boolean>(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => setSrc(reader.result as string));
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const onAspectRatioChange = (value: string) => {
+    setAspectRatio(value);
+    if (value === 'free') {
+      setCrop({ ...crop, aspect: undefined });
+    } else if (value === 'custom') {
+      // Handle custom aspect ratio
+    } else {
+      const [width, height] = value.split(':').map(Number);
+      setCrop({ ...crop, aspect: width / height });
+    }
+  };
+
+  const onZoomChange = (value: number[]) => {
+    setZoom(value[0]);
+    if (imgRef.current) {
+      imgRef.current.style.transform = `scale(${value[0]})`;
+    }
+  };
+
+  const getCroppedImg = (image: HTMLImageElement, crop: Crop) => {
+    const canvas = document.createElement('canvas');
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    canvas.width = crop.width!;
+    canvas.height = crop.height!;
+    const ctx = canvas.getContext('2d');
+
+    if (ctx) {
+      ctx.drawImage(
+        image,
+        crop.x! * scaleX,
+        crop.y! * scaleY,
+        crop.width! * scaleX,
+        crop.height! * scaleY,
+        0,
+        0,
+        crop.width!,
+        crop.height!
+      );
+    }
+
+    return new Promise<string>((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error('Canvas is empty'));
+          return;
+        }
+        resolve(URL.createObjectURL(blob));
+      }, 'image/jpeg');
+    });
+  };
+
+  const handleCropClick = async () => {
+    if (!completedCrop || !imgRef.current) {
+      setError('Please select a crop area');
+      return;
+    }
+
+    try {
+      const croppedImageUrl = await getCroppedImg(imgRef.current, completedCrop);
+      console.log('Cropped image URL:', croppedImageUrl);
+      setSuccess(true);
+      setError('');
+      // Here you would typically send the cropped image to a server or download it
+    } catch (e) {
+      setError('Failed to crop image');
+    }
+  };
+
+  return (
+    <div className="flex">
+      <div className="flex-grow mr-6">
+        <h1 className="text-3xl font-bold mb-2">Image Crop</h1>
+        <p className="text-muted-foreground mb-6">Crop images easily to your desired dimensions.</p>
+        <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+          <CardContent className="p-6">
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="image-upload" className="block text-sm font-medium mb-2">Upload Image</Label>
+                <Input type="file" id="image-upload" className="w-full" accept="image/*" onChange={onSelectFile} />
+                <p className="mt-1 text-sm text-muted-foreground">Supported formats: JPG, PNG, WebP, GIF</p>
+              </div>
+              {src && (
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={crop.aspect}
+                >
+                  <img ref={imgRef} src={src} style={{ maxWidth: '100%' }} />
+                </ReactCrop>
+              )}
+              <div>
+                <Label htmlFor="aspect-ratio" className="block text-sm font-medium mb-2">Aspect Ratio</Label>
+                <Select value={aspectRatio} onValueChange={onAspectRatioChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select aspect ratio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free Form</SelectItem>
+                    <SelectItem value="1:1">1:1 (Square)</SelectItem>
+                    <SelectItem value="4:3">4:3</SelectItem>
+                    <SelectItem value="16:9">16:9</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="zoom" className="block text-sm font-medium mb-2">Zoom</Label>
+                <Slider
+                  id="zoom"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={[zoom]}
+                  onValueChange={onZoomChange}
+                  className="w-full"
+                />
+              </div>
+              <Button variant="default" className="w-full bg-primary text-white hover:bg-primary-dark" onClick={handleCropClick}>
+                Crop Image
+              </Button>
+            </div>
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {success && (
+              <Alert className="mt-4">
+                <AlertDescription>Image cropped successfully!</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      <Toolbar />
+    </div>
+  );
+}

@@ -36,25 +36,12 @@ export default function NewDocument() {
   const { toast } = useToast()
 
   useEffect(() => {
-    console.log("Component mounted. Current user:", user);
-
-    const unsubscribe = auth.onAuthStateChanged((authUser) => {
-      console.log("Auth state changed. Current user:", authUser);
-      if (authUser) {
-        console.log("User is signed in. UID:", authUser.uid);
-      } else {
-        console.log("No user is signed in.");
-      }
-    });
-
-    return () => unsubscribe();
-  }, [user]);
+    if (!user) {
+      router.push('/login')
+    }
+  }, [user, router])
 
   const saveDocument = useCallback(async () => {
-    console.log("Starting saveDocument function");
-    console.log("Current user from useAuth:", user);
-    console.log("Current user from auth.currentUser:", auth.currentUser);
-
     if (!user || !auth.currentUser) {
       console.error("No user found. Cannot save document.")
       setSaveStatus('Error: Not logged in')
@@ -63,24 +50,14 @@ export default function NewDocument() {
         description: "You must be logged in to save a document.",
         variant: "destructive",
       })
+      router.push('/login')
       return
     }
 
     setIsSaving(true)
     setSaveStatus('Saving...')
     try {
-      console.log("Attempting to save document...")
-      console.log("User ID:", user.uid);
-
-      // Check if 'documents' collection exists
       const collectionRef = collection(db, "documents");
-      const snapshot = await getDocs(collectionRef);
-      if (snapshot.empty) {
-        console.log("'documents' collection does not exist or is empty. Creating new document anyway.");
-      } else {
-        console.log("'documents' collection exists and contains documents.");
-      }
-
       const docData: DocumentData = {
         title,
         content,
@@ -90,7 +67,6 @@ export default function NewDocument() {
         type: 'document',
         version: 1
       }
-      console.log("Document data:", docData)
 
       const docRef = await addDoc(collectionRef, docData)
       console.log("Document saved successfully with ID:", docRef.id)
@@ -103,11 +79,6 @@ export default function NewDocument() {
       router.push('/dashboard/documents')
     } catch (error) {
       console.error("Error saving document:", error)
-      if (error instanceof Error) {
-        console.error("Error name:", error.name);
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-      }
       setSaveStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
       toast({
         title: "Error",
@@ -140,10 +111,14 @@ export default function NewDocument() {
     setSaveStatus('Unsaved changes')
   }
 
+  if (!user) {
+    return null; // or a loading spinner
+  }
+
   return (
     <TooltipProvider>
       <div className="container mx-auto px-4 py-8">
-        <Breadcrumbs className="mb-6">
+        <Breadcrumbs>
           <BreadcrumbItem>
             <Link href="/dashboard">Dashboard</Link>
           </BreadcrumbItem>
@@ -152,7 +127,7 @@ export default function NewDocument() {
           </BreadcrumbItem>
           <BreadcrumbItem isActive>New Document</BreadcrumbItem>
         </Breadcrumbs>
-        <Card>
+        <Card className="mt-6">
           <CardHeader>
             <CardTitle>
               {isEditing ? (

@@ -33,7 +33,7 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
 
       <footer className="bg-white border-t border-gray-200 mt-6 py-4">
         <div className="container mx-auto text-center">
-          <p className="text-gray-600">Explore more tools</p>
+          <p className="text-gray-600">SImple tools for rockstars</p>
         </div>
       </footer>
     </div>

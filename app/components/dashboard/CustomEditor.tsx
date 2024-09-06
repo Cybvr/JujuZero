@@ -42,9 +42,8 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
     }
   }, [onChange])
 
-  const execCommand = (command: string, value: string | null = null) => {
+  const execCommand = (command: string, value: string | undefined = undefined) => {
     document.execCommand(command, false, value)
-  }
 
   const handleHeadingChange = (value: string) => {
     execCommand('formatBlock', value)

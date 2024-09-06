@@ -1,13 +1,14 @@
+// app/dashboard/tools/video-to-mp4/page.tsx
 "use client";
- 
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CustomSlider } from '../../../components/dashboard/CustomSlider';
 import Toolbar from '../../../components/dashboard/toolbar';
 
 export default function VideoToMp4Page() {
@@ -68,67 +69,66 @@ export default function VideoToMp4Page() {
               <div>
                 <Label htmlFor="video-upload" className="block text-sm font-medium mb-2">Upload Video</Label>
                 <Input type="file" id="video-upload" className="w-full" accept="video/*" onChange={handleFileChange} />
-                <p className="mt-1 text-sm text-muted-foreground">Supported formats: AVI, MOV, WMV, FLV, MKV</p>
+                <p className="mt-1 text-sm text-muted-foreground">Supported formats: MP4, AVI, MOV, WMV</p>
               </div>
               <div>
-                <Label htmlFor="video-quality" className="block text-sm font-medium mb-2">Video Quality</Label>
+                <Label htmlFor="quality" className="block text-sm font-medium mb-2">Video Quality</Label>
                 <Select value={quality} onValueChange={setQuality}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select quality" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low (480p)</SelectItem>
-                    <SelectItem value="medium">Medium (720p)</SelectItem>
-                    <SelectItem value="high">High (1080p)</SelectItem>
-                    <SelectItem value="original">Original</SelectItem>
+                    <SelectItem value="480p">480p</SelectItem>
+                    <SelectItem value="720p">720p</SelectItem>
+                    <SelectItem value="1080p">1080p</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="audio-bitrate" className="block text-sm font-medium mb-2">Audio Bitrate</Label>
+                <Label htmlFor="bitrate" className="block text-sm font-medium mb-2">Audio Bitrate</Label>
                 <Select value={bitrate} onValueChange={setBitrate}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select bitrate" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="128">128 kbps</SelectItem>
-                    <SelectItem value="192">192 kbps</SelectItem>
-                    <SelectItem value="256">256 kbps</SelectItem>
-                    <SelectItem value="320">320 kbps</SelectItem>
+                    <SelectItem value="128k">128 kbps</SelectItem>
+                    <SelectItem value="192k">192 kbps</SelectItem>
+                    <SelectItem value="256k">256 kbps</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="trim-video" className="block text-sm font-medium mb-2">Trim Video (Optional)</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    type="text"
-                    id="start-time"
-                    placeholder="Start time (00:00:00)"
-                    className="w-1/2"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                  />
-                  <Input
-                    type="text"
-                    id="end-time"
-                    placeholder="End time (00:00:00)"
-                    className="w-1/2"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                  />
-                </div>
+                <Label htmlFor="start-time" className="block text-sm font-medium mb-2">Start Time (optional)</Label>
+                <Input
+                  type="text"
+                  id="start-time"
+                  placeholder="00:00:00"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="end-time" className="block text-sm font-medium mb-2">End Time (optional)</Label>
+                <Input
+                  type="text"
+                  id="end-time"
+                  placeholder="00:00:00"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full"
+                />
               </div>
               <div>
                 <Label htmlFor="compression-level" className="block text-sm font-medium mb-2">Compression Level</Label>
-                <Slider
+                <CustomSlider
                   id="compression-level"
                   min={0}
                   max={100}
                   step={1}
-                  value={[compressionLevel]}
-                  onValueChange={(value) => setCompressionLevel(value[0])}
-                  className="w-full"
+                  value={compressionLevel}
+                  onChange={setCompressionLevel}
+                  className="mt-2"
                 />
               </div>
               <Button type="submit" variant="default" className="w-full bg-primary text-white hover:bg-primary-dark">

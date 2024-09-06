@@ -1,16 +1,19 @@
-// File: app/dashboard/projects/components/AssetViewer.tsx
+// @app/dashboard/projects/components/AssetViewer.tsx
 import React from 'react';
 
-export default function AssetViewer({ projectId, assetId }) {
+interface AssetViewerProps {
+  projectId: string;
+  editable?: boolean;
+}
+
+const AssetViewer: React.FC<AssetViewerProps> = ({ projectId, editable = false }) => {
   return (
-    <div className="border rounded p-4">
-      <h3 className="font-semibold mb-2">Asset Viewer</h3>
-      {assetId ? (
-        <p>Viewing asset {assetId} for project {projectId}</p>
-      ) : (
-        <p>Select an asset to view its details</p>
-      )}
-      {/* Placeholder for actual asset viewing/editing functionality */}
+    <div className="asset-viewer">
+      <h2 className="text-xl font-semibold mb-4">Assets for Project {projectId}</h2>
+      <p>Asset list will be displayed here.</p>
+      {editable && <p>Editable mode is enabled.</p>}
     </div>
   );
-}
+};
+
+export default AssetViewer;

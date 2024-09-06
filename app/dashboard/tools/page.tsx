@@ -9,6 +9,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/dashboard/AuthModal';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const categories = ["All", "conversion", "image", "text"];
 
@@ -68,46 +69,47 @@ export default function AllTools() {
         <p className="text-muted-foreground mt-1">Explore our collection of powerful tools to enhance your workflow</p>
       </div>
 
-      <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
-        {categories.map((category) => (
-          <button
-            key={category}
-            className={`px-4 py-2 rounded-full ${
-              activeTab === category ? 'bg-primary text-primary-foreground' : 'bg-secondary'
-            }`}
-            onClick={() => setActiveTab(category)}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {tools
-          .filter(tool => activeTab === "All" || tool.category === activeTab.toLowerCase())
-          .map((tool) => (
-            <Card 
-              key={tool.slug} 
-              onClick={() => handleCardClick(tool.slug, tool.access)} 
-              className="cursor-pointer hover:shadow-md transition-shadow duration-300 overflow-hidden"
+      <Tabs defaultValue="All" onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
+          {categories.map((category) => (
+            <TabsTrigger 
+              key={category} 
+              value={category}
+              className="px-4 py-2 rounded-full"
             >
-              <div className="relative">
-                <img src={tool.imageSrc} alt={tool.name} className="w-full h-40 object-cover" />
-                <Badge 
-                  variant={getBadgeContent(tool.access).variant as "default" | "destructive" | "outline" | "secondary"}
-                  className="absolute top-2 right-2 p-1"
-                  title={getBadgeContent(tool.access).tooltip}
-                >
-                  {React.createElement(getBadgeContent(tool.access).icon, { size: 16 })}
-                </Badge>
-              </div>
-              <CardHeader className="p-4">
-                <CardTitle className="text-lg">{tool.name}</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">{tool.description}</p>
-              </CardHeader>
-            </Card>
+              {category}
+            </TabsTrigger>
           ))}
-      </div>
+        </TabsList>
+        <TabsContent value={activeTab}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {tools
+              .filter(tool => activeTab === "All" || tool.category === activeTab.toLowerCase())
+              .map((tool) => (
+                <Card 
+                  key={tool.slug} 
+                  onClick={() => handleCardClick(tool.slug, tool.access)} 
+                  className="cursor-pointer hover:shadow-md transition-shadow duration-300 overflow-hidden"
+                >
+                  <div className="relative">
+                    <img src={tool.imageSrc} alt={tool.name} className="w-full h-40 object-cover" />
+                    <Badge 
+                      variant={getBadgeContent(tool.access).variant as "default" | "destructive" | "outline" | "secondary"}
+                      className="absolute top-2 right-2 p-1"
+                      title={getBadgeContent(tool.access).tooltip}
+                    >
+                      {React.createElement(getBadgeContent(tool.access).icon, { size: 16 })}
+                    </Badge>
+                  </div>
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-lg">{tool.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">{tool.description}</p>
+                  </CardHeader>
+                </Card>
+              ))}
+          </div>
+        </TabsContent>
+      </Tabs>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );

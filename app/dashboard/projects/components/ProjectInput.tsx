@@ -1,16 +1,26 @@
-// File: app/dashboard/projects/components/ProjectInput.tsx
 import React, { useState } from 'react';
 
+interface FormData {
+  name: string;
+  description: string;
+  targetAudience: string;
+}
+
+interface FormErrors {
+  name?: string;
+  description?: string;
+}
+
 export default function ProjectInput() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
     targetAudience: '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [aiPreview, setAiPreview] = useState('');
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
@@ -18,20 +28,18 @@ export default function ProjectInput() {
     }));
   };
 
-  const validateForm = () => {
-    let tempErrors = {};
+  const validateForm = (): FormErrors => {
+    let tempErrors: FormErrors = {};
     if (!formData.name.trim()) tempErrors.name = "Project name is required";
     if (formData.description.length < 10) tempErrors.description = "Description should be at least 10 characters";
     return tempErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formErrors = validateForm();
     if (Object.keys(formErrors).length === 0) {
-      // Here we would typically send the data to an API
       console.log("Form submitted:", formData);
-      // For now, let's just update the AI preview
       setAiPreview(`Based on your input, here's how the AI might interpret your project:
       - Name: ${formData.name}
       - Key Elements: ${formData.description.split(' ').slice(0, 5).join(', ')}...

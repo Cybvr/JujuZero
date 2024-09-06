@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, DocumentData, Query } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -14,13 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { File, FileText, Image, Video, Folder, Plus, Grid, List } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface Document {
+interface Document extends DocumentData {
   id: string;
   title: string;
   content: string;
   userId: string;
-  createdAt: any;
-  lastModified: any;
+  createdAt: { seconds: number; nanoseconds: number };
+  lastModified: { seconds: number; nanoseconds: number };
   type: 'document' | 'image' | 'video' | 'folder';
 }
 
@@ -30,7 +30,7 @@ export default function DocumentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('lastModified');
+  const [sortBy, setSortBy] = useState<'lastModified' | 'title'>('lastModified');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const { user } = useAuth();
@@ -59,7 +59,7 @@ export default function DocumentsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const q = query(
+      const q: Query<DocumentData> = query(
         collection(db, "documents"),
         where("userId", "==", userId),
         orderBy("lastModified", "desc")
@@ -72,7 +72,8 @@ export default function DocumentsPage() {
       setDocuments(docs);
       setFilteredDocuments(docs);
     } catch (error) {
-      setError(`Failed to load documents. Error: ${error instanceof Error ? error.message : String(error)}`);
+      setError(`Failed to load documents. Please try again later.`);
+      console.error("Error fetching documents:", error);
     } finally {
       setIsLoading(false);
     }
@@ -81,19 +82,19 @@ export default function DocumentsPage() {
   const getFileIcon = (type: string) => {
     switch (type) {
       case 'document':
-        return <FileText className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" aria-label="Document" />;
       case 'image':
-        return <Image className="h-4 w-4" />;
+        return <Image className="h-4 w-4" aria-label="Image" />;
       case 'video':
-        return <Video className="h-4 w-4" />;
+        return <Video className="h-4 w-4" aria-label="Video" />;
       case 'folder':
-        return <Folder className="h-4 w-4" />;
+        return <Folder className="h-4 w-4" aria-label="Folder" />;
       default:
-        return <File className="h-4 w-4" />;
+        return <File className="h-4 w-4" aria-label="File" />;
     }
   };
 
-  const handleSort = (value: string) => {
+  const handleSort = (value: 'lastModified' | 'title') => {
     setSortBy(value);
     const sorted = [...filteredDocuments].sort((a, b) => {
       if (value === 'lastModified') {
@@ -105,23 +106,23 @@ export default function DocumentsPage() {
     setFilteredDocuments(sorted);
   };
 
-  const toggleDocumentSelection = (docId: string) => {
+  const toggleDocumentSelection = (docId: string, checked: boolean) => {
     setSelectedDocuments(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(docId)) {
-        newSet.delete(docId);
-      } else {
+      if (checked) {
         newSet.add(docId);
+      } else {
+        newSet.delete(docId);
       }
       return newSet;
     });
   };
 
-  const toggleAllDocuments = () => {
-    if (selectedDocuments.size === filteredDocuments.length) {
-      setSelectedDocuments(new Set());
-    } else {
+  const toggleAllDocuments = (checked: boolean) => {
+    if (checked) {
       setSelectedDocuments(new Set(filteredDocuments.map(doc => doc.id)));
+    } else {
+      setSelectedDocuments(new Set());
     }
   };
 
@@ -152,7 +153,14 @@ export default function DocumentsPage() {
   }
 
   if (error) {
-    return <div className="container mx-auto px-4 py-8 text-red-500">{error}</div>;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
+          <strong className="font-bold">Error:</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -163,12 +171,13 @@ export default function DocumentsPage() {
           <Plus className="mr-2 h-4 w-4" /> New Document
         </Button>
       </div>
-      <div className="mb-4 flex space-x-4">
+      <div className="mb-4 flex flex-wrap gap-4">
         <Input
           placeholder="Search documents..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
+          aria-label="Search documents"
         />
         <Select onValueChange={handleSort} defaultValue={sortBy}>
           <SelectTrigger className="w-[180px]">
@@ -180,10 +189,18 @@ export default function DocumentsPage() {
           </SelectContent>
         </Select>
         <div className="flex space-x-2">
-          <Button variant={viewMode === 'list' ? 'default' : 'outline'} onClick={() => setViewMode('list')}>
+          <Button 
+            variant={viewMode === 'list' ? 'default' : 'outline'} 
+            onClick={() => setViewMode('list')}
+            aria-label="List view"
+          >
             <List className="h-4 w-4" />
           </Button>
-          <Button variant={viewMode === 'grid' ? 'default' : 'outline'} onClick={() => setViewMode('grid')}>
+          <Button 
+            variant={viewMode === 'grid' ? 'default' : 'outline'} 
+            onClick={() => setViewMode('grid')}
+            aria-label="Grid view"
+          >
             <Grid className="h-4 w-4" />
           </Button>
         </div>
@@ -199,9 +216,11 @@ export default function DocumentsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
-                  <Checkbox
+                  <Checkbox 
+                    id="select-all"
+                    label="Select all documents"
                     checked={selectedDocuments.size === filteredDocuments.length}
-                    onCheckedChange={toggleAllDocuments}
+                    onChange={(e) => toggleAllDocuments(e.target.checked)}
                   />
                 </TableHead>
                 <TableHead>Name</TableHead>
@@ -213,8 +232,10 @@ export default function DocumentsPage() {
                 <TableRow key={doc.id}>
                   <TableCell>
                     <Checkbox
+                      id={`select-${doc.id}`}
+                      label={`Select ${doc.title}`}
                       checked={selectedDocuments.has(doc.id)}
-                      onCheckedChange={() => toggleDocumentSelection(doc.id)}
+                      onChange={(e) => toggleDocumentSelection(doc.id, e.target.checked)}
                     />
                   </TableCell>
                   <TableCell className="font-medium">
@@ -235,8 +256,10 @@ export default function DocumentsPage() {
             <Card key={doc.id} className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <Checkbox
+                  id={`select-${doc.id}`}
+                  label={`Select ${doc.title}`}
                   checked={selectedDocuments.has(doc.id)}
-                  onCheckedChange={() => toggleDocumentSelection(doc.id)}
+                  onChange={(e) => toggleDocumentSelection(doc.id, e.target.checked)}
                 />
                 {getFileIcon(doc.type)}
               </div>

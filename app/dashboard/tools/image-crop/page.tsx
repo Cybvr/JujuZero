@@ -8,13 +8,42 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Toolbar from '../../../components/dashboard/toolbar';
 
+const CustomSlider: React.FC<{
+  id: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (value: number) => void;
+  className?: string;
+}> = ({ id, min, max, step, value, onChange, className }) => {
+  return (
+    <input
+      type="range"
+      id={id}
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className={className}
+    />
+  );
+};
+
 export default function ImageCropPage() {
   const [src, setSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState<Crop>({ unit: '%', width: 30, aspect: 16 / 9 });
+  const [crop, setCrop] = useState<Crop>({
+    unit: '%',
+    width: 30,
+    height: 30,
+    x: 0,
+    y: 0
+  });
+  const [aspect, setAspect] = useState<number | undefined>(16 / 9);
   const [completedCrop, setCompletedCrop] = useState<Crop | null>(null);
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
   const [zoom, setZoom] = useState<number>(1);
@@ -33,19 +62,19 @@ export default function ImageCropPage() {
   const onAspectRatioChange = (value: string) => {
     setAspectRatio(value);
     if (value === 'free') {
-      setCrop({ ...crop, aspect: undefined });
+      setAspect(undefined);
     } else if (value === 'custom') {
       // Handle custom aspect ratio
     } else {
       const [width, height] = value.split(':').map(Number);
-      setCrop({ ...crop, aspect: width / height });
+      setAspect(width / height);
     }
   };
 
-  const onZoomChange = (value: number[]) => {
-    setZoom(value[0]);
+  const onZoomChange = (newZoom: number) => {
+    setZoom(newZoom);
     if (imgRef.current) {
-      imgRef.current.style.transform = `scale(${value[0]})`;
+      imgRef.current.style.transform = `scale(${newZoom})`;
     }
   };
 
@@ -53,21 +82,21 @@ export default function ImageCropPage() {
     const canvas = document.createElement('canvas');
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
-    canvas.width = crop.width!;
-    canvas.height = crop.height!;
+    canvas.width = crop.width;
+    canvas.height = crop.height;
     const ctx = canvas.getContext('2d');
 
     if (ctx) {
       ctx.drawImage(
         image,
-        crop.x! * scaleX,
-        crop.y! * scaleY,
-        crop.width! * scaleX,
-        crop.height! * scaleY,
+        crop.x * scaleX,
+        crop.y * scaleY,
+        crop.width * scaleX,
+        crop.height * scaleY,
         0,
         0,
-        crop.width!,
-        crop.height!
+        crop.width,
+        crop.height
       );
     }
 
@@ -115,9 +144,9 @@ export default function ImageCropPage() {
               {src && (
                 <ReactCrop
                   crop={crop}
-                  onChange={(c) => setCrop(c)}
+                  onChange={(c, percentCrop) => setCrop(percentCrop)}
                   onComplete={(c) => setCompletedCrop(c)}
-                  aspect={crop.aspect}
+                  aspect={aspect}
                 >
                   <img ref={imgRef} src={src} style={{ maxWidth: '100%' }} />
                 </ReactCrop>
@@ -139,13 +168,13 @@ export default function ImageCropPage() {
               </div>
               <div>
                 <Label htmlFor="zoom" className="block text-sm font-medium mb-2">Zoom</Label>
-                <Slider
+                <CustomSlider
                   id="zoom"
                   min={1}
                   max={3}
                   step={0.1}
-                  value={[zoom]}
-                  onValueChange={onZoomChange}
+                  value={zoom}
+                  onChange={onZoomChange}
                   className="w-full"
                 />
               </div>

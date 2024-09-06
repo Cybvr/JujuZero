@@ -119,13 +119,13 @@ export default function NewDocument() {
     <TooltipProvider>
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs>
-          <BreadcrumbItem>
+          <BreadcrumbItem isActive={false}>
             <Link href="/dashboard">Dashboard</Link>
           </BreadcrumbItem>
-          <BreadcrumbItem>
+          <BreadcrumbItem isActive={false}>
             <Link href="/dashboard/documents">Documents</Link>
           </BreadcrumbItem>
-          <BreadcrumbItem isActive>New Document</BreadcrumbItem>
+          <BreadcrumbItem isActive={true}>New Document</BreadcrumbItem>
         </Breadcrumbs>
         <Card className="mt-6">
           <CardHeader>

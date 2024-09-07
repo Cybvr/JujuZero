@@ -3,8 +3,14 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, FileText, Image, Code, Share2, PlusCircle, Settings } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, FileText, Image, Code, Share2, Settings, Wand2 } from 'lucide-react';
+import CustomEditor from '@/components/dashboard/CustomEditor';
+
+// Import asset components
+import BrandGuidelinesAsset from '@/components/assets/BrandGuidelinesAsset';
+import MarketingCopyAsset from '@/components/assets/MarketingCopyAsset';
+import LandingPageAsset from '@/components/assets/LandingPageAsset';
 
 // Placeholder data - in a real app, you'd fetch this based on the projectId
 const projectData = {
@@ -13,11 +19,9 @@ const projectData = {
   description: 'Premium flower subscription service that delivers curated, seasonal bouquets to homes.',
   createdAt: '2024-07-01',
   assets: [
-    { id: '1', name: 'Logo', type: 'image' },
-    { id: '2', name: 'Brand Guidelines', type: 'document' },
-    { id: '3', name: 'Marketing Copy', type: 'text' },
-    { id: '4', name: 'Landing Page', type: 'html' },
-    { id: '5', name: 'Social Media Assets', type: 'image' },
+    { id: '1', name: 'Brand Guidelines', type: 'brandGuidelines', content: { logo: '/path/to/logo.png', colors: ['#FF0000', '#00FF00', '#0000FF'], typography: 'Typography content...' } },
+    { id: '2', name: 'Marketing Copy', type: 'marketingCopy', content: 'Marketing copy content...' },
+    { id: '3', name: 'Landing Page', type: 'landingPage', content: '<h1>Welcome to Bloom Box</h1>' },
   ]
 };
 
@@ -25,78 +29,90 @@ export default function ProjectDetails({ params }) {
   const router = useRouter();
   const { projectId } = params;
 
+  const renderAsset = (asset) => {
+    switch (asset.type) {
+      case 'brandGuidelines':
+        return <BrandGuidelinesAsset content={asset.content} onChange={() => {}} />;
+      case 'marketingCopy':
+        return <MarketingCopyAsset content={asset.content} onChange={() => {}} />;
+      case 'landingPage':
+        return <LandingPageAsset content={asset.content} />;
+      default:
+        return <p>Unknown asset type</p>;
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <Button 
-          onClick={() => router.back()} 
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <Button
+          onClick={() => router.back()}
           variant="ghost"
+          className="px-0 sm:px-4"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
+          <ArrowLeft className="mr-2 h-4 w-4" /> 
+          <span className="hidden sm:inline">Back to Projects</span>
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" className="w-full sm:w-auto">
           <Settings className="mr-2 h-4 w-4" /> Project Settings
         </Button>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>{projectData.name}</CardTitle>
-              <CardDescription>{projectData.description}</CardDescription>
+              <CardTitle className="text-xl sm:text-2xl">{projectData.name}</CardTitle>
+              <CardDescription className="text-sm sm:text-base">{projectData.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Created on: {projectData.createdAt}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Created on: {projectData.createdAt}</p>
             </CardContent>
           </Card>
-
-          <h2 className="text-2xl font-bold mb-4">Project Assets</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <Tabs defaultValue={projectData.assets[0].id} className="space-y-4">
+            <TabsList className="flex flex-wrap gap-2">
+              {projectData.assets.map((asset) => (
+                <TabsTrigger key={asset.id} value={asset.id} className="text-xs sm:text-sm">{asset.name}</TabsTrigger>
+              ))}
+            </TabsList>
             {projectData.assets.map((asset) => (
-              <Card key={asset.id}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{asset.name}</CardTitle>
-                  <CardDescription>{asset.type}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline">View Asset</Button>
-                </CardContent>
-              </Card>
+              <TabsContent key={asset.id} value={asset.id}>
+                {renderAsset(asset)}
+              </TabsContent>
             ))}
-          </div>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Asset
-          </Button>
+          </Tabs>
         </div>
-
-        <div>
-          <Card className="mb-6">
+        <div className="space-y-6">
+          <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
-              <Button className="w-full justify-start">
+              <Button 
+                className="w-full justify-start bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white"
+              >
+                <Wand2 className="mr-2 h-4 w-4" /> Regenerate
+              </Button>
+              <Button className="w-full justify-start bg-white text-black border border-gray-300 hover:bg-gray-100">
                 <FileText className="mr-2 h-4 w-4" /> Export as PDF
               </Button>
-              <Button className="w-full justify-start">
+              <Button className="w-full justify-start bg-white text-black border border-gray-300 hover:bg-gray-100">
                 <Image className="mr-2 h-4 w-4" /> Export Images
               </Button>
-              <Button className="w-full justify-start">
+              <Button className="w-full justify-start bg-white text-black border border-gray-300 hover:bg-gray-100">
                 <Code className="mr-2 h-4 w-4" /> Export Code
               </Button>
-              <Button className="w-full justify-start">
+              <Button className="w-full justify-start bg-white text-black border border-gray-300 hover:bg-gray-100">
                 <Share2 className="mr-2 h-4 w-4" /> Share Project
               </Button>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
-              <CardTitle>Project Statistics</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Project Statistics</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Total Assets: {projectData.assets.length}</p>
+              <p className="text-sm">Total Assets: {projectData.assets.length}</p>
               {/* Add more statistics here */}
             </CardContent>
           </Card>

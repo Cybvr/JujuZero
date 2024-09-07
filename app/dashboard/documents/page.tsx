@@ -217,8 +217,6 @@ export default function DocumentsPage() {
               <TableRow>
                 <TableHead className="w-12">
                   <Checkbox 
-                    id="select-all"
-                    label="Select all documents"
                     checked={selectedDocuments.size === filteredDocuments.length}
                     onChange={(e) => toggleAllDocuments(e.target.checked)}
                   />
@@ -232,8 +230,6 @@ export default function DocumentsPage() {
                 <TableRow key={doc.id}>
                   <TableCell>
                     <Checkbox
-                      id={`select-${doc.id}`}
-                      label={`Select ${doc.title}`}
                       checked={selectedDocuments.has(doc.id)}
                       onChange={(e) => toggleDocumentSelection(doc.id, e.target.checked)}
                     />
@@ -256,8 +252,6 @@ export default function DocumentsPage() {
             <Card key={doc.id} className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <Checkbox
-                  id={`select-${doc.id}`}
-                  label={`Select ${doc.title}`}
                   checked={selectedDocuments.has(doc.id)}
                   onChange={(e) => toggleDocumentSelection(doc.id, e.target.checked)}
                 />

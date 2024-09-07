@@ -111,24 +111,18 @@ export default function FAQPage() {
         </CardContent>
       </Card>
 
-      <div className="space-y-6">
+      <Accordion type="single" collapsible className="w-full space-y-4">
         {filteredFaqs.map((faq, index) => (
-          <Card key={index} className="shadow-sm">
-            <CardContent className="pt-6">
-              <Accordion type="single" collapsible>
-                <AccordionItem value={`item-${index}`}>
-                  <AccordionTrigger className="text-lg font-medium text-foreground hover:text-primary">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground mt-2">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </CardContent>
-          </Card>
+          <AccordionItem value={`item-${index}`} key={index} className="border rounded-lg">
+            <AccordionTrigger className="text-lg font-medium text-foreground hover:text-primary px-4 py-2">
+              {faq.question}
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground px-4 py-2">
+              {faq.answer}
+            </AccordionContent>
+          </AccordionItem>
         ))}
-      </div>
+      </Accordion>
 
       {filteredFaqs.length === 0 && (
         <Card className="mt-8 shadow-sm">

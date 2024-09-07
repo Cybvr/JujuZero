@@ -4,8 +4,10 @@ import './globals.css';
 import { Inter } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/AuthContext';
+import { PricingDialogProvider } from '@/context/PricingDialogContext';
 import { useState, useEffect } from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
+import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,7 +31,6 @@ export default function RootLayout({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate initial app loading
     const timer = setTimeout(() => setIsLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -38,9 +39,25 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          {isLoading ? <LoadingScreen /> : children}
-          <Toaster />
+          <PricingDialogProvider>
+            {isLoading ? <LoadingScreen /> : children}
+            <Toaster />
+          </PricingDialogProvider>
         </AuthProvider>
+        <Script id="chatbase-widget" strategy="afterInteractive">
+          {`
+            window.embeddedChatbotConfig = {
+              chatbotId: "TB6IwCsYnWV0nUh-XJxPF",
+              domain: "www.chatbase.co"
+            }
+          `}
+        </Script>
+        <Script
+          src="https://www.chatbase.co/embed.min.js"
+          chatbotId="TB6IwCsYnWV0nUh-XJxPF"
+          domain="www.chatbase.co"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

@@ -202,7 +202,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                 </CardContent>
               </Card>
             )}
-            <Link href="/dashboard/support" passHref legacyBehavior>
+            <Link href="/help" passHref legacyBehavior>
               <Button variant="ghost" size="default" className="w-full justify-start">
                 <HelpCircle className="mr-2 h-4 w-4 text-blue-500" />
                 {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">Support</span>}
@@ -212,9 +212,9 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
             {(isSidebarOpen || isMobile) && (
               <div className="mt-2 flex justify-between items-center text-sm text-gray-500">
                 <div className="flex space-x-2">
-                  <Link href="/dashboard/about">About</Link>
-                  <Link href="/dashboard/privacy">Privacy</Link>
-                  <Link href="/dashboard/terms">Terms</Link>
+                  <Link href="/about">About</Link>
+                  <Link href="/privacy">Privacy</Link>
+                  <Link href="/terms">Terms</Link>
                 </div>
                 <Twitter className="h-4 w-4" />
               </div>

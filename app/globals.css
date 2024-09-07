@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* white */
+    --background: 0 0% 100%;
     --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 20 14.3% 4.1%;
@@ -29,10 +29,20 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    /* New variables for consistent font sizes */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
   }
 
   .dark {
-    --background: 0 0% 100%; /* white */
+    --background: 20 14.3% 4.1%;
     --foreground: 60 9.1% 97.8%;
     --card: 20 14.3% 4.1%;
     --card-foreground: 60 9.1% 97.8%;
@@ -59,20 +69,49 @@
   }
 }
 
-.toast-title {
-  color: black; /* or any color that contrasts with your toast background */
-}
-
-.toast-description {
-  color: black; /* or any color that contrasts with your toast background */
-}
-
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
-    background-color: white; /* Ensure background is white */
   }
 }
+
+/* Utility classes for consistent typography */
+.h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+}
+
+.h3 {
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.text-body {
+  font-size: var(--font-size-base);
+}
+
+.text-small {
+  font-size: var(--font-size-sm);
+}
+
+/* Additional custom styles */
+.toast-title {
+  color: black;
+}
+
+.toast-description {
+  color: black;
+}
+
+/* You can add more custom styles here as needed */

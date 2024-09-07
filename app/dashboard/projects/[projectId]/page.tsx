@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -28,15 +28,22 @@ const projectData = {
 export default function ProjectDetails({ params }) {
   const router = useRouter();
   const { projectId } = params;
+  const [assets, setAssets] = useState(projectData.assets);
+
+  const handleAssetChange = (assetId, newContent) => {
+    setAssets(prevAssets => prevAssets.map(asset => 
+      asset.id === assetId ? { ...asset, content: newContent } : asset
+    ));
+  };
 
   const renderAsset = (asset) => {
     switch (asset.type) {
       case 'brandGuidelines':
-        return <BrandGuidelinesAsset content={asset.content} onChange={() => {}} />;
+        return <BrandGuidelinesAsset content={asset.content} onChange={(newContent) => handleAssetChange(asset.id, newContent)} />;
       case 'marketingCopy':
-        return <MarketingCopyAsset content={asset.content} onChange={() => {}} />;
+        return <MarketingCopyAsset content={asset.content} onChange={(newContent) => handleAssetChange(asset.id, newContent)} />;
       case 'landingPage':
-        return <LandingPageAsset content={asset.content} />;
+        return <LandingPageAsset content={asset.content} onChange={(newContent) => handleAssetChange(asset.id, newContent)} />;
       default:
         return <p>Unknown asset type</p>;
     }
@@ -69,13 +76,13 @@ export default function ProjectDetails({ params }) {
               <p className="text-xs sm:text-sm text-muted-foreground">Created on: {projectData.createdAt}</p>
             </CardContent>
           </Card>
-          <Tabs defaultValue={projectData.assets[0].id} className="space-y-4">
+          <Tabs defaultValue={assets[0].id} className="space-y-4">
             <TabsList className="flex flex-wrap gap-2">
-              {projectData.assets.map((asset) => (
+              {assets.map((asset) => (
                 <TabsTrigger key={asset.id} value={asset.id} className="text-xs sm:text-sm">{asset.name}</TabsTrigger>
               ))}
             </TabsList>
-            {projectData.assets.map((asset) => (
+            {assets.map((asset) => (
               <TabsContent key={asset.id} value={asset.id}>
                 {renderAsset(asset)}
               </TabsContent>
@@ -112,7 +119,7 @@ export default function ProjectDetails({ params }) {
               <CardTitle className="text-lg sm:text-xl">Project Statistics</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">Total Assets: {projectData.assets.length}</p>
+              <p className="text-sm">Total Assets: {assets.length}</p>
               {/* Add more statistics here */}
             </CardContent>
           </Card>

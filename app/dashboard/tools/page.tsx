@@ -65,8 +65,8 @@ export default function AllTools() {
   return (
     <div className="container mx-auto p-4 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">All Tools</h1>
-        <p className="text-muted-foreground mt-1">Explore our collection of powerful tools to enhance your workflow</p>
+        <h1 className="h1">All Tools</h1>
+        <p className="text-body text-muted-foreground">Explore our collection of powerful tools to enhance your workflow</p>
       </div>
 
       <Tabs defaultValue="All" onValueChange={setActiveTab}>
@@ -75,7 +75,7 @@ export default function AllTools() {
             <TabsTrigger 
               key={category} 
               value={category}
-              className="px-4 py-2 rounded-full"
+              className="px-4 py-2 rounded-full text-small"
             >
               {category}
             </TabsTrigger>
@@ -102,8 +102,8 @@ export default function AllTools() {
                     </Badge>
                   </div>
                   <CardHeader className="p-4">
-                    <CardTitle className="text-lg">{tool.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">{tool.description}</p>
+                    <CardTitle className="h3">{tool.name}</CardTitle>
+                    <p className="text-small text-muted-foreground mt-1">{tool.description}</p>
                   </CardHeader>
                 </Card>
               ))}

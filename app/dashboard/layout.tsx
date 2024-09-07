@@ -1,5 +1,3 @@
-// app/dashboard/layout.tsx
-
 "use client";
 
 import React, { useState } from 'react';
@@ -21,8 +19,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-white">
             {children}
           </main>
-          <div className="fixed bottom-0 left-0 right-0 md:hidden" style={{ paddingBottom: '30px' }}>
-            <ComboboxDemo />
+          <div className="fixed bottom-0 left-0 md:hidden" style={{ paddingBottom: '30px', paddingLeft: '20px' }}>
+            <div style={{ width: '200px', height: '40px' }}>
+              <ComboboxDemo />
+            </div>
           </div>
         </div>
       </div>

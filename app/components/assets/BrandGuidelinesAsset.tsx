@@ -6,7 +6,7 @@ import { ChevronDown, Copy, Check } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 const generateColors = () => {
-  const colors = [];
+  const colors: string[] = [];
   for (let i = 0; i < 4; i++) {
     const hue = Math.floor(Math.random() * 360);
     const saturation = Math.floor(Math.random() * 30) + 70; // 70-100%
@@ -16,13 +16,20 @@ const generateColors = () => {
   return colors;
 };
 
-export default function BrandGuidelinesAsset({ content }) {
+interface BrandGuidelinesAssetProps {
+  content: any;
+  onChange: (newContent: any) => void;
+}
+
+export default function BrandGuidelinesAsset({ content, onChange }: BrandGuidelinesAssetProps) {
   const [colors, setColors] = useState(content?.colors || []);
   const [copiedColor, setCopiedColor] = useState(null);
 
   useEffect(() => {
     if (colors.length === 0) {
-      setColors(generateColors());
+      const newColors = generateColors();
+      setColors(newColors);
+      onChange({ ...content, colors: newColors });
     }
   }, []);
 
@@ -34,6 +41,13 @@ export default function BrandGuidelinesAsset({ content }) {
     navigator.clipboard.writeText(color);
     setCopiedColor(color);
     setTimeout(() => setCopiedColor(null), 2000);
+  };
+
+  const handleColorChange = (index, newColor) => {
+    const newColors = [...colors];
+    newColors[index] = newColor;
+    setColors(newColors);
+    onChange({ ...content, colors: newColors });
   };
 
   const safeContent = {

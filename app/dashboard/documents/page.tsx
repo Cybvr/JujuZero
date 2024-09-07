@@ -217,8 +217,10 @@ export default function DocumentsPage() {
               <TableRow>
                 <TableHead className="w-12">
                   <Checkbox 
+                    id="select-all"
                     checked={selectedDocuments.size === filteredDocuments.length}
                     onChange={(e) => toggleAllDocuments(e.target.checked)}
+                    aria-label="Select all documents"
                   />
                 </TableHead>
                 <TableHead>Name</TableHead>
@@ -230,8 +232,10 @@ export default function DocumentsPage() {
                 <TableRow key={doc.id}>
                   <TableCell>
                     <Checkbox
+                      id={`select-doc-${doc.id}`}
                       checked={selectedDocuments.has(doc.id)}
                       onChange={(e) => toggleDocumentSelection(doc.id, e.target.checked)}
+                      aria-label={`Select ${doc.title}`}
                     />
                   </TableCell>
                   <TableCell className="font-medium">
@@ -252,8 +256,10 @@ export default function DocumentsPage() {
             <Card key={doc.id} className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <Checkbox
+                  id={`select-doc-${doc.id}`}
                   checked={selectedDocuments.has(doc.id)}
                   onChange={(e) => toggleDocumentSelection(doc.id, e.target.checked)}
+                  aria-label={`Select ${doc.title}`}
                 />
                 {getFileIcon(doc.type)}
               </div>

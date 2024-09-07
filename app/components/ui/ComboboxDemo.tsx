@@ -46,7 +46,7 @@ export function ComboboxDemo() {
         >
           {value
             ? tools.find((tool) => tool.slug === value)?.name
-            : "Select tool..."}
+            : "✨ Select Magic tool.."}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

@@ -52,12 +52,8 @@ export default function RootLayout({
             }
           `}
         </Script>
-        <Script
-          src="https://www.chatbase.co/embed.min.js"
-          chatbotId="TB6IwCsYnWV0nUh-XJxPF"
-          domain="www.chatbase.co"
-          strategy="afterInteractive"
-        />
+        <Script src="https://www.chatbase.co/embed.min.js?chatbotId=TB6IwCsYnWV0nUh-XJxPF" strategy="afterInteractive" />
+
       </body>
     </html>
   );

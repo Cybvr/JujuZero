@@ -330,7 +330,7 @@ export default function DocumentsPage() {
               <Link href={`/dashboard/documents/edit/${doc.id}`}>
                 <h3 className="font-medium">{doc.title}</h3>
               </Link>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {doc.lastModified ? new Date(doc.lastModified.seconds * 1000).toLocaleString() : 'N/A'}
               </p>
               <AlertDialog>

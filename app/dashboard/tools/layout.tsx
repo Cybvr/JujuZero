@@ -1,4 +1,5 @@
 "use client";
+
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -9,8 +10,8 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
   const pathSegments = pathname.split('/').filter(segment => segment);
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <header className="bg-white border-b border-gray-200">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <header className="border-b border-border">
         <div className="container mx-auto flex justify-between items-center py-4 px-6">
           <Breadcrumbs>
             {pathSegments.map((segment, index) => {
@@ -27,13 +28,13 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto py-1 px-6 bg-white rounded-md mt-6">
+      <main className="flex-grow container mx-auto py-1 px-6 rounded-md mt-6">
         {children}
       </main>
 
-      <footer className="bg-white border-t border-gray-200 mt-6 py-4">
+      <footer className="border-t border-border mt-6 py-4">
         <div className="container mx-auto text-center">
-          <p className="text-gray-600">SImple tools for charmers 👻</p>
+          <p className="text-muted-foreground text-sm">Simple tools for charmers 👻</p>
         </div>
       </footer>
     </div>

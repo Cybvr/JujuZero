@@ -3,11 +3,12 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"; 
-import { Crown, Search } from 'lucide-react';
+import { Crown, Search, Moon, Sun } from 'lucide-react';
 import UserProfileMenu from '@/components/ui/UserProfileMenu';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from './AuthModal';
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 
 interface DashboardHeaderProps {
   className?: string;
@@ -16,6 +17,7 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ className }: DashboardHeaderProps) {
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className={`flex justify-between items-center p-4 bg-background ${className ?? ''}`}>
@@ -30,6 +32,14 @@ export default function DashboardHeader({ className }: DashboardHeaderProps) {
         </div>
       </div>
       <div className="flex items-center space-x-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          aria-label="Toggle dark mode"
+        >
+          {theme === 'dark' ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
+        </Button>
         {user ? (
           <>
             <Button variant="outline" size="sm" className="h-8 px-2 lg:px-3">

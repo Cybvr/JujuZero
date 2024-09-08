@@ -30,7 +30,7 @@ export default function ProjectsDashboard() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Your Projects</h1>
+        <h1 className="h2">Your Projects</h1>
         <Link href="/dashboard/projects/new">
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" /> Create New Project
@@ -39,8 +39,8 @@ export default function ProjectsDashboard() {
       </div>
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-xl">Welcome to Your Project Dashboard!</CardTitle>
-          <CardDescription className="text-sm">Here you can view all your projects, create new ones, and manage your brand assets.</CardDescription>
+          <CardTitle>Welcome to Your Project Dashboard!</CardTitle>
+          <CardDescription>Here you can view all your projects, create new ones, and manage your brand assets.</CardDescription>
         </CardHeader>
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -49,10 +49,11 @@ export default function ProjectsDashboard() {
             <Card className="h-full hover:shadow-md transition-shadow duration-200">
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{project.name}</CardTitle>
+                  <CardTitle className="h3">{project.name}</CardTitle>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.preventDefault()}>
+                        <span className="sr-only">Open menu</span>
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -63,10 +64,10 @@ export default function ProjectsDashboard() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <CardDescription className="text-xs">Created on: {project.createdAt}</CardDescription>
+                <CardDescription className="text-small">Created on: {project.createdAt}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">{project.description}</p>
+                <p className="text-small text-muted-foreground">{project.description}</p>
               </CardContent>
             </Card>
           </Link>

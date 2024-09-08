@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from 'react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -12,15 +11,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <PricingDialogProvider>
-      <div className="flex h-screen bg-white">
+      <div className="flex h-screen bg-background text-foreground">
         <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
         <div className="flex-1 flex flex-col overflow-hidden">
           <DashboardHeader />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-white">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background">
             {children}
           </main>
-          <div className="fixed bottom-0 left-0 md:hidden" style={{ paddingBottom: '30px', paddingLeft: '20px' }}>
-            <div style={{ width: '200px', height: '40px' }}>
+          <div className="fixed bottom-0 left-0 md:hidden p-4">
+            <div className="w-[200px]">
               <ComboboxDemo />
             </div>
           </div>

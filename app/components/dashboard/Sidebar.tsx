@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, HelpCircle, PanelLeftOpen, PanelLeftClose, FileIcon, Star, List, User, Briefcase } from 'lucide-react'; 
+import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, HelpCircle, PanelLeftOpen, PanelLeftClose, FileIcon, Star, List, User, Briefcase, Moon, Sun } from 'lucide-react'; 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +13,7 @@ import { usePricingDialog } from '@/context/PricingDialogContext';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from 'next-themes';
 
 const discover = [
   { name: 'Discover', icon: CompassIcon, path: '/dashboard/tools' },
@@ -27,6 +28,25 @@ interface SidebarProps {
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
+function LogoWrapper() {
+  const [mounted, setMounted] = useState(false);
+  const { theme } = useTheme();
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  return (
+    <Image 
+      src={theme === 'dark' ? "/images/logoy.png" : "/images/logox.png"}
+      alt="Logo" 
+      width={96} 
+      height={24} 
+      className="w-24 h-6 object-contain"
+    />
+  );
+}
+
 export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -35,6 +55,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const { user } = useAuth();
   const [favorites, setFavorites] = useState<string[]>([]);
   const [myList, setMyList] = useState<string[]>([]);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -53,16 +74,16 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const handleDropdownToggle = () => setIsDropdownOpen(!isDropdownOpen);
 
   const isActive = (path: string) => pathname === path;
-  const buttonClasses = (path: string) => `w-full justify-start ${isActive(path) ? 'bg-blue-100 dark:bg-blue-900' : ''}`;
-  const iconClasses = (path: string) => `text-blue-500 ${isActive(path) ? 'text-blue-700 dark:text-blue-300' : ''}`;
+  const buttonClasses = (path: string) => `w-full justify-start ${isActive(path) ? 'bg-primary dark:bg-card' : ''}`;
+  const iconClasses = (path: string) => `mr-2 h-4 w-4 ${isActive(path) ? 'text-secondary' : ''}`;
 
   const renderNavItems = () => (
     <>
       <Link href="/dashboard" passHref legacyBehavior>
         <a>
           <Button variant="ghost" className={buttonClasses('/dashboard')}>
-            <HomeIcon className={`mr-2 h-4 w-4 ${iconClasses('/dashboard')}`} />
-            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home</span>}
+            <HomeIcon className={iconClasses('/dashboard')} />
+            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Home</span>}
           </Button>
         </a>
       </Link>
@@ -71,8 +92,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
         <Link key={item.path} href={item.path} passHref legacyBehavior>
           <a>
             <Button variant="ghost" className={buttonClasses(item.path)}>
-              <item.icon className={`mr-2 h-4 w-4 ${iconClasses(item.path)}`} />
-              {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</span>}
+              <item.icon className={iconClasses(item.path)} />
+              {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
             </Button>
           </a>
         </Link>
@@ -80,8 +101,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
       <Link href="/dashboard/tools/myTools" passHref legacyBehavior>
         <a>
           <Button variant="ghost" className={buttonClasses('/dashboard/tools/myList')}>
-            <List className={`mr-2 h-4 w-4 ${iconClasses('/dashboard/tools/myList')}`} />
-            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">My Tools</span>}
+            <List className={iconClasses('/dashboard/tools/myList')} />
+            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">My Tools</span>}
           </Button>
         </a>
       </Link>
@@ -90,8 +111,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
         <Link key={item.path} href={item.path} passHref legacyBehavior>
           <a>
             <Button variant="ghost" className={buttonClasses(item.path)}>
-              <item.icon className={`mr-2 h-4 w-4 ${iconClasses(item.path)}`} />
-              {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</span>}
+              <item.icon className={iconClasses(item.path)} />
+              {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
             </Button>
           </a>
         </Link>
@@ -99,8 +120,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
       <Link href="/dashboard/projects" passHref legacyBehavior>
         <a>
           <Button variant="ghost" className={buttonClasses('/dashboard/projects')}>
-            <Briefcase className={`mr-2 h-4 w-4 ${iconClasses('/dashboard/projects')}`} />
-            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">Projects</span>}
+            <Briefcase className={iconClasses('/dashboard/projects')} />
+            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>}
           </Button>
         </a>
       </Link>
@@ -116,13 +137,13 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                     <a>
                       <Button variant="ghost" className="w-full justify-start">
                         <Star className="mr-2 h-4 w-4 text-yellow-500" />
-                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">{slug}</span>
+                        <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{slug}</span>
                       </Button>
                     </a>
                   </Link>
                 ))
               ) : (
-                <p className="text-xs px-2">No favorite tools</p>
+                <p className="text-xs px-2 text-muted-foreground">No favorite tools</p>
               )}
             </ScrollArea>
           </div>
@@ -135,13 +156,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
     <>
       <div className="md:hidden flex justify-between p-2 border-b items-center fixed top-0 left-0 right-0 bg-gray-100 dark:bg-[#1e1e1e] z-20">
         <Link href="/dashboard" className="flex items-center">
-          <Image 
-            src="/images/logox.png" 
-            alt="Logo" 
-            width={96} 
-            height={24} 
-            className="w-24 h-6 object-contain"
-          />
+          <LogoWrapper />
         </Link>
         <div className="flex items-center">
           <Button variant="ghost" size="sm" onClick={handleDropdownToggle} className="mr-2">
@@ -164,13 +179,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           <div className="p-4 border-b flex justify-between items-center">
             {isSidebarOpen && (
               <Link href="/dashboard" className="flex-shrink-0">
-                <Image
-                  src="/images/logox.png" 
-                  alt="Logo" 
-                  width={96} 
-                  height={24} 
-                  className="w-24 h-6 object-contain"
-                />
+                <LogoWrapper />
               </Link>
             )}
             <Button variant="ghost" size="sm" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={isSidebarOpen ? '' : 'mx-auto'}>
@@ -186,8 +195,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
             {isSidebarOpen && (
               <Card className="mb-4">
                 <CardContent className="p-4">
-                  <p className="text-sm font-medium mb-2">👋 Try Pro!  Upgrade for more tools and task assistants.</p>
-                  <Button variant="default" size="sm" className="w-full" onClick={() => setIsPricingOpen(true)}>
+                  <p className="text-small font-medium mb-2">👋 Try Pro!  Upgrade for more tools and task assistants.</p>
+                  <Button variant="default" size="sm" className="w-full bg-accent text-primary hover:bg-primary/90" onClick={() => setIsPricingOpen(true)}>
                     Learn more
                   </Button>
                 </CardContent>
@@ -195,13 +204,23 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
             )}
             <Link href="/help" passHref legacyBehavior>
               <Button variant="ghost" size="default" className="w-full justify-start">
-                <HelpCircle className="mr-2 h-4 w-4 text-blue-500" />
-                {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">Support</span>}
+                <HelpCircle className="mr-2 h-4 w-4 text-primary" />
+                {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Support</span>}
               </Button>
             </Link>
-
+            <Button 
+              variant="ghost" 
+              size="default" 
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
+              className="w-full justify-start mt-2"
+            >
+              {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+              {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">
+                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              </span>}
+            </Button>
             {(isSidebarOpen || isMobile) && (
-              <div className="mt-2 flex justify-between items-center text-sm text-gray-500">
+              <div className="mt-2 flex justify-between items-center text-small text-muted-foreground">
                 <div className="flex space-x-2">
                   <Link href="/about">About</Link>
                   <Link href="/privacy">Privacy</Link>

@@ -64,6 +64,10 @@ export default function MyTools() {
   if (myTools.length === 0) {
     return (
       <div className="container mx-auto p-4 max-w-7xl">
+        <div className="mb-8">
+          <h1 className="h1">My Tools</h1>
+          <p className="text-body text-muted-foreground">Your personal collection of tools</p>
+        </div>
         <Card className="text-center py-16">
           <CardContent>
             <div className="flex flex-col items-center">

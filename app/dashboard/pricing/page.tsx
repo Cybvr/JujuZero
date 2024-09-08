@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Check, X } from "lucide-react"
-import { usePricingDialog } from '@/context/PricingDialogContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const features = [
@@ -45,9 +44,13 @@ const paidTiers = {
   }
 }
 
-export default function Component() {
-  const { setIsPricingOpen } = usePricingDialog()
+export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly')
+
+  const handleUpgrade = () => {
+    // Implement your upgrade logic here
+    console.log('Upgrade clicked')
+  }
 
   const renderPricingCard = (option, index) => (
     <Card key={index} className={`flex flex-col ${index === 1 ? 'border-primary' : ''}`}>
@@ -82,7 +85,7 @@ export default function Component() {
         <Button 
           className="w-full" 
           variant={index === 1 ? "default" : "secondary"}
-          onClick={() => option.isCurrent ? null : setIsPricingOpen(true)}
+          onClick={handleUpgrade}
           disabled={option.isCurrent}
         >
           {option.isCurrent ? "Current Plan" : "Choose Plan"}
@@ -92,27 +95,23 @@ export default function Component() {
   )
 
   return (
-    <div className="container mx-auto p-6 text-center bg-background">
-      <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
-      <p className="text-md text-muted-foreground mb-6">Select the perfect plan for your needs</p>
-      <Tabs defaultValue="monthly" onValueChange={(value) => setBillingPeriod(value as 'monthly' | 'annual')}>
-        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6 mx-auto">
-          <TabsTrigger value="monthly">Monthly Billing</TabsTrigger>
-          <TabsTrigger value="annual">Annual Billing</TabsTrigger>
+    <div className="container mx-auto px-4 py-8">
+      <div className="text-center mb-10">
+        <h1 className="text-3xl font-bold mb-2">Pricing Plans</h1>
+        <p className="text-xl text-muted-foreground">Choose the plan that fits your needs</p>
+      </div>
+
+      <Tabs value={billingPeriod} onValueChange={(value: 'monthly' | 'annual') => setBillingPeriod(value)} className="mb-8">
+        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+          <TabsTrigger value="monthly">Monthly</TabsTrigger>
+          <TabsTrigger value="annual">Annual</TabsTrigger>
         </TabsList>
-        <TabsContent value="monthly" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {renderPricingCard(freeTier, 0)}
-            {renderPricingCard(paidTiers.monthly, 1)}
-          </div>
-        </TabsContent>
-        <TabsContent value="annual" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {renderPricingCard(freeTier, 0)}
-            {renderPricingCard(paidTiers.annual, 1)}
-          </div>
-        </TabsContent>
       </Tabs>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {renderPricingCard(freeTier, 0)}
+        {renderPricingCard(paidTiers[billingPeriod], 1)}
+      </div>
     </div>
   )
 }

@@ -89,7 +89,7 @@ export default function AllTools() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-2 max-w-7xl">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold mb-2">All Tools</h1>
         <p className="text-muted-foreground">Explore our collection of powerful tools to enhance your workflow</p>

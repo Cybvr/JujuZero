@@ -14,3 +14,7 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.invert-colors {
+  filter: invert(1);
+}

@@ -77,7 +77,7 @@ export default function ProjectDetails({ params }) {
             </CardContent>
           </Card>
           <Tabs defaultValue={assets[0].id} className="space-y-4">
-            <TabsList className="flex flex-wrap gap-2">
+            <TabsList className="inline-flex justify-start flex-wrap gap-2">
               {assets.map((asset) => (
                 <TabsTrigger key={asset.id} value={asset.id} className="text-xs sm:text-sm">{asset.name}</TabsTrigger>
               ))}

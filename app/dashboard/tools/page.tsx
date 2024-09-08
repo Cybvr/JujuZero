@@ -1,81 +1,107 @@
-"use client";
+"use client"
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Zap, UserCircle2, Crown } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import AuthModal from '@/components/dashboard/AuthModal';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Zap, UserCircle2, Crown, Star, Plus } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+import AuthModal from '@/components/dashboard/AuthModal'
+import Link from 'next/link'
 
-const categories = ["All", "conversion", "image", "text"];
+const categories = ["All", "Conversion", "Image", "Text"]
 
 interface Tool {
-  name: string;
-  description: string;
-  slug: string;
-  imageSrc: string;
-  category: string;
-  access: 'free' | 'signin' | 'premium';
+  name: string
+  description: string
+  slug: string
+  imageSrc: string
+  category: string
+  access: 'free' | 'signin' | 'premium'
 }
 
 const tools: Tool[] = [
-  { name: 'QR Code Generator', slug: 'qr-code-generator', description: 'Create custom QR codes easily.', imageSrc: '/images/tools/1.png', category: 'conversion', access: 'free' },
-  { name: 'Remove Background', slug: 'remove-background', description: 'Easily remove image backgrounds.', imageSrc: '/images/tools/2.png', category: 'image', access: 'free' },
-  { name: 'Compress Image', slug: 'compress-image', description: 'Reduce image file size without losing quality.', imageSrc: '/images/tools/3.png', category: 'image', access: 'free' },
-  { name: 'Video to MP4', slug: 'video-to-mp4', description: 'Convert various video formats to MP4.', imageSrc: '/images/tools/video-to-mp4.png', category: 'conversion', access: 'free' },
-  { name: 'Audio to MP3', slug: 'audio-to-mp3', description: 'Convert audio files to MP3 format.', imageSrc: '/images/tools/audio-to-mp3.png', category: 'conversion', access: 'signin' },
-  { name: 'Document to PDF', slug: 'document-to-pdf', description: 'Convert documents like Word, Excel, and PowerPoint to PDF format.', imageSrc: '/images/tools/document-to-pdf.png', category: 'conversion', access: 'signin' },
-  { name: 'Image Crop', slug: 'image-crop', description: 'Crop images easily.', imageSrc: '/images/tools/crop.png', category: 'image', access: 'premium' },
-  { name: 'Add Watermark', slug: 'add-watermark', description: 'Add watermark to images.', imageSrc: '/images/tools/add-watermark.png', category: 'image', access: 'premium' },
-];
+  { name: 'QR Code Generator', slug: 'qr-code-generator', description: 'Create custom QR codes easily.', imageSrc: '/images/tools/1.png', category: 'Conversion', access: 'free' },
+  { name: 'Remove Background', slug: 'remove-background', description: 'Easily remove image backgrounds.', imageSrc: '/images/tools/2.png', category: 'Image', access: 'free' },
+  { name: 'Compress Image', slug: 'compress-image', description: 'Reduce image file size without losing quality.', imageSrc: '/images/tools/3.png', category: 'Image', access: 'free' },
+  { name: 'Video to MP4', slug: 'video-to-mp4', description: 'Convert various video formats to MP4.', imageSrc: '/images/tools/video-to-mp4.png', category: 'Conversion', access: 'free' },
+  { name: 'Audio to MP3', slug: 'audio-to-mp3', description: 'Convert audio files to MP3 format.', imageSrc: '/images/tools/audio-to-mp3.png', category: 'Conversion', access: 'signin' },
+  { name: 'Document to PDF', slug: 'document-to-pdf', description: 'Convert documents like Word, Excel, and PowerPoint to PDF format.', imageSrc: '/images/tools/document-to-pdf.png', category: 'Conversion', access: 'signin' },
+  { name: 'Image Crop', slug: 'image-crop', description: 'Crop images easily.', imageSrc: '/images/tools/crop.png', category: 'Image', access: 'premium' },
+  { name: 'Add Watermark', slug: 'add-watermark', description: 'Add watermark to images.', imageSrc: '/images/tools/add-watermark.png', category: 'Image', access: 'premium' },
+]
 
 const getBadgeContent = (access: string): { icon: LucideIcon; variant: "default" | "secondary" | "destructive" | "outline"; tooltip: string } => {
   switch (access) {
     case 'free':
-      return { icon: Zap, variant: "secondary", tooltip: 'Free - No account required' };
+      return { icon: Zap, variant: "secondary", tooltip: 'Free - No account required' }
     case 'signin':
-      return { icon: UserCircle2, variant: "default", tooltip: 'Sign In Required' };
+      return { icon: UserCircle2, variant: "default", tooltip: 'Sign In Required' }
     case 'premium':
-      return { icon: Crown, variant: "destructive", tooltip: 'Premium Feature' };
+      return { icon: Crown, variant: "destructive", tooltip: 'Premium Feature' }
     default:
-      return { icon: Zap, variant: "outline", tooltip: 'Unknown' };
+      return { icon: Zap, variant: "outline", tooltip: 'Unknown' }
   }
-};
+}
 
 export default function AllTools() {
-  const [activeTab, setActiveTab] = useState("All");
-  const router = useRouter();
-  const { user } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("All")
+  const { user } = useAuth()
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [myTools, setMyTools] = useState<Tool[]>([])
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
-  const handleCardClick = (slug: string, access: string) => {
-    if (access === 'free') {
-      router.push(`/dashboard/tools/${slug}`);
-    } else if ((access === 'signin' || access === 'premium') && !user) {
-      setShowAuthModal(true);
-    } else {
-      router.push(`/dashboard/tools/${slug}`);
-    }
-  };
+  useEffect(() => {
+    const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+    const savedMyTools = JSON.parse(localStorage.getItem('myTools') || '[]')
+    setFavorites(savedFavorites)
+    setMyTools(savedMyTools)
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favorites))
+  }, [favorites])
+
+  useEffect(() => {
+    localStorage.setItem('myTools', JSON.stringify(myTools))
+  }, [myTools])
+
+  const handleFavoriteToggle = (e: React.MouseEvent, slug: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setFavorites((prevFavorites) =>
+      prevFavorites.includes(slug)
+        ? prevFavorites.filter((favorite) => favorite !== slug)
+        : [...prevFavorites, slug]
+    )
+  }
+
+  const handleAddToMyTools = (e: React.MouseEvent, tool: Tool) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setMyTools((prevTools) => {
+      if (!prevTools.some(t => t.slug === tool.slug)) {
+        return [...prevTools, tool]
+      }
+      return prevTools
+    })
+  }
 
   return (
-    <div className="container mx-auto p-4 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
-        <h1 className="h1">All Tools</h1>
-        <p className="text-body text-muted-foreground">Explore our collection of powerful tools to enhance your workflow</p>
+        <h1 className="text-3xl font-semibold mb-2">All Tools</h1>
+        <p className="text-muted-foreground">Explore our collection of powerful tools to enhance your workflow</p>
       </div>
 
-      <Tabs defaultValue="All" onValueChange={setActiveTab}>
+      <Tabs defaultValue="All" onValueChange={setActiveTab} className="mb-8">
         <TabsList className="mb-6">
           {categories.map((category) => (
             <TabsTrigger 
               key={category} 
               value={category}
-              className="px-4 py-2 rounded-full text-small"
+              className="px-4 py-2 text-sm"
             >
               {category}
             </TabsTrigger>
@@ -84,33 +110,58 @@ export default function AllTools() {
         <TabsContent value={activeTab}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {tools
-              .filter(tool => activeTab === "All" || tool.category === activeTab.toLowerCase())
+              .filter(tool => activeTab === "All" || tool.category === activeTab)
               .map((tool) => (
-                <Card 
+                <Link 
                   key={tool.slug} 
-                  onClick={() => handleCardClick(tool.slug, tool.access)} 
-                  className="cursor-pointer hover:shadow-md transition-shadow duration-300 overflow-hidden"
+                  href={`/dashboard/tools/${tool.slug}`}
+                  onClick={(e) => {
+                    if ((tool.access === 'signin' || tool.access === 'premium') && !user) {
+                      e.preventDefault()
+                      setShowAuthModal(true)
+                    }
+                  }}
                 >
-                  <div className="relative">
-                    <img src={tool.imageSrc} alt={tool.name} className="w-full h-40 object-cover" />
-                    <Badge 
-                      variant={getBadgeContent(tool.access).variant as "default" | "destructive" | "outline" | "secondary"}
-                      className="absolute top-2 right-2 p-1"
-                      title={getBadgeContent(tool.access).tooltip}
-                    >
-                      {React.createElement(getBadgeContent(tool.access).icon, { size: 16 })}
-                    </Badge>
-                  </div>
-                  <CardHeader className="p-4">
-                    <CardTitle className="h3">{tool.name}</CardTitle>
-                    <p className="text-small text-muted-foreground mt-1">{tool.description}</p>
-                  </CardHeader>
-                </Card>
+                  <Card 
+                    className="overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer"
+                  >
+                    <div className="relative">
+                      <img src={tool.imageSrc} alt={tool.name} className="w-full h-40 object-cover" />
+                      <Badge 
+                        variant={getBadgeContent(tool.access).variant}
+                        className="absolute top-2 right-2 p-1"
+                        title={getBadgeContent(tool.access).tooltip}
+                      >
+                        {React.createElement(getBadgeContent(tool.access).icon, { size: 14 })}
+                      </Badge>
+                      <div className="absolute top-2 left-2 flex space-x-2">
+                        <button
+                          onClick={(e) => handleFavoriteToggle(e, tool.slug)}
+                          className="p-1 bg-white/80 rounded-full hover:bg-white transition-colors"
+                          title={favorites.includes(tool.slug) ? 'Remove from Favorites' : 'Add to Favorites'}
+                        >
+                          <Star className={`h-4 w-4 ${favorites.includes(tool.slug) ? "text-yellow-500 fill-current" : "text-gray-500"}`} />
+                        </button>
+                        <button
+                          onClick={(e) => handleAddToMyTools(e, tool)}
+                          className="p-1 bg-white/80 rounded-full hover:bg-white transition-colors"
+                          title={myTools.some(t => t.slug === tool.slug) ? 'Added to My Tools' : 'Add to My Tools'}
+                        >
+                          <Plus className={`h-4 w-4 ${myTools.some(t => t.slug === tool.slug) ? "text-green-500" : "text-gray-500"}`} />
+                        </button>
+                      </div>
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="text-lg font-medium mb-1">{tool.name}</h3>
+                      <p className="text-sm text-muted-foreground">{tool.description}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
           </div>
         </TabsContent>
       </Tabs>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
-  );
+  )
 }

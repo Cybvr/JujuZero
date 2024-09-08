@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy, DocumentData, Query } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, deleteDoc, doc, DocumentData, Query } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -11,8 +11,9 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { File, FileText, Image, Video, Folder, Plus, Grid, List } from 'lucide-react';
+import { File, FileText, Image, Video, Folder, Plus, Grid, List, Trash2 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 interface Document extends DocumentData {
   id: string;
@@ -33,6 +34,8 @@ export default function DocumentsPage() {
   const [sortBy, setSortBy] = useState<'lastModified' | 'title'>('lastModified');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -126,6 +129,40 @@ export default function DocumentsPage() {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    if (!user) return;
+
+    try {
+      const deletePromises = Array.from(selectedDocuments).map(docId => deleteDoc(doc(db, "documents", docId)));
+      await Promise.all(deletePromises);
+      setDocuments(prev => prev.filter(doc => !selectedDocuments.has(doc.id)));
+      setFilteredDocuments(prev => prev.filter(doc => !selectedDocuments.has(doc.id)));
+      setSelectedDocuments(new Set());
+      console.log("Selected documents have been deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting documents:", error);
+      setError("Failed to delete selected documents. Please try again.");
+    } finally {
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const handleDeleteSingleDocument = async () => {
+    if (!user || !documentToDelete) return;
+
+    try {
+      await deleteDoc(doc(db, "documents", documentToDelete));
+      setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete));
+      setFilteredDocuments(prev => prev.filter(doc => doc.id !== documentToDelete));
+      console.log("Document has been deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      setError("Failed to delete document. Please try again.");
+    } finally {
+      setDocumentToDelete(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -167,9 +204,36 @@ export default function DocumentsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Your Documents</h1>
-        <Button onClick={() => router.push('/dashboard/documents/new')}>
-          <Plus className="mr-2 h-4 w-4" /> New Document
-        </Button>
+        <div className="flex space-x-2">
+          {selectedDocuments.size > 0 && (
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="icon" onClick={() => setIsDeleteDialogOpen(true)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the selected documents.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </AlertDialogCancel>
+                  <AlertDialogAction asChild>
+                    <Button variant="destructive" onClick={handleDeleteSelected}>Yes, delete</Button>
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+          <Button onClick={() => router.push('/dashboard/documents/new')}>
+            <Plus className="mr-2 h-4 w-4" /> New Document
+          </Button>
+        </div>
       </div>
       <div className="mb-4 flex flex-wrap gap-4">
         <Input
@@ -264,15 +328,38 @@ export default function DocumentsPage() {
                 {getFileIcon(doc.type)}
               </div>
               <Link href={`/dashboard/documents/edit/${doc.id}`}>
-                <h3 className="font-medium truncate">{doc.title}</h3>
+                <h3 className="font-medium">{doc.title}</h3>
               </Link>
               <p className="text-sm text-gray-500">
                 {doc.lastModified ? new Date(doc.lastModified.seconds * 1000).toLocaleString() : 'N/A'}
               </p>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="mt-2" onClick={() => setDocumentToDelete(doc.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the document "{doc.title}".
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                      <AlertDialogCancel asChild>
+                                            <Button variant="outline">Cancel</Button>
+                                          </AlertDialogCancel>
+                                          <AlertDialogAction asChild>
+                                            <Button variant="destructive" onClick={handleDeleteSingleDocument}>Delete</Button>
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </Card>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }

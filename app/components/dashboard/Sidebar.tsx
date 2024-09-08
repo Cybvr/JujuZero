@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, HelpCircle, PanelLeftOpen, PanelLeftClose, FileIcon, Twitter, User } from 'lucide-react'; 
+import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, HelpCircle, PanelLeftOpen, PanelLeftClose, FileIcon, Star, List, User, Briefcase } from 'lucide-react'; 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -15,7 +15,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 
 const discover = [
-  { name: 'Magic Tools', icon: CompassIcon, path: '/dashboard/tools' },
+  { name: 'Discover', icon: CompassIcon, path: '/dashboard/tools' },
 ];
 
 const folders = [
@@ -33,7 +33,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const [isMobile, setIsMobile] = useState(false);
   const { setIsPricingOpen } = usePricingDialog();
   const { user } = useAuth();
-  const [recentFiles, setRecentFiles] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [myList, setMyList] = useState<string[]>([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -43,33 +44,11 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   }, []);
 
   useEffect(() => {
-    if (user) {
-      fetchRecentDocuments();
-    }
-  }, [user]);
-
-  const fetchRecentDocuments = async () => {
-    if (!user) return;
-    try {
-      const q = query(
-        collection(db, "documents"),
-        where("userId", "==", user.uid),
-        orderBy("lastModified", "desc"),
-        limit(4)
-      );
-      const querySnapshot = await getDocs(q);
-      const docs = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        name: doc.data().title,
-        path: `/dashboard/documents/edit/${doc.id}`,
-        icon: FileIcon
-      }));
-      setRecentFiles(docs);
-    } catch (error) {
-      console.error("Error fetching recent documents:", error);
-      setRecentFiles([]);
-    }
-  };
+    const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const savedMyList = JSON.parse(localStorage.getItem('myList') || '[]');
+    setFavorites(savedFavorites);
+    setMyList(savedMyList);
+  }, []);
 
   const handleDropdownToggle = () => setIsDropdownOpen(!isDropdownOpen);
 
@@ -98,6 +77,14 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           </a>
         </Link>
       ))}
+      <Link href="/dashboard/tools/myTools" passHref legacyBehavior>
+        <a>
+          <Button variant="ghost" className={buttonClasses('/dashboard/tools/myList')}>
+            <List className={`mr-2 h-4 w-4 ${iconClasses('/dashboard/tools/myList')}`} />
+            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">My Tools</span>}
+          </Button>
+        </a>
+      </Link>
       <Separator className="my-2" />
       {folders.map((item) => (
         <Link key={item.path} href={item.path} passHref legacyBehavior>
@@ -112,7 +99,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
       <Link href="/dashboard/projects" passHref legacyBehavior>
         <a>
           <Button variant="ghost" className={buttonClasses('/dashboard/projects')}>
-            <FolderIcon className={`mr-2 h-4 w-4 ${iconClasses('/dashboard/projects')}`} />
+            <Briefcase className={`mr-2 h-4 w-4 ${iconClasses('/dashboard/projects')}`} />
             {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis">Projects</span>}
           </Button>
         </a>
@@ -121,18 +108,22 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
         <>
           <Separator className="my-2" />
           <div className="px-3 py-2">
-            <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight">Recent files</h2>
-            <ScrollArea className="h-[230px]">
-              {recentFiles.map((file) => (
-                <Link key={file.path} href={file.path} passHref legacyBehavior>
-                  <a>
-                    <Button variant="ghost" className="w-full justify-start">
-                      <file.icon className="mr-2 h-4 w-4 text-blue-500" />
-                      <span className="whitespace-nowrap overflow-hidden text-ellipsis">{file.name}</span>
-                    </Button>
-                  </a>
-                </Link>
-              ))}
+            <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight">⭐ Favorite Tools</h2>
+            <ScrollArea className="h-[100px]">
+              {favorites.length > 0 ? (
+                favorites.map((slug) => (
+                  <Link key={slug} href={`/dashboard/tools/${slug}`} passHref legacyBehavior>
+                    <a>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <Star className="mr-2 h-4 w-4 text-yellow-500" />
+                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">{slug}</span>
+                      </Button>
+                    </a>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-xs px-2">No favorite tools</p>
+              )}
             </ScrollArea>
           </div>
         </>
@@ -216,7 +207,6 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                   <Link href="/privacy">Privacy</Link>
                   <Link href="/terms">Terms</Link>
                 </div>
-                <Twitter className="h-4 w-4" />
               </div>
             )}
           </div>

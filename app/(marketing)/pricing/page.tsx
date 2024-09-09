@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Check, X } from "lucide-react"
-import { usePricingDialog } from '@/context/PricingDialogContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const features = [
@@ -46,7 +46,7 @@ const paidTiers = {
 }
 
 export default function Component() {
-  const { setIsPricingOpen } = usePricingDialog()
+  const router = useRouter()
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly')
 
   const renderPricingCard = (option, index) => (
@@ -82,7 +82,7 @@ export default function Component() {
         <Button 
           className="w-full" 
           variant={index === 1 ? "default" : "secondary"}
-          onClick={() => option.isCurrent ? null : setIsPricingOpen(true)}
+          onClick={() => option.isCurrent ? null : router.push('/signup')}
           disabled={option.isCurrent}
         >
           {option.isCurrent ? "Current Plan" : "Choose Plan"}

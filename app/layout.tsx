@@ -20,7 +20,7 @@ export default function RootLayout({
 
       // Set up the configuration after the script has loaded
       script.onload = () => {
-        window.embeddedChatbotConfig = {
+        (window as Window).embeddedChatbotConfig = {
           chatbotId: "TB6IwCsYnWV0nUh-XJxPF",
           domain: "www.chatbase.co"
         };

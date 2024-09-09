@@ -94,7 +94,7 @@ export default function MarketingCopyAsset({ content, onSave }: MarketingCopyAss
           <CustomEditor
             value={localContent}
             onChange={handleContentChange}
-            placeholder="Enter your marketing copy..."
+            
           />
         </div>
 

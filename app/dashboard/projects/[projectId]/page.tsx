@@ -124,6 +124,69 @@ export default function ProjectDetails({ params }: { params: { projectId: string
     }
   }
 
+  const handleSaveBrandGuidelines = async (newContent: ProjectData['brandGuidelines']) => {
+    try {
+      await updateDoc(doc(db, "projects", projectId), {
+        brandGuidelines: newContent,
+        updatedAt: new Date(),
+      })
+      setProject(prev => prev ? { ...prev, brandGuidelines: newContent } : null)
+      toast({
+        title: "Changes saved",
+        description: "Brand guidelines have been updated.",
+      })
+    } catch (error) {
+      console.error("Error saving brand guidelines:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save changes. Please try again.",
+      })
+    }
+  }
+
+  const handleSaveMarketingCopy = async (newContent: string) => {
+    try {
+      await updateDoc(doc(db, "projects", projectId), {
+        marketingCopy: newContent,
+        updatedAt: new Date(),
+      })
+      setProject(prev => prev ? { ...prev, marketingCopy: newContent } : null)
+      toast({
+        title: "Changes saved",
+        description: "Marketing copy has been updated.",
+      })
+    } catch (error) {
+      console.error("Error saving marketing copy:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save changes. Please try again.",
+      })
+    }
+  }
+
+  const handleSaveLandingPage = async (newContent: string) => {
+    try {
+      await updateDoc(doc(db, "projects", projectId), {
+        landingPage: newContent,
+        updatedAt: new Date(),
+      })
+      setProject(prev => prev ? { ...prev, landingPage: newContent } : null)
+      toast({
+        title: "Changes saved",
+        description: "Landing page has been updated.",
+      })
+    } catch (error) {
+      console.error("Error saving landing page:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save changes. Please try again.",
+      })
+    }
+  }
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
@@ -192,15 +255,15 @@ export default function ProjectDetails({ params }: { params: { projectId: string
             </div>
 
             <div id="brandGuidelines">
-              <BrandGuidelinesAsset content={project.brandGuidelines} />
+              <BrandGuidelinesAsset content={project.brandGuidelines} onSave={handleSaveBrandGuidelines} />
             </div>
 
             <div id="marketingCopy">
-              <MarketingCopyAsset content={project.marketingCopy} />
+              <MarketingCopyAsset content={project.marketingCopy} onSave={handleSaveMarketingCopy} />
             </div>
 
             <div id="landingPage">
-              <LandingPageAsset content={project.landingPage} />
+              <LandingPageAsset content={project.landingPage} onSave={handleSaveLandingPage} />
             </div>
 
             <div className="flex justify-center mt-8">

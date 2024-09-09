@@ -1,17 +1,16 @@
-'use client'
+"use client";
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { db } from '@/lib/firebase'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { useAuth } from '@/context/AuthContext'
-import BrandGuidelinesAsset from '@/components/assets/BrandGuidelinesAsset'
-import MarketingCopyAsset from '@/components/assets/MarketingCopyAsset'
-import LandingPageAsset from '@/components/assets/LandingPageAsset'
 import { useToast } from "@/components/ui/use-toast"
-import { ErrorBoundary } from 'react-error-boundary'
+import { PlusCircle, Stars, Download } from 'lucide-react'
+import { Progress } from "@/components/ui/progress"
 
 const sampleDescriptions = [
   "A modern, eco-friendly clothing brand focusing on sustainable materials and ethical production.",
@@ -19,52 +18,56 @@ const sampleDescriptions = [
   "A gourmet pet food company specializing in organic, locally-sourced ingredients."
 ];
 
-function ErrorFallback({error, resetErrorBoundary}) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
-  )
-}
-
 export default function NewProject() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
+  const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [projectData, setProjectData] = useState({
-    brandGuidelines: {},
-    marketingCopy: {
-      brandOverview: '',
-      targetAudience: '',
-      keyMessages: [],
-      marketingChannels: []
-    },
-    landingPage: ''
-  })
-  const [isComplete, setIsComplete] = useState(false)
+  const [progress, setProgress] = useState(0)
 
-  const handleAddSample = (sample: string) => {
+  useEffect(() => {
+    if (!authLoading && user === null && !isLoading) {
+      router.push('/login')
+    }
+  }, [user, router, isLoading, authLoading])
+
+  const handleAddSample = (sample) => {
     setDescription(prev => prev + (prev ? '\n\n' : '') + sample)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const simulateProgress = () => {
+    let currentProgress = 0
+    const interval = setInterval(() => {
+      currentProgress += Math.random() * 10
+      if (currentProgress > 100) {
+        currentProgress = 100
+        clearInterval(interval)
+      }
+      setProgress(Math.round(currentProgress))
+    }, 500)
+    return () => clearInterval(interval)
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!name.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a project name.",
+      })
+      return
+    }
     setIsLoading(true)
+    const cleanup = simulateProgress()
 
     try {
       const response = await fetch('/api/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [
-            { role: "system", content: "You are a helpful assistant that generates project data based on descriptions." },
-            { role: "user", content: `Generate project data for the following description: ${description}` }
-          ]
-        }),
+        body: JSON.stringify({ name, description }),
       })
 
       if (!response.ok) {
@@ -73,59 +76,41 @@ export default function NewProject() {
 
       const data = await response.json()
 
-      const updateResponse = await fetch('/api/update-project-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [
-            { role: "system", content: "You are a helpful assistant that updates project data." },
-            { role: "user", content: data.content }
-          ]
-        }),
+      // We don't need to call the update-project-data route separately anymore
+      // as the initial generation now includes all required fields
+
+      const docRef = await addDoc(collection(db, "projects"), {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        userId: user?.uid,
       })
 
-      if (!updateResponse.ok) {
-        throw new Error(`HTTP error! status: ${updateResponse.status}`)
-      }
+      cleanup()
+      setProgress(100)
 
-      const updatedData = await updateResponse.json()
-      setProjectData(updatedData)
-      setIsComplete(true)
+      setTimeout(() => {
+        router.push(`/dashboard/projects/${docRef.id}`)
+      }, 500)
+
     } catch (error) {
+      cleanup()
       console.error('Error creating project:', error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: `Failed to create project: ${error.message}`,
+        description: `Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`,
       })
-    } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSaveProject = async () => {
-    try {
-      const docRef = await addDoc(collection(db, "projects"), {
-        description,
-        ...projectData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        userId: user.uid,
-      })
-
-      router.push(`/dashboard/projects/${docRef.id}`)
-    } catch (error) {
-      console.error('Error saving project:', error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to save project: ${error.message}`,
-      })
-    }
+  if (authLoading) {
+    return <div>Loading...</div>
   }
 
-  if (!user) {
-    return <div>Please sign in to create a project.</div>
+  if (user === null) {
+    return null
   }
 
   return (
@@ -138,6 +123,12 @@ export default function NewProject() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter project name"
+                className="w-full bg-background/5 text-foreground placeholder-muted-foreground border-input"
+              />
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -169,39 +160,31 @@ export default function NewProject() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-primary-foreground font-bold py-2 px-6 rounded-sm"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-sm"
                 >
-                  {isLoading ? 'Creating...' : 'Create Project'}
+                  {isLoading ? (
+                    <>
+                      <Download className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Stars className="mr-2 h-4 w-4" />
+                      Create Project
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
+
+            {isLoading && (
+              <div className="mt-8">
+                <p className="text-center text-sm text-muted-foreground mb-2">Generating your project assets...</p>
+                <Progress value={progress} className="w-full" />
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        {isComplete && (
-          <div className="space-y-8 mt-8">
-            <h2 className="text-2xl font-bold text-primary">Generated Assets</h2>
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <BrandGuidelinesAsset
-                content={projectData.brandGuidelines}
-                onChange={(newContent) => setProjectData(prev => ({ ...prev, brandGuidelines: newContent }))}
-              />
-            </ErrorBoundary>
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <MarketingCopyAsset
-                content={projectData.marketingCopy}
-                onChange={(newContent) => setProjectData(prev => ({ ...prev, marketingCopy: newContent }))}
-              />
-            </ErrorBoundary>
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <LandingPageAsset
-                content={projectData.landingPage}
-                onChange={(newContent) => setProjectData(prev => ({ ...prev, landingPage: newContent }))}
-              />
-            </ErrorBoundary>
-            <Button onClick={handleSaveProject} className="mt-4">Save Project</Button>
-          </div>
-        )}
       </div>
     </div>
   )

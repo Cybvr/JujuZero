@@ -1,14 +1,28 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';  // Use 'next/navigation' here
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
-export default function Home() {
+export default function RootPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    router.push('/dashboard');
-  }, []);
+    if (!loading) {
+      if (user) {
+        router.push('/dashboard');
+      } else {
+        router.push('/home');  // This will route to the marketing page
+      }
+    }
+  }, [user, loading, router]);
 
-return null;  // We don't even need to render anything here
+  // Show a loading state while checking auth
+  if (loading) {
+    return <div>Loading...</div>;  // Or a more sophisticated loading component
+  }
+
+  // This component doesn't render anything itself, it just handles routing
+  return null;
 }

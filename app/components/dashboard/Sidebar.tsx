@@ -197,7 +197,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           </ScrollArea>
           <div className="p-4 border-t mt-auto">
             {isSidebarOpen && (
-              <Card className="mb-4 bg-muted">
+              <Card className="mb-4 bg-card">
                 <CardContent className="p-4">
                   <p className="text-small font-medium mb-2 text-muted-foreground">👋 Try Pro!  Upgrade for more tools and task assistants.</p>
                   <Button variant="default" size="sm" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setIsPricingOpen(true)}>

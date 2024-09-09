@@ -71,7 +71,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-zinc-800 to-zinc-900">
+    <div className="min-h-screen ">
       <div className="container mx-auto px-4 py-8">
         <h1 className="h3 mb-6 text-foreground">👋 Welcome</h1>
 

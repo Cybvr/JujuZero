@@ -35,7 +35,7 @@ interface BrandGuidelinesAssetProps {
   onChange?: (newContent: any) => void
 }
 
-export default function Component({ content = {}, onChange = () => {} }: BrandGuidelinesAssetProps) {
+export default function BrandGuidelinesAsset({ content = {}, onChange = () => {} }: BrandGuidelinesAssetProps) {
   const [colors, setColors] = useState(content?.colors || [])
   const [copiedColor, setCopiedColor] = useState<string | null>(null)
 
@@ -84,16 +84,16 @@ export default function Component({ content = {}, onChange = () => {} }: BrandGu
 
   return (
     <TooltipProvider>
-      <div className="p-8 space-y-8 text-sm bg-white shadow-lg rounded-lg max-w-4xl mx-auto">
+      <div className="p-8 space-y-8 text-sm bg-card text-card-foreground shadow-lg rounded-lg max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-primary">Brand Guidelines Cheat Sheet</h1>
           <div className="flex space-x-2">
-            <Button size="sm" variant="outline" className="bg-white text-primary border-primary" onClick={() => window.print()}>
+            <Button size="sm" variant="outline" className="bg-background text-foreground border-input" onClick={() => window.print()}>
               <Printer className="mr-2 h-4 w-4" /> Print
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline" className="bg-white text-primary border-primary">
+                <Button size="sm" variant="outline" className="bg-background text-foreground border-input">
                   Export as <ChevronDown className="ml-2 h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
@@ -109,11 +109,11 @@ export default function Component({ content = {}, onChange = () => {} }: BrandGu
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-primary">Brand Essence</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded-md">
+            <div className="bg-muted p-4 rounded-md">
               <h3 className="font-semibold mb-2">Tagline</h3>
               <p className="italic text-lg">{safeContent.tagline}</p>
             </div>
-            <div className="bg-gray-50 p-4 rounded-md">
+            <div className="bg-muted p-4 rounded-md">
               <h3 className="font-semibold mb-2">Mission Statement</h3>
               <p>{safeContent.missionStatement}</p>
             </div>
@@ -126,7 +126,7 @@ export default function Component({ content = {}, onChange = () => {} }: BrandGu
           <h2 className="text-xl font-semibold text-primary">Brand Values</h2>
           <div className="flex flex-wrap gap-4">
             {safeContent.brandValues.map((value, index) => (
-              <div key={index} className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium">
+              <div key={index} className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium">
                 {value}
               </div>
             ))}
@@ -140,7 +140,7 @@ export default function Component({ content = {}, onChange = () => {} }: BrandGu
           <div className="flex flex-wrap justify-center gap-8">
             {safeContent.logos.map((logo, index) => (
               <div key={index} className="flex-shrink-0">
-                <img src={logo} alt={`Logo ${index + 1}`} className="h-24 w-24 object-cover border border-gray-200 rounded-md" />
+                <img src={logo} alt={`Logo ${index + 1}`} className="h-24 w-24 object-cover border border-input rounded-md" />
               </div>
             ))}
           </div>
@@ -162,7 +162,7 @@ export default function Component({ content = {}, onChange = () => {} }: BrandGu
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="bg-white text-black border-gray-300 text-xs"
+                      className="bg-background text-foreground border-input text-xs"
                       onClick={() => handleCopyColor(color)}
                     >
                       {copiedColor === color ? <Check className="mr-1 h-3 w-3" /> : <Copy className="mr-1 h-3 w-3" />}
@@ -186,12 +186,12 @@ export default function Component({ content = {}, onChange = () => {} }: BrandGu
             {safeContent.typography.map((typography, index) => (
               <Tooltip key={index}>
                 <TooltipTrigger asChild>
-                  <div className="p-4 bg-gray-50 rounded-md cursor-help">
+                  <div className="p-4 bg-muted rounded-md cursor-help">
                     <h3 className="font-semibold">{typography.title}</h3>
                     <p className="text-sm mt-1">{typography.description}</p>
                     {typography.example && (
-                      <div className="mt-2 p-2 bg-white rounded border border-gray-200">
-                        <span className="text-xs text-gray-500">Example:</span>
+                      <div className="mt-2 p-2 bg-background rounded border border-input">
+                        <span className="text-xs text-muted-foreground">Example:</span>
                         <p className="mt-1" style={{fontFamily: typography.fontFamily, fontSize: typography.fontSize}}>
                           {typography.example}
                         </p>

@@ -19,7 +19,7 @@ export default function Toolbar() {
   return (
     <aside className="w-64 space-y-8 text-sm">
       <div>
-        <h2 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+        <h2 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
           Related Tools
         </h2>
         <ul className="space-y-1">
@@ -27,7 +27,7 @@ export default function Toolbar() {
             <li key={tool.slug}>
               <Link 
                 href={`/dashboard/tools/${tool.slug}`} 
-                className="text-gray-700 hover:text-primary transition-colors duration-200 flex items-center"
+                className="text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center"
               >
                 <tool.icon className="mr-2 flex-shrink-0" size={14} />
                 <span className="truncate">{tool.name}</span>
@@ -38,7 +38,7 @@ export default function Toolbar() {
       </div>
       <Separator className="my-4" />
       <div>
-        <h2 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+        <h2 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
           Popular Tools
         </h2>
         <ul className="space-y-1">
@@ -46,7 +46,7 @@ export default function Toolbar() {
             <li key={tool.slug}>
               <Link 
                 href={`/dashboard/tools/${tool.slug}`} 
-                className="text-gray-700 hover:text-primary transition-colors duration-200 flex items-center"
+                className="text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center"
               >
                 <tool.icon className="mr-2 flex-shrink-0" size={14} />
                 <span className="truncate">{tool.name}</span>
@@ -56,9 +56,9 @@ export default function Toolbar() {
         </ul>
       </div>
       <Separator className="my-4" />
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <h3 className="font-medium text-sm mb-2">Unlock Premium Features</h3>
-        <p className="text-xs text-gray-600 mb-4">Get access to all tools and advanced features.</p>
+      <div className="bg-card p-4 rounded-lg">
+        <h3 className="font-medium text-sm mb-2 text-card-foreground">Unlock Premium Features</h3>
+        <p className="text-xs text-muted-foreground mb-4">Get access to all tools and advanced features.</p>
         <Button variant="outline" size="sm" className="w-full text-xs">
           Upgrade Now <ArrowRight className="ml-2" size={12} />
         </Button>

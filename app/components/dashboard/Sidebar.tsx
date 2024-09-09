@@ -10,8 +10,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePricingDialog } from '@/context/PricingDialogContext';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from 'next-themes';
 
@@ -30,15 +28,19 @@ interface SidebarProps {
 
 function LogoWrapper() {
   const [mounted, setMounted] = useState(false);
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return null;
+  }
+
+  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logox.png";
 
   return (
     <Image 
-      src={theme === 'dark' ? "/images/logoy.png" : "/images/logox.png"}
+      src={logoSrc}
       alt="Logo" 
       width={96} 
       height={24} 
@@ -56,8 +58,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const [favorites, setFavorites] = useState<string[]>([]);
   const [myList, setMyList] = useState<string[]>([]);
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -65,81 +69,81 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   }, []);
 
   useEffect(() => {
-    const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    const savedMyList = JSON.parse(localStorage.getItem('myList') || '[]');
-    setFavorites(savedFavorites);
-    setMyList(savedMyList);
+    if (typeof window !== 'undefined') {
+      const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+      const savedMyList = JSON.parse(localStorage.getItem('myList') || '[]');
+      setFavorites(savedFavorites);
+      setMyList(savedMyList);
+    }
   }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   const handleDropdownToggle = () => setIsDropdownOpen(!isDropdownOpen);
 
   const isActive = (path: string) => pathname === path;
-  const buttonClasses = (path: string) => `w-full justify-start ${isActive(path) ? 'bg-primary dark:bg-card' : ''}`;
-  const iconClasses = (path: string) => `mr-2 h-4 w-4 ${isActive(path) ? 'text-secondary' : ''}`;
+  const buttonClasses = (path: string) => `w-full justify-start ${isActive(path) ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`;
+  const iconClasses = (path: string) => `mr-2 h-4 w-4 ${isActive(path) ? 'text-secondary-foreground' : 'text-muted-foreground'}`;
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setIsDropdownOpen(false);
+    }
+  };
 
   const renderNavItems = () => (
     <>
-      <Link href="/dashboard" passHref legacyBehavior>
-        <a>
-          <Button variant="ghost" className={buttonClasses('/dashboard')}>
-            <HomeIcon className={iconClasses('/dashboard')} />
-            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Home</span>}
-          </Button>
-        </a>
+      <Link href="/dashboard" className={buttonClasses('/dashboard')}>
+        <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+          <HomeIcon className={iconClasses('/dashboard')} />
+          {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Home</span>}
+        </Button>
       </Link>
       <Separator className="my-2" />
       {discover.map((item) => (
-        <Link key={item.path} href={item.path} passHref legacyBehavior>
-          <a>
-            <Button variant="ghost" className={buttonClasses(item.path)}>
-              <item.icon className={iconClasses(item.path)} />
-              {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
-            </Button>
-          </a>
+        <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
+          <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+            <item.icon className={iconClasses(item.path)} />
+            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
+          </Button>
         </Link>
       ))}
-      <Link href="/dashboard/tools/myTools" passHref legacyBehavior>
-        <a>
-          <Button variant="ghost" className={buttonClasses('/dashboard/tools/myList')}>
-            <List className={iconClasses('/dashboard/tools/myList')} />
-            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">My Tools</span>}
-          </Button>
-        </a>
+      <Link href="/dashboard/tools/myTools" className={buttonClasses('/dashboard/tools/myList')}>
+        <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+          <List className={iconClasses('/dashboard/tools/myList')} />
+          {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">My Tools</span>}
+        </Button>
       </Link>
       <Separator className="my-2" />
       {folders.map((item) => (
-        <Link key={item.path} href={item.path} passHref legacyBehavior>
-          <a>
-            <Button variant="ghost" className={buttonClasses(item.path)}>
-              <item.icon className={iconClasses(item.path)} />
-              {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
-            </Button>
-          </a>
+        <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
+          <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+            <item.icon className={iconClasses(item.path)} />
+            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
+          </Button>
         </Link>
       ))}
-      <Link href="/dashboard/projects" passHref legacyBehavior>
-        <a>
-          <Button variant="ghost" className={buttonClasses('/dashboard/projects')}>
-            <Briefcase className={iconClasses('/dashboard/projects')} />
-            {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>}
-          </Button>
-        </a>
+      <Link href="/dashboard/projects" className={buttonClasses('/dashboard/projects')}>
+        <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+          <Briefcase className={iconClasses('/dashboard/projects')} />
+          {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>}
+        </Button>
       </Link>
       {(isSidebarOpen || isMobile) && (
         <>
           <Separator className="my-2" />
           <div className="px-3 py-2">
-            <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight">⭐ Favorite Tools</h2>
+            <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-muted-foreground">⭐ Favorite Tools</h2>
             <ScrollArea className="h-[100px]">
               {favorites.length > 0 ? (
                 favorites.map((slug) => (
-                  <Link key={slug} href={`/dashboard/tools/${slug}`} passHref legacyBehavior>
-                    <a>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Star className="mr-2 h-4 w-4 text-yellow-500" />
-                        <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{slug}</span>
-                      </Button>
-                    </a>
+                  <Link key={slug} href={`/dashboard/tools/${slug}`} className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-secondary/50">
+                    <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+                      <Star className="mr-2 h-4 w-4 text-yellow-500" />
+                      <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{slug}</span>
+                    </Button>
                   </Link>
                 ))
               ) : (
@@ -159,10 +163,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           <LogoWrapper />
         </Link>
         <div className="flex items-center">
-          <Button variant="ghost" size="sm" onClick={handleDropdownToggle} className="mr-2">
+          <Button variant="ghost" size="sm" onClick={handleDropdownToggle} className="mr-2 text-muted-foreground hover:text-foreground">
             {isDropdownOpen ? <PanelLeftClose className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
           </Button>
-          <Link href="/dashboard/account">
+          <Link href="/dashboard/account" className="text-muted-foreground hover:text-foreground">
             <Button variant="ghost" size="sm">
               <User className="h-4 w-4" />
             </Button>
@@ -182,7 +186,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                 <LogoWrapper />
               </Link>
             )}
-            <Button variant="ghost" size="sm" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={isSidebarOpen ? '' : 'mx-auto'}>
+            <Button variant="ghost" size="sm" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`text-muted-foreground hover:text-foreground ${isSidebarOpen ? '' : 'mx-auto'}`}>
               {isSidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
             </Button>
           </div>
@@ -193,18 +197,18 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           </ScrollArea>
           <div className="p-4 border-t mt-auto">
             {isSidebarOpen && (
-              <Card className="mb-4">
+              <Card className="mb-4 bg-muted">
                 <CardContent className="p-4">
-                  <p className="text-small font-medium mb-2">👋 Try Pro!  Upgrade for more tools and task assistants.</p>
-                  <Button variant="default" size="sm" className="w-full bg-accent text-primary hover:bg-primary/90" onClick={() => setIsPricingOpen(true)}>
+                  <p className="text-small font-medium mb-2 text-muted-foreground">👋 Try Pro!  Upgrade for more tools and task assistants.</p>
+                  <Button variant="default" size="sm" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setIsPricingOpen(true)}>
                     Learn more
                   </Button>
                 </CardContent>
               </Card>
             )}
-            <Link href="/help" passHref legacyBehavior>
-              <Button variant="ghost" size="default" className="w-full justify-start">
-                <HelpCircle className="mr-2 h-4 w-4 text-primary" />
+            <Link href="/help" className="w-full justify-start text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="default" className="w-full justify-start" onClick={handleLinkClick}>
+                <HelpCircle className="mr-2 h-4 w-4" />
                 {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Support</span>}
               </Button>
             </Link>
@@ -212,7 +216,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
               variant="ghost" 
               size="default" 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-              className="w-full justify-start mt-2"
+              className="w-full justify-start mt-2 text-muted-foreground hover:text-foreground"
             >
               {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
               {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">
@@ -222,9 +226,15 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
             {(isSidebarOpen || isMobile) && (
               <div className="mt-2 flex justify-between items-center text-small text-muted-foreground">
                 <div className="flex space-x-2">
-                  <Link href="/about">About</Link>
-                  <Link href="/privacy">Privacy</Link>
-                  <Link href="/terms">Terms</Link>
+                  <Link href="/about" className="hover:text-foreground">
+                    About
+                  </Link>
+                  <Link href="/privacy" className="hover:text-foreground">
+                    Privacy
+                  </Link>
+                  <Link href="/terms" className="hover:text-foreground">
+                    Terms
+                  </Link>
                 </div>
               </div>
             )}

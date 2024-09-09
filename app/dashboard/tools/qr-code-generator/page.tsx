@@ -42,35 +42,35 @@ export default function QRCodeGenerator() {
     <div className="flex">
       <div className="flex-grow mr-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <QrCode className="mr-2" />
+          <h1 className="text-2xl font-bold mb-2 flex items-center text-foreground">
+            <QrCode className="mr-2 h-6 w-6" />
             QR Code Generator
           </h1>
-          <p className="text-muted-foreground">Create custom QR codes for your business or personal use</p>
-          <Separator orientation="horizontal" className="my-4" />
+          <p className="text-muted-foreground text-sm">Create custom QR codes for your business or personal use</p>
+          <Separator className="my-4" />
         </div>
-        <Card className="shadow-lg border border-gray-200">
+        <Card>
           <CardContent className="p-6">
             <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4 md:col-span-2">
-                  <Label htmlFor="qr-content" className="text-lg font-semibold">QR Code Content</Label>
+                  <Label htmlFor="qr-content" className="text-sm font-medium">QR Code Content</Label>
                   <Textarea 
                     id="qr-content" 
                     placeholder="Enter text or URL for QR code" 
-                    className="w-full h-32 resize-none"
+                    className="resize-none"
                     value={qrContent}
                     onChange={(e) => setQrContent(e.target.value)}
                   />
                 </div>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center">
-                    <Settings className="mr-2" /> Configuration
+                  <h3 className="text-sm font-medium flex items-center">
+                    <Settings className="mr-2 h-4 w-4" /> Configuration
                   </h3>
                   <div>
-                    <Label htmlFor="qr-size" className="block mb-2">QR Code Size</Label>
+                    <Label htmlFor="qr-size" className="text-sm">QR Code Size</Label>
                     <Select onValueChange={(value) => setQrSize(Number(value))}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select size" />
                       </SelectTrigger>
                       <SelectContent>
@@ -81,45 +81,47 @@ export default function QRCodeGenerator() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="fg-color" className="block mb-2">Foreground Color</Label>
+                    <Label htmlFor="fg-color" className="text-sm">Foreground Color</Label>
                     <Input 
                       type="color" 
                       id="fg-color" 
                       value={fgColor}
                       onChange={(e) => setFgColor(e.target.value)}
-                      className="w-full h-10"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="bg-color" className="block mb-2">Background Color</Label>
+                    <Label htmlFor="bg-color" className="text-sm">Background Color</Label>
                     <Input 
                       type="color" 
                       id="bg-color" 
                       value={bgColor}
                       onChange={(e) => setBgColor(e.target.value)}
-                      className="w-full h-10"
                     />
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Preview</h3>
-                  <div className="border p-4 flex justify-center items-center bg-white">
+                  <h3 className="text-sm font-medium">Preview</h3>
+                  <div className="border border-border p-4 flex justify-center items-center bg-card">
                     {qrCodeDataURL && <img src={qrCodeDataURL} alt="Generated QR Code" />}
                   </div>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <Button variant="default" size="lg" className="px-8 py-2 text-lg" onClick={generateQRCode}>
+                <Button variant="default" onClick={generateQRCode}>
                   Generate QR Code
                 </Button>
                 {qrCodeDataURL && (
-                  <a 
-                    href={qrCodeDataURL} 
-                    download="qrcode.png" 
-                    className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark"
+                  <Button 
+                    variant="secondary"
+                    asChild
                   >
-                    Download QR Code
-                  </a>
+                    <a 
+                      href={qrCodeDataURL} 
+                      download="qrcode.png" 
+                    >
+                      Download QR Code
+                    </a>
+                  </Button>
                 )}
               </div>
             </form>

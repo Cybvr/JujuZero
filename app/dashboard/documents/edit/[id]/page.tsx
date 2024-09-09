@@ -130,21 +130,21 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col min-h-screen bg-white">
+      <div className="flex flex-col min-h-screen bg-background">
         <Toaster />
-        <header className="bg-white border-b border-gray-200">
+        <header className="bg-card border-b border-border">
           <div className="container mx-auto flex justify-between items-center py-4 px-6">
             <Breadcrumbs>
               <BreadcrumbItem isActive={false}>
-                <Link href="/dashboard/documents">Documents</Link>
+                <Link href="/dashboard/documents" className="text-muted-foreground hover:text-foreground">Documents</Link>
               </BreadcrumbItem>
               <BreadcrumbItem isActive>
-                {id === 'new' ? 'New Document' : title}
+                <span className="text-foreground">{id === 'new' ? 'New Document' : title}</span>
               </BreadcrumbItem>
             </Breadcrumbs>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" onClick={handleBack}>
+                <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-foreground">
                   <ChevronLeft className="mr-2 h-4 w-4" /> Back to Documents
                 </Button>
               </TooltipTrigger>
@@ -155,7 +155,7 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
           </div>
         </header>
 
-        <main className="flex-grow container mx-auto py-4 px-6 bg-white rounded-md">
+        <main className="flex-grow container mx-auto py-4 px-6 bg-background rounded-md">
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               {isLoading ? (
@@ -165,14 +165,14 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
                   type="text"
                   value={title}
                   onChange={handleTitleChange}
-                  className="text-3xl font-bold w-full sm:w-auto bg-transparent border-none focus:outline-none"
+                  className="text-3xl font-bold w-full sm:w-auto bg-transparent border-none focus:outline-none text-foreground"
                   placeholder="Enter document title"
                 />
               )}
               <div className="flex space-x-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" onClick={handleBack}>Cancel</Button>
+                    <Button variant="outline" onClick={handleBack} className="text-muted-foreground hover:text-foreground">Cancel</Button>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Discard changes</p>
@@ -180,7 +180,7 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button onClick={handleSave}>
+                    <Button onClick={handleSave} className="bg-primary text-primary-foreground hover:bg-primary/90">
                       Save
                       <Save className="ml-2 h-4 w-4" />
                     </Button>
@@ -191,7 +191,7 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
                 </Tooltip>
               </div>
             </div>
-            <Card>
+            <Card className="bg-card">
               <CardContent className="p-4">
                 {isLoading ? (
                   <Skeleton className="h-[300px] w-full" />

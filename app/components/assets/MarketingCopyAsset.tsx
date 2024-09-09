@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -24,16 +24,21 @@ interface MarketingKitProps {
   onChange: (newContent: MarketingKitContent) => void;
 }
 
-const defaultContent: MarketingKitContent = {
-  brandOverview: '',
-  targetAudience: '',
-  keyMessages: [],
-  marketingChannels: [],
-};
-
-export default function MarketingKit({ content = defaultContent, onChange }: MarketingKitProps) {
+export default function MarketingCopyAsset({ content, onChange }: MarketingKitProps) {
   const [newMessage, setNewMessage] = useState('')
   const [newChannel, setNewChannel] = useState<MarketingChannel>({ name: '', description: '' })
+
+  useEffect(() => {
+    // Initialize content if it's undefined
+    if (!content) {
+      onChange({
+        brandOverview: '',
+        targetAudience: '',
+        keyMessages: [],
+        marketingChannels: []
+      });
+    }
+  }, [content, onChange]);
 
   const handleDownload = () => {
     const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' })
@@ -51,7 +56,7 @@ export default function MarketingKit({ content = defaultContent, onChange }: Mar
   }
 
   const handleRemoveMessage = (index: number) => {
-    const updatedMessages = content.keyMessages?.filter((_, i) => i !== index) || []
+    const updatedMessages = (content.keyMessages || []).filter((_, i) => i !== index)
     onChange({ ...content, keyMessages: updatedMessages })
   }
 
@@ -63,143 +68,142 @@ export default function MarketingKit({ content = defaultContent, onChange }: Mar
   }
 
   const handleRemoveChannel = (index: number) => {
-    const updatedChannels = content.marketingChannels?.filter((_, i) => i !== index) || []
+    const updatedChannels = (content.marketingChannels || []).filter((_, i) => i !== index)
     onChange({ ...content, marketingChannels: updatedChannels })
   }
 
+  if (!content) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <TooltipProvider>
-      <div className="p-6 space-y-6 bg-white rounded-lg shadow-lg max-w-4xl mx-auto">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-primary">Marketing Kit</h1>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="bg-white text-primary border-primary"
-                onClick={handleDownload}
-              >
-                <Download className="mr-2 h-4 w-4" /> Download Kit
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Download this marketing kit</TooltipContent>
-          </Tooltip>
-        </div>
-
-        <Tabs defaultValue="brand" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="brand">Brand Overview</TabsTrigger>
-            <TabsTrigger value="audience">Target Audience</TabsTrigger>
-            <TabsTrigger value="messages">Key Messages</TabsTrigger>
-            <TabsTrigger value="channels">Marketing Channels</TabsTrigger>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Marketing Copy</CardTitle>
+        <CardDescription>
+          Develop your brand's voice and messaging strategy
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="brand-overview">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="brand-overview">Brand Overview</TabsTrigger>
+            <TabsTrigger value="target-audience">Target Audience</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="brand">
-            <Card>
-              <CardHeader>
-                <CardTitle>Brand Overview</CardTitle>
-                <CardDescription>Summarize your brand's essence and values</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea 
-                  placeholder="Enter your brand overview here..."
-                  value={content.brandOverview}
-                  onChange={(e) => onChange({ ...content, brandOverview: e.target.value })}
-                  rows={6}
-                />
-              </CardContent>
-            </Card>
+          <TabsContent value="brand-overview">
+            <Textarea
+              value={content.brandOverview}
+              onChange={(e) => onChange({ ...content, brandOverview: e.target.value })}
+              placeholder="Enter your brand overview..."
+              className="min-h-[200px]"
+            />
           </TabsContent>
-
-          <TabsContent value="audience">
-            <Card>
-              <CardHeader>
-                <CardTitle>Target Audience</CardTitle>
-                <CardDescription>Describe your ideal customer or audience</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea 
-                  placeholder="Describe your target audience here..."
-                  value={content.targetAudience}
-                  onChange={(e) => onChange({ ...content, targetAudience: e.target.value })}
-                  rows={6}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="messages">
-            <Card>
-              <CardHeader>
-                <CardTitle>Key Messages</CardTitle>
-                <CardDescription>List your brand's core messages or value propositions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {content.keyMessages?.map((message, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <Input value={message} readOnly />
-                      <Button variant="ghost" size="icon" onClick={() => handleRemoveMessage(index)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <div className="flex items-center space-x-2">
-                    <Input 
-                      placeholder="New key message"
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                    />
-                    <Button onClick={handleAddMessage}>
-                      <Plus className="h-4 w-4 mr-2" /> Add
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="channels">
-            <Card>
-              <CardHeader>
-                <CardTitle>Marketing Channels</CardTitle>
-                <CardDescription>List and describe your primary marketing channels</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {content.marketingChannels?.map((channel, index) => (
-                    <div key={index} className="flex items-start space-x-2">
-                      <div className="flex-grow space-y-2">
-                        <Input value={channel.name} readOnly />
-                        <Textarea value={channel.description} readOnly rows={2} />
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => handleRemoveChannel(index)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <div className="space-y-2">
-                    <Input 
-                      placeholder="Channel name"
-                      value={newChannel.name}
-                      onChange={(e) => setNewChannel({ ...newChannel, name: e.target.value })}
-                    />
-                    <Textarea 
-                      placeholder="Channel description"
-                      value={newChannel.description}
-                      onChange={(e) => setNewChannel({ ...newChannel, description: e.target.value })}
-                      rows={2}
-                    />
-                    <Button onClick={handleAddChannel}>
-                      <Plus className="h-4 w-4 mr-2" /> Add Channel
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="target-audience">
+            <Textarea
+              value={content.targetAudience}
+              onChange={(e) => onChange({ ...content, targetAudience: e.target.value })}
+              placeholder="Describe your target audience..."
+              className="min-h-[200px]"
+            />
           </TabsContent>
         </Tabs>
-      </div>
-    </TooltipProvider>
+
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2">Key Messages</h3>
+          <div className="space-y-2">
+            {(content.keyMessages || []).map((message, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <Input value={message} readOnly className="flex-grow" />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => handleRemoveMessage(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Remove message</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center space-x-2 mt-2">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="New key message"
+              className="flex-grow"
+            />
+            <Button onClick={handleAddMessage}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2">Marketing Channels</h3>
+          <div className="space-y-4">
+            {(content.marketingChannels || []).map((channel, index) => (
+              <Card key={index}>
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-md font-semibold">{channel.name}</h4>
+                      <p className="text-sm text-gray-500">{channel.description}</p>
+                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => handleRemoveChannel(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Remove channel</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="space-y-2 mt-4">
+            <Input
+              value={newChannel.name}
+              onChange={(e) => setNewChannel({ ...newChannel, name: e.target.value })}
+              placeholder="Channel name"
+            />
+            <Textarea
+              value={newChannel.description}
+              onChange={(e) => setNewChannel({ ...newChannel, description: e.target.value })}
+              placeholder="Channel description"
+            />
+            <Button onClick={handleAddChannel}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Channel
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <Button onClick={handleDownload}>
+            <Download className="h-4 w-4 mr-2" />
+            Download Marketing Kit
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

@@ -1,20 +1,25 @@
 // app/not-found.tsx
-import Link from 'next/link'
+"use client"
+  import React from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function NotFound() {
+  const router = useRouter();
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-        <p className="text-xl mb-4">
-          The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+    <div className="flex items-center justify-center h-screen text-center bg-gray-100 dark:bg-[#1e1e1e]">
+      <div className="max-w-md p-6 rounded-lg shadow-lg bg-white dark:bg-gray-800">
+        <h1 className="mb-4 text-3xl font-bold text-yellow-600">404 - Page Not Found!</h1>
+        <p className="mb-4 text-gray-700 dark:text-gray-300">
+          Sorry, the page you are looking for doesn’t exist. It might have been removed, or you may have mistyped the URL.
         </p>
-        <Link href="/">
-          <span className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer">
-            Go to Homepage
-          </span>
-        </Link>
+        <p className="mb-6 text-gray-500 dark:text-gray-400">
+          Don’t worry! You can navigate back to safety by clicking the button below.
+        </p>
+        <button onClick={() => router.push('/')} className="inline-flex items-center px-4 py-2 text-white bg-blue-600 rounded-md shadow hover:bg-blue-500 focus:outline-none">
+          Take Me Home
+        </button>
       </div>
     </div>
-  )
+  );
 }

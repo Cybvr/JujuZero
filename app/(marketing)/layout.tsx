@@ -1,11 +1,13 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from "@/components/ui/button";
+import { useTheme } from 'next-themes';
 
 const navigation = [
   { name: 'About', href: '/about' },
@@ -27,6 +29,29 @@ const toolLinks = [
   { name: 'Video to MP4', href: '/dashboard/tools/video-to-mp4' },
 ];
 
+function LogoWrapper() {
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logox.png";
+
+  return (
+    <Image 
+      src={logoSrc}
+      alt="JujuAGI Logo" 
+      width={96} 
+      height={24} 
+      className="h-6 w-auto"
+    />
+  );
+}
+
 export default function MarketingLayout({
   children,
 }: {
@@ -35,6 +60,14 @@ export default function MarketingLayout({
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -43,12 +76,8 @@ export default function MarketingLayout({
           <div className="w-full py-3 flex items-center justify-between">
             <div className="flex items-center">
               <Link href="/">
-                <span className="sr-only">JujuAGI</span>
-                <img
-                  className="h-6 w-auto"
-                  src="/images/logox.png"
-                  alt="JujuAGI Logo"
-                />
+                <span className="sr-only">Juju</span>
+                <LogoWrapper />
               </Link>
               <div className="hidden ml-10 space-x-8 lg:flex">
                 {navigation.map((link) => (
@@ -66,11 +95,11 @@ export default function MarketingLayout({
                 ))}
               </div>
             </div>
-            <div className="ml-10 space-x-4">
+            <div className="ml-10 space-x-4 flex items-center ">
               {user ? (
                 <Link href="/dashboard">
                   <Button variant="default" size="sm">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <LayoutDashboard className="mr-2 h-4 w-4 bg-violet-800" />
                     Go to Dashboard
                   </Button>
                 </Link>
@@ -80,10 +109,18 @@ export default function MarketingLayout({
                     <Button variant="outline" size="sm">Sign in</Button>
                   </Link>
                   <Link href="/signup">
-                    <Button variant="default" size="sm">Sign up</Button>
+                    <Button variant="default" size="sm" className="bg-violet-800 hover:bg-violet-900 text-white">Get Started</Button>
                   </Link>
                 </>
               )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="ml-2"
+              >
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
             </div>
             <div className="lg:hidden">
               <Button
@@ -105,11 +142,7 @@ export default function MarketingLayout({
               <div className="flex items-center justify-between">
                 <Link href="/" className="-m-1.5 p-1.5">
                   <span className="sr-only">JujuAGI</span>
-                  <img
-                    className="h-6 w-auto"
-                    src="/images/logox.png"
-                    alt="JujuAGI Logo"
-                  />
+                  <LogoWrapper />
                 </Link>
                 <Button
                   variant="ghost"
@@ -147,10 +180,18 @@ export default function MarketingLayout({
                           <Button variant="outline" size="sm" className="w-full mb-2">Sign in</Button>
                         </Link>
                         <Link href="/signup">
-                          <Button variant="default" size="sm" className="w-full">Sign up</Button>
+                          <Button variant="default" size="sm" className="w-full bg-yellow-400 hover:bg-yellow-500 text-black">Sign up</Button>
                         </Link>
                       </>
                     )}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                      className="w-full mt-2"
+                    >
+                      {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -167,9 +208,9 @@ export default function MarketingLayout({
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="md:max-w-md">
-              <img src="/images/logox.png" alt="JujuAGI Logo" className="h-6 w-auto mb-4" />
-              <p className="text-sm text-gray-400">
-                JujuAGI is your all-in-one platform for file conversion and editing tasks. 
+              <LogoWrapper />
+              <p className="text-sm text-gray-400 mt-4">
+                Juju is your all-in-one platform for file conversion and editing tasks. 
                 We offer a suite of tools including PDF conversion, image editing, text tools, 
                 data conversion, and AI-powered features.
               </p>
@@ -221,7 +262,7 @@ export default function MarketingLayout({
           </div>
           <div className="mt-8 border-t border-gray-700 pt-8">
             <p className="text-center text-sm text-gray-400">
-              &copy; 2023 JujuAGI, Inc. All rights reserved.
+              &copy; 2023 Juju, Inc. All rights reserved.
             </p>
           </div>
         </div>

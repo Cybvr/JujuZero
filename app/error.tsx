@@ -13,17 +13,20 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Oops! Something went wrong</h1>
-            <p className="text-xl mb-4">
-              We apologize for the inconvenience. Please try again.
+        <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+          <div className="max-w-md p-8 bg-card rounded-lg shadow-lg text-center">
+            <h1 className="text-4xl font-bold mb-4 text-primary">Whoops! We've Hit a Snag</h1>
+            <p className="text-xl mb-6 text-muted-foreground">
+              Even AI assistants stumble sometimes. Let's dust ourselves off and try again!
+            </p>
+            <p className="text-sm mb-6 text-muted-foreground">
+              Error: {error.message}
             </p>
             <button
               onClick={() => reset()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors duration-200 font-semibold"
             >
-              Try Again
+              Let's Give It Another Shot
             </button>
           </div>
         </div>

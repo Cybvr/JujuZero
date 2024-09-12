@@ -1,68 +1,112 @@
-'use client'
-
-import React, { useEffect, useRef, useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { 
-  Bold, Italic, Underline, List, AlignLeft, AlignCenter, AlignRight, 
+import React, { useEffect, useRef, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Bold, Italic, Underline, List, AlignLeft, AlignCenter, AlignRight,
   Type, Palette, Link, ListOrdered, Strikethrough, Subscript, Superscript,
-  Undo, Redo
-} from 'lucide-react'
+  Undo, Redo, Trash2
+} from 'lucide-react';
 
 interface CustomEditorProps {
-  value: string
-  onChange: (value: string) => void
+  value: string;
+  onChange: (value: string) => void;
 }
 
 const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
-  const editorRef = useRef<HTMLDivElement>(null)
-  const [textColor, setTextColor] = useState('#000000')
-  const [linkUrl, setLinkUrl] = useState('')
-  const [showLinkInput, setShowLinkInput] = useState(false)
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [textColor, setTextColor] = useState('#000000');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
-    const editor = editorRef.current
+    const editor = editorRef.current;
     if (editor && editor.innerHTML !== value) {
-      editor.innerHTML = value
+      editor.innerHTML = value;
     }
-  }, [value])
+  }, [value]);
 
   useEffect(() => {
-    const editor = editorRef.current
+    const editor = editorRef.current;
     if (editor) {
-      const handleInput = () => {
-        const content = editor.innerHTML
-        onChange(content)
-      }
+      const handleContentChange = () => {
+        const content = editor.innerHTML;
+        onChange(content);
+      };
 
-      editor.addEventListener('input', handleInput)
-      return () => editor.removeEventListener('input', handleInput)
+      editor.addEventListener('input', handleContentChange);
+      editor.addEventListener('paste', handleContentChange);
+      editor.addEventListener('cut', handleContentChange);
+
+      return () => {
+        editor.removeEventListener('input', handleContentChange);
+        editor.removeEventListener('paste', handleContentChange);
+        editor.removeEventListener('cut', handleContentChange);
+      };
     }
-  }, [onChange])
+  }, [onChange]);
 
-  const execCommand = (command: string, value: string | undefined = undefined) => {
-    document.execCommand(command, false, value)
-  }
+  const execCommand = (command: string, value?: string) => {
+    const editor = editorRef.current;
+    if (editor) {
+      document.execCommand(command, false, value);
+      editor.focus();
+    }
+  };
 
   const handleHeadingChange = (value: string) => {
-    execCommand('formatBlock', value)
-  }
+    execCommand('formatBlock', `<${value}>`);
+  };
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const color = e.target.value
-    setTextColor(color)
-    execCommand('foreColor', color)
-  }
+    const color = e.target.value;
+    setTextColor(color);
+    execCommand('foreColor', color);
+  };
 
   const handleLinkInsert = () => {
     if (linkUrl) {
-      execCommand('createLink', linkUrl)
-      setLinkUrl('')
-      setShowLinkInput(false)
+      execCommand('createLink', linkUrl);
+      setLinkUrl('');
+      setShowLinkInput(false);
     }
-  }
+  };
+
+  const handleDelete = () => {
+    if (editorRef.current) {
+      editorRef.current.innerHTML = '';
+      onChange('');
+    }
+    setShowDeleteDialog(false);
+  };
+
+  const handleListInsert = (listType: 'ul' | 'ol') => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const listElement = document.createElement(listType);
+      const listItem = document.createElement('li');
+      listItem.appendChild(range.extractContents());
+      listElement.appendChild(listItem);
+      range.insertNode(listElement);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    editorRef.current?.focus();
+  };
 
   return (
     <div>
@@ -79,8 +123,8 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
           <Button size="sm" variant="ghost" onClick={() => execCommand('justifyRight')}><AlignRight size={16} /></Button>
         </div>
         <div className="flex gap-1">
-          <Button size="sm" variant="ghost" onClick={() => execCommand('insertUnorderedList')}><List size={16} /></Button>
-          <Button size="sm" variant="ghost" onClick={() => execCommand('insertOrderedList')}><ListOrdered size={16} /></Button>
+          <Button size="sm" variant="ghost" onClick={() => handleListInsert('ul')}><List size={16} /></Button>
+          <Button size="sm" variant="ghost" onClick={() => handleListInsert('ol')}><ListOrdered size={16} /></Button>
         </div>
         <div className="flex gap-1">
           <Button size="sm" variant="ghost" onClick={() => execCommand('subscript')}><Subscript size={16} /></Button>
@@ -138,14 +182,38 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
             </PopoverContent>
           </Popover>
         </div>
+        <div className="flex gap-1 items-center">
+          <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="ghost"><Trash2 size={16} /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete all content in the editor.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
       <div
         ref={editorRef}
         contentEditable
-        className="min-h-[300px] focus:outline-none"
+        className="min-h-[300px] focus:outline-none border p-2 prose max-w-none"
+        onPaste={(e) => {
+          e.preventDefault();
+          const text = e.clipboardData.getData('text/plain');
+          document.execCommand('insertText', false, text);
+        }}
       />
     </div>
-  )
-}
+  );
+};
 
-export default CustomEditor
+export default CustomEditor;

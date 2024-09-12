@@ -1,16 +1,16 @@
+// @app/(admin)/admin/page.tsx
 'use client'
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { collection, doc, getDocs, setDoc, addDoc, deleteDoc, DocumentData } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import CustomEditor from '@/components/dashboard/CustomEditor';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { collection, doc, getDocs, setDoc, addDoc, deleteDoc, DocumentData, Timestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Plus, Save, ArrowUp, ArrowDown } from 'lucide-react';
+import ChangelogForm from './ChangelogForm';
+import HelpPageForm from './HelpPageForm';
+import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton component
+
 
 interface HelpPage {
   id: string;
@@ -26,6 +26,16 @@ interface HelpPage {
   };
 }
 
+interface ChangelogEntry {
+  id: string;
+  name: string;
+  categories: string[];
+  content: string;
+  images: string[];
+  isPublished: boolean;
+  updatedAt: Timestamp;
+}
+
 export default function ContentAdmin() {
   const [pages, setPages] = useState<HelpPage[]>([]);
   const [selectedPage, setSelectedPage] = useState<HelpPage | null>(null);
@@ -36,33 +46,53 @@ export default function ContentAdmin() {
     categories: [],
     content: { intro: '', sections: [] }
   });
-  const [activeTab, setActiveTab] = useState('help');
   const [newCategory, setNewCategory] = useState('');
   const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true); // Loading state
+
+  const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
+  const [selectedChangelogEntry, setSelectedChangelogEntry] = useState<ChangelogEntry | null>(null);
+  const [editedChangelogEntry, setEditedChangelogEntry] = useState<ChangelogEntry>({
+    id: '',
+    name: '',
+    categories: [],
+    content: '',
+    images: [],
+    isPublished: false,
+    updatedAt: Timestamp.now()
+  });
 
   useEffect(() => {
     fetchPages();
+    fetchChangelogEntries();
   }, []);
 
+  // Help Page functions
   const fetchPages = async () => {
-    const querySnapshot = await getDocs(collection(db, "help_pages"));
-    const fetchedPages: HelpPage[] = querySnapshot.docs.map(doc => {
-      const data = doc.data() as DocumentData;
-      return {
-        id: doc.id,
-        title: data.title || '',
-        sortOrder: data.sortOrder || 0,
-        categories: data.categories || [],
-        content: {
-          intro: data.content?.intro || '',
-          sections: data.content?.sections || []
-        }
-      };
-    });
-    setPages(fetchedPages.sort((a, b) => a.sortOrder - b.sortOrder));
+    setLoading(true); // Start loading
+    try {
+      const querySnapshot = await getDocs(collection(db, "help_pages"));
+      const fetchedPages: HelpPage[] = querySnapshot.docs.map(doc => {
+        const data = doc.data() as DocumentData;
+        return {
+          id: doc.id,
+          title: data.title || '',
+          sortOrder: data.sortOrder || 0,
+          categories: data.categories || [],
+          content: {
+            intro: data.content?.intro || '',
+            sections: data.content?.sections || []
+          }
+        };
+      });
+      setPages(fetchedPages.sort((a, b) => a.sortOrder - b.sortOrder));
 
-    const uniqueCategories = Array.from(new Set(fetchedPages.flatMap(page => page.categories)));
-    setAllCategories(uniqueCategories);
+      const uniqueCategories = Array.from(new Set(fetchedPages.flatMap(page => page.categories)));
+      setAllCategories(uniqueCategories);
+    } catch (error) {
+      console.error("Error fetching pages:", error);
+    }
+    setLoading(false); // Stop loading
   };
 
   const handlePageSelect = (page: HelpPage) => {
@@ -152,15 +182,86 @@ export default function ContentAdmin() {
     }));
   };
 
-  const handleMoveSection = (index: number, direction: number) => {
-    const newSections = [...editedContent.content.sections];
-    const temp = newSections[index];
-    newSections[index] = newSections[index + direction];
-    newSections[index + direction] = temp;
-    setEditedContent(prev => ({
+  // Changelog functions
+  const fetchChangelogEntries = async () => {
+    setLoading(true); // Start loading
+    try {
+      const querySnapshot = await getDocs(collection(db, "changelog"));
+      const fetchedEntries: ChangelogEntry[] = querySnapshot.docs.map(doc => {
+        const data = doc.data() as DocumentData;
+        return {
+          id: doc.id,
+          name: data.name || '',
+          categories: data.categories || [],
+          content: data.content || '',
+          images: data.images || [],
+          isPublished: data.isPublished || false,
+          updatedAt: data.updatedAt || Timestamp.now()
+        };
+      });
+      setChangelogEntries(fetchedEntries.sort((a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
+    } catch (error) {
+      console.error("Error fetching changelog entries:", error);
+    }
+    setLoading(false); // Stop loading
+  };
+
+  const handleChangelogEntrySelect = (entry: ChangelogEntry | null) => {
+    setSelectedChangelogEntry(entry);
+    setEditedChangelogEntry(entry || {
+      id: '',
+      name: '',
+      categories: [],
+      content: '',
+      images: [],
+      isPublished: false,
+      updatedAt: Timestamp.now()
+    });
+  };
+
+  const handleChangelogEntryChange = (field: keyof ChangelogEntry, value: any) => {
+    setEditedChangelogEntry(prev => ({
       ...prev,
-      content: { ...prev.content, sections: newSections }
+      [field]: field === 'images' ? (Array.isArray(value) ? value : []) : value
     }));
+  };
+
+  const handleChangelogImageUpload = async (file: File) => {
+    if (!storage) {
+      console.error('Firebase storage is not initialized');
+      return;
+    }
+    try {
+      const storageRef = ref(storage, `changelog/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      handleChangelogEntryChange('images', [...editedChangelogEntry.images, url]);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+
+  const handleChangelogSave = async () => {
+    const entryToSave = {
+      ...editedChangelogEntry,
+      updatedAt: Timestamp.now()
+    };
+
+    if (selectedChangelogEntry) {
+      await setDoc(doc(db, "changelog", selectedChangelogEntry.id), entryToSave);
+    } else {
+      await addDoc(collection(db, "changelog"), entryToSave);
+    }
+    fetchChangelogEntries();
+    handleChangelogEntrySelect(null);
+  };
+
+  const handleChangelogDelete = async (entryId: string) => {
+    await deleteDoc(doc(db, "changelog", entryId));
+    fetchChangelogEntries();
+    if (selectedChangelogEntry && selectedChangelogEntry.id === entryId) {
+      handleChangelogEntrySelect(null);
+    }
   };
 
   return (
@@ -172,133 +273,47 @@ export default function ContentAdmin() {
         </div>
       </header>
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="help">Help Pages</TabsTrigger>
-            <TabsTrigger value="marketing">Marketing Pages</TabsTrigger>
-          </TabsList>
-          <TabsContent value="help">
-            <div className="flex space-x-6">
-              <Card className="w-1/3">
-                <CardHeader>
-                  <CardTitle>Help Pages</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {pages.map(page => (
-                      <li key={page.id} className="flex justify-between items-center">
-                        <button onClick={() => handlePageSelect(page)} className="text-blue-500 hover:underline">
-                          {page.title}
-                        </button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeletePage(page.id)}><Trash2 className="h-4 w-4" /></Button>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button onClick={() => setSelectedPage(null)} className="mt-4" variant="outline"><Plus className="mr-2 h-4 w-4" /> Add New Page</Button>
-                </CardContent>
-              </Card>
-              <Card className="w-2/3">
-                <CardHeader>
-                  <CardTitle>{selectedPage ? 'Edit Page' : 'New Page'}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Input
-                    value={editedContent.title}
-                    onChange={(e) => handleContentChange('title', e.target.value)}
-                    className="mb-4"
-                    placeholder="Page Title"
-                  />
-                  <Input
-                    type="number"
-                    value={editedContent.sortOrder}
-                    onChange={(e) => handleContentChange('sortOrder', parseInt(e.target.value))}
-                    className="mb-4"
-                    placeholder="Sort Order"
-                  />
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold mb-2">Categories</h4>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {editedContent.categories.map(category => (
-                        <span key={category} className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded flex items-center">
-                          {category}
-                          <button onClick={() => handleRemoveCategory(category)} className="ml-1 text-blue-800 hover:text-blue-900">×</button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Select onValueChange={handleSelectCategory}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allCategories.map((category, index) => (
-                            <SelectItem key={index} value={category}>{category}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        placeholder="New Category"
-                      />
-                      <Button onClick={handleAddCategory}>Add</Button>
-                    </div>
-                  </div>
-                  <CustomEditor
-                    value={editedContent.content.intro}
-                    onChange={(value) => handleContentChange('content', { ...editedContent.content, intro: value })}
-                  />
-                  <h3 className="text-lg font-semibold mt-6 mb-4">Sections</h3>
-                  {editedContent.content.sections.map((section, index) => (
-                    <Card key={index} className="mb-4">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <Input
-                          value={section.title}
-                          onChange={(e) => handleSectionChange(index, 'title', e.target.value)}
-                          className="font-bold"
-                          placeholder="Section Title"
-                        />
-                        <div className="flex items-center space-x-2">
-                          {index > 0 && (
-                            <Button variant="ghost" size="sm" onClick={() => handleMoveSection(index, -1)}><ArrowUp className="h-4 w-4" /></Button>
-                          )}
-                          {index < editedContent.content.sections.length - 1 && (
-                            <Button variant="ghost" size="sm" onClick={() => handleMoveSection(index, 1)}><ArrowDown className="h-4 w-4" /></Button>
-                          )}
-                          <Button variant="ghost" size="sm" onClick={() => handleDeleteSection(index)}><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <CustomEditor
-                          value={section.content}
-                          onChange={(value) => handleSectionChange(index, 'content', value)}
-                        />
-                      </CardContent>
-                    </Card>
-                  ))}
-                  <Button onClick={() => setEditedContent(prev => ({
-                    ...prev,
-                    content: {
-                      ...prev.content,
-                      sections: [...prev.content.sections, { title: '', content: '' }]
-                    }
-                  }))} variant="outline" className="mr-2"><Plus className="mr-2 h-4 w-4" /> Add Section</Button>
-                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Page</Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          <TabsContent value="marketing">
-            <Card>
-              <CardHeader>
-                <CardTitle>Marketing Pages</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Marketing page editing functionality coming soon...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {loading ? (
+          <Skeleton className="w-full h-96" />
+        ) : (
+          <Tabs defaultValue="help">
+            <TabsList>
+              <TabsTrigger value="help">Help Pages</TabsTrigger>
+              <TabsTrigger value="changelog">Changelog</TabsTrigger>
+            </TabsList>
+            <TabsContent value="help">
+              <HelpPageForm
+                pages={pages}
+                selectedPage={selectedPage}
+                editedContent={editedContent}
+                allCategories={allCategories}
+                newCategory={newCategory}
+                handlePageSelect={handlePageSelect}
+                handleContentChange={handleContentChange}
+                handleSectionChange={handleSectionChange}
+                handleSave={handleSave}
+                handleDeletePage={handleDeletePage}
+                handleDeleteSection={handleDeleteSection}
+                handleAddCategory={handleAddCategory}
+                handleSelectCategory={handleSelectCategory}
+                handleRemoveCategory={handleRemoveCategory}
+                setNewCategory={setNewCategory}
+              />
+            </TabsContent>
+            <TabsContent value="changelog">
+              <ChangelogForm
+                changelogEntries={changelogEntries}
+                selectedChangelogEntry={selectedChangelogEntry}
+                editedChangelogEntry={editedChangelogEntry}
+                handleChangelogEntrySelect={handleChangelogEntrySelect}
+                handleChangelogEntryChange={handleChangelogEntryChange}
+                handleChangelogImageUpload={handleChangelogImageUpload}
+                handleChangelogSave={handleChangelogSave}
+                handleChangelogDelete={handleChangelogDelete}
+              />
+            </TabsContent>
+          </Tabs>
+        )}
       </main>
     </div>
   );

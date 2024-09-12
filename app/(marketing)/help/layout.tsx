@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HelpPage {
   id: string;
@@ -20,6 +21,7 @@ interface CategoryGroup {
 export default function HelpLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchHelpPages = async () => {
@@ -51,22 +53,25 @@ export default function HelpLayout({ children }: { children: React.ReactNode }) 
     fetchHelpPages();
   }, []);
 
-  return (
-    <div className="flex flex-col md:flex-row min-h-screen">
-      <aside className="w-full md:w-64 bg-gray-100 p-4 md:p-6 overflow-y-auto">
+  const renderSidebar = () => (
+    <ScrollArea className="h-full">
+      <div className="p-4">
         <h2 className="text-lg font-semibold mb-4">Help Topics</h2>
         <nav>
           {categoryGroups && Object.entries(categoryGroups).map(([category, pages]) => (
             <div key={category} className="mb-4">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{category}</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{category}</h3>
               <ul className="space-y-1">
                 {pages.map((page) => (
                   <li key={page.id}>
                     <Link 
                       href={`/help/${page.id}`}
                       className={`block p-2 rounded text-sm ${
-                        pathname === `/help/${page.id}` ? 'bg-blue-500 text-white' : 'hover:bg-gray-200'
+                        pathname === `/help/${page.id}` 
+                          ? 'bg-secondary text-secondary-foreground' 
+                          : 'text-foreground hover:bg-secondary/50'
                       }`}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {page.title}
                     </Link>
@@ -76,7 +81,35 @@ export default function HelpLayout({ children }: { children: React.ReactNode }) 
             </div>
           ))}
         </nav>
+      </div>
+    </ScrollArea>
+  );
+
+  return (
+    <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground">
+      {/* Mobile menu button */}
+      <button
+        className="md:hidden p-4 text-foreground"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        {isMobileMenuOpen ? 'Close Menu' : 'Open Menu'}
+      </button>
+
+      {/* Sidebar for mobile */}
+      <aside className={`
+        md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-background border-r border-border
+        transform transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {renderSidebar()}
       </aside>
+
+      {/* Sidebar for desktop */}
+      <aside className="hidden md:block w-64 border-r border-border">
+        {renderSidebar()}
+      </aside>
+
+      {/* Main content */}
       <main className="flex-1 p-4 md:p-6 overflow-y-auto">
         {children}
       </main>

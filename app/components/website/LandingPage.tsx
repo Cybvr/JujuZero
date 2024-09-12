@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { ToolsFaqSection } from "@/components/website/ToolsFaqSection";
+import ToolsFaqSection from "@/components/website/ToolsFaqSection";
 import { CTASection } from "@/components/website/CTASection";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

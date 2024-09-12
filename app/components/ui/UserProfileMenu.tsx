@@ -53,7 +53,7 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Item className="px-2 py-1.5 text-sm cursor-pointer focus:bg-accent focus:text-accent-foreground rounded-sm">
-            <Link href="/dashboard/changelog" className="flex items-center">
+            <Link href="/changelog" className="flex items-center">
               <Bell className="mr-2 h-4 w-4" />
               <span>What's new</span>
             </Link>

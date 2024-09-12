@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { usePricingDialog } from '@/context/PricingDialogContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from 'next-themes';
+import FeedbackDialog from '@/components/ui/FeedbackDialog';
 
 const discover = [
   { name: 'Discover', icon: CompassIcon, path: '/dashboard/tools' },
@@ -59,6 +61,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const [myList, setMyList] = useState<string[]>([]);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -91,6 +94,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
     if (isMobile) {
       setIsDropdownOpen(false);
     }
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const renderNavItems = () => (
@@ -206,24 +213,30 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                 </CardContent>
               </Card>
             )}
+            <Button
+              variant="ghost"
+              size="default"
+              onClick={() => setIsFeedbackDialogOpen(true)}
+              className="w-full justify-start mb-2 text-muted-foreground hover:text-foreground"
+            >
+              <HelpCircle className="mr-2 h-4 w-4" />
+              {isSidebarOpen && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Feedback</span>}
+            </Button>
             <Link href="/help" className="w-full justify-start text-muted-foreground hover:text-foreground">
               <Button variant="ghost" size="default" className="w-full justify-start" onClick={handleLinkClick}>
                 <HelpCircle className="mr-2 h-4 w-4" />
-                {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Support</span>}
+                {isSidebarOpen && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Support</span>}
               </Button>
             </Link>
-            <Button 
-              variant="ghost" 
-              size="default" 
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-              className="w-full justify-start mt-2 text-muted-foreground hover:text-foreground"
-            >
-              {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-              {(isSidebarOpen || isMobile) && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">
-                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-              </span>}
-            </Button>
-            {(isSidebarOpen || isMobile) && (
+            <div className="flex items-center justify-between mt-2">
+              {isSidebarOpen && (
+                <span className="text-sm text-muted-foreground">
+                  {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                </span>
+              )}
+              <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} className={isSidebarOpen ? '' : 'ml-auto'} />
+            </div>
+            {isSidebarOpen && (
               <div className="mt-2 flex justify-between items-center text-small text-muted-foreground">
                 <div className="flex space-x-2">
                   <Link href="/about" className="hover:text-foreground">
@@ -241,6 +254,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           </div>
         </aside>
       )}
+      <FeedbackDialog
+        isOpen={isFeedbackDialogOpen}
+        onClose={() => setIsFeedbackDialogOpen(false)}
+      />
     </>
   )
 }

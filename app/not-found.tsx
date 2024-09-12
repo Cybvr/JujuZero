@@ -13,9 +13,7 @@ export default function NotFound() {
         <p className="mb-4 text-gray-700 dark:text-gray-300">
           Sorry, the page you are looking for doesn’t exist. It might have been removed, or you may have mistyped the URL.
         </p>
-        <p className="mb-6 text-gray-500 dark:text-gray-400">
-          Don’t worry! You can navigate back to safety by clicking the button below.
-        </p>
+      
         <button onClick={() => router.push('/')} className="inline-flex items-center px-4 py-2 text-white bg-blue-600 rounded-md shadow hover:bg-blue-500 focus:outline-none">
           Take Me Home
         </button>

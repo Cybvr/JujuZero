@@ -47,7 +47,7 @@ function LogoWrapper() {
       alt="JujuAGI Logo" 
       width={96} 
       height={24} 
-      className="h-6 w-auto"
+      className="h-6 sm:h-6 md:h-6 w-auto"
     />
   );
 }
@@ -63,7 +63,30 @@ export default function MarketingLayout({
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+
+    // Add Chatbase script
+    const script = document.createElement('script');
+    script.src = "https://www.chatbase.co/embed.min.js?chatbotId=TB6IwCsYnWV0nUh-XJxPF";
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      console.log('Chatbase script loaded');
+      window.embeddedChatbotConfig = {
+        chatbotId: "TB6IwCsYnWV0nUh-XJxPF",
+        domain: "www.chatbase.co"
+      };
+      console.log('Chatbase configuration set');
+    };
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
 
   if (!mounted) {
     return null;
@@ -74,7 +97,7 @@ export default function MarketingLayout({
       <header className="sticky top-0 bg-background shadow-sm border-b border-border z-10">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
           <div className="w-full py-3 flex items-center justify-between">
-            <div className="flex items-center">
+            <div className="flex items-center px-2 sm:px-0">
               <Link href="/">
                 <span className="sr-only">Juju</span>
                 <LogoWrapper />
@@ -95,7 +118,7 @@ export default function MarketingLayout({
                 ))}
               </div>
             </div>
-            <div className="ml-10 space-x-4 flex items-center ">
+            <div className="ml-10 space-x-4 flex items-center">
               {user ? (
                 <Link href="/dashboard">
                   <Button variant="default" size="sm">
@@ -104,14 +127,14 @@ export default function MarketingLayout({
                   </Button>
                 </Link>
               ) : (
-                <>
+                <div className="hidden sm:flex space-x-4">
                   <Link href="/login">
                     <Button variant="outline" size="sm">Sign in</Button>
                   </Link>
                   <Link href="/signup">
                     <Button variant="default" size="sm" className="bg-violet-800 hover:bg-violet-900 text-white">Get Started</Button>
                   </Link>
-                </>
+                </div>
               )}
               <Button 
                 variant="ghost" 
@@ -175,14 +198,9 @@ export default function MarketingLayout({
                         </Button>
                       </Link>
                     ) : (
-                      <>
-                        <Link href="/login">
-                          <Button variant="outline" size="sm" className="w-full mb-2">Sign in</Button>
-                        </Link>
-                        <Link href="/signup">
-                          <Button variant="default" size="sm" className="w-full bg-yellow-400 hover:bg-yellow-500 text-black">Sign up</Button>
-                        </Link>
-                      </>
+                      <Link href="/signup">
+                        <Button variant="default" size="sm" className="w-full bg-violet-800 hover:bg-violet-900 text-white">Get Started</Button>
+                      </Link>
                     )}
                     <Button 
                       variant="ghost" 
@@ -262,11 +280,12 @@ export default function MarketingLayout({
           </div>
           <div className="mt-8 border-t border-gray-700 pt-8">
             <p className="text-center text-sm text-gray-400">
-              &copy; 2023 Juju, Inc. All rights reserved.
+              &copy; 2024 Juju, Inc. All rights reserved. Powered by VisualHQ
             </p>
           </div>
         </div>
       </footer>
+      <div id="chatbase-widget"></div>
     </div>
   );
 }

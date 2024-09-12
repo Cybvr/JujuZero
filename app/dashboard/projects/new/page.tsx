@@ -116,7 +116,7 @@ export default function NewProject() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-800 to-zinc-900 flex items-center justify-center">
       <div className="w-full max-w-4xl px-4 py-8">
-        <Card className="bg-card/10 backdrop-blur-lg">
+        <Card className="bg-card">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-primary mb-2">Create a new project</CardTitle>
             <p className="text-base text-muted-foreground">How would you like to get started?</p>

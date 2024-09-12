@@ -1,7 +1,7 @@
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Button } from "@/components/ui/button";
-import { Settings, CreditCard, User, LogOut, Bell } from 'lucide-react';
+import { CreditCard, User, LogOut, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -44,12 +44,6 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
             <Link href="/dashboard/billing" className="flex items-center">
               <CreditCard className="mr-2 h-4 w-4" />
               <span>Billing</span>
-            </Link>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item className="px-2 py-1.5 text-sm cursor-pointer focus:bg-accent focus:text-accent-foreground rounded-sm">
-            <Link href="/dashboard/settings" className="flex items-center">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Item className="px-2 py-1.5 text-sm cursor-pointer focus:bg-accent focus:text-accent-foreground rounded-sm">

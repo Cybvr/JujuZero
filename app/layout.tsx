@@ -6,19 +6,47 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from 'next-themes';
 import FeedbackDialog from '@/components/ui/FeedbackDialog';
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, Wand2, FileText, User, Plus } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
-// Note: Metadata can't be used in a Client Component, so we'll need to handle it differently
+const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: string; icon: React.ElementType; label?: string; isRounded?: boolean }) => {
+  const pathname = usePathname();
+  const isActive = pathname === href;
 
-interface EmbeddedChatbotConfig {
-  chatbotId: string;
-  domain: string;
-}
+  return (
+    <Link href={href} className={`flex flex-col items-center justify-center space-y-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+      {isRounded ? (
+        <Button
+          className="bg-violet-800 text-white rounded-full shadow-md hover:shadow-lg transition-shadow"
+          size="icon"
+        >
+          <Icon className="w-6 h-6" />
+        </Button>
+      ) : (
+        <>
+          <Icon className="w-5 h-5" />
+          {label && <span className="text-xs">{label}</span>}
+        </>
+      )}
+    </Link>
+  );
+};
 
-declare global {
-  interface Window {
-    embeddedChatbotConfig?: EmbeddedChatbotConfig;
-  }
-}
+const FooterMenu = () => {
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-2 md:hidden">
+      <div className="flex justify-around items-center">
+        <FooterMenuItem href="/dashboard" icon={Home} label="Home" />
+        <FooterMenuItem href="/dashboard/tools" icon={Wand2} label="Tools" />
+        <FooterMenuItem href="/dashboard/projects/new" icon={Plus} isRounded={true} />
+        <FooterMenuItem href="/dashboard/documents" icon={FileText} label="Documents" />
+        <FooterMenuItem href="/dashboard/account" icon={User} label="Account" />
+      </div>
+    </nav>
+  );
+};
 
 export default function RootLayout({
   children,
@@ -29,37 +57,15 @@ export default function RootLayout({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate content loading
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000); // Adjust this time as needed
-
-    // Load the Chatbase script immediately
-    const script = document.createElement('script');
-    script.src = "https://www.chatbase.co/embed.min.js?chatbotId=TB6IwCsYnWV0nUh-XJxPF";
-    script.async = true;
-    document.body.appendChild(script);
-
-    // Set up the configuration after the script has loaded
-    script.onload = () => {
-      console.log('Chatbase script loaded');
-      window.embeddedChatbotConfig = {
-        chatbotId: "TB6IwCsYnWV0nUh-XJxPF",
-        domain: "www.chatbase.co"
-      };
-      console.log('Chatbase configuration set');
-    };
+    }, 2000);
 
     return () => {
       clearTimeout(timer);
-      // Remove the script when the component unmounts
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
     };
   }, []);
 
-  // Since we're in a Client Component, we need to manually add the metadata
   useEffect(() => {
     document.title = 'Juju: Simple tools for everyone';
     const metaDescription = document.createElement('meta');
@@ -114,14 +120,17 @@ export default function RootLayout({
                 <Skeleton className="w-full h-64" />
               </div>
             ) : (
-              children
+              <>
+                <div className="pb-16 md:pb-0">
+                  {children}
+                </div>
+                <FooterMenu />
+              </>
             )}
             <FeedbackDialog
               isOpen={isFeedbackDialogOpen}
               onClose={() => setIsFeedbackDialogOpen(false)}
             />
-            {/* Add this div for Chatbase */}
-            <div id="chatbase-widget"></div>
           </AuthProvider>
         </ThemeProvider>
       </body>

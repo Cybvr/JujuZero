@@ -1,29 +1,114 @@
-"use client";
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Lock, Trash2 } from "lucide-react";
+import { User, Lock, Trash2, Camera } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { db, auth, storage } from '@/lib/firebase';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import Image from 'next/image';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Account() {
-  const [name, setName] = useState('John Doe');
-  const [email, setEmail] = useState('johndoe@example.com');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [avatar, setAvatar] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const handleSaveAccountInfo = () => {
-    // Implement the logic to save account information
-    console.log("Saving account information:", { name, email });
-    setIsEditing(false);
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    } else if (user) {
+      fetchUserData();
+    }
+  }, [user, loading, router]);
+
+  const fetchUserData = async () => {
+    if (user) {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setName(userData.name || '');
+        setEmail(userData.email || '');
+        setAvatar(userData.avatar || '');
+      }
+    }
   };
 
-  const handleDeleteAccount = () => {
-    // Implement the actual account deletion logic here
+  const handleSaveAccountInfo = async () => {
+    if (user) {
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          name,
+          email,
+          avatar,
+          updatedAt: new Date()
+        });
+        setIsEditing(false);
+        toast({
+          title: "Success",
+          description: "Account information updated successfully.",
+        });
+      } catch (error) {
+        console.error("Error updating account info:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update account information.",
+        });
+      }
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    // Implement account deletion logic here
     console.log("Account deletion initiated");
     setIsDeleteDialogOpen(false);
+    // Add actual deletion logic and error handling
   };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && user) {
+      try {
+        const storageRef = ref(storage, `avatars/${user.uid}`);
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        setAvatar(downloadURL);
+        toast({
+          title: "Success",
+          description: "Avatar updated successfully.",
+        });
+      } catch (error) {
+        console.error("Error uploading avatar:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update avatar.",
+        });
+      }
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return null; // This will prevent any flash of content before redirect
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -40,6 +125,36 @@ export default function Account() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  {avatar ? (
+                    <Image src={avatar} alt="User avatar" width={100} height={100} className="rounded-full" />
+                  ) : (
+                    <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+                      <User className="w-12 h-12 text-gray-400" />
+                    </div>
+                  )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute bottom-0 right-0"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Camera className="w-4 h-4" />
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                  />
+                </div>
+                <div>
+                  <h3 className="font-medium">{name}</h3>
+                  <p className="text-sm text-muted-foreground">{email}</p>
+                </div>
+              </div>
               <div>
                 <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
                 {isEditing ? (
@@ -102,7 +217,6 @@ export default function Account() {
         </Card>
       </div>
 
-      {/* Confirmation Dialog for Account Deletion */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

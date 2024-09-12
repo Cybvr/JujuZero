@@ -42,25 +42,25 @@ const tools = [
 const testimonials = [
   {
     content: "Juju has revolutionized our branding process. It's intuitive, powerful, and saves us countless hours.",
-    name: "Alice Johnson",
-    role: "Marketing Director",
+    name: "Alice Liu",
+    role: "Content Creator",
     avatar: "/images/marketing/testimonial1.png"
   },
   {
     content: "As a startup, we needed efficient branding tools. Juju delivered beyond our expectations.",
-    name: "Bob Smith",
+    name: "Alejandra Rodriguez",
     role: "Startup Founder",
     avatar: "/images/marketing/testimonial2.png"
   },
   {
     content: "The AI-powered features in Juju have significantly enhanced my design workflow. Highly recommended!",
-    name: "Carol Williams",
+    name: "Kola Williams",
     role: "Freelance Designer",
     avatar: "/images/marketing/testimonial3.png"
   },
   {
     content: "Juju has transformed how we approach branding. It's an indispensable tool for our agency.",
-    name: "David Brown",
+    name: "Jennifer McFarland",
     role: "Creative Director",
     avatar: "/images/marketing/testimonial4.png"
   },
@@ -72,13 +72,13 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <main className="flex-1">
-        <section className="w-full py-36 px-10 sm:px-14 lg:px-20">
-          <div className="container mx-auto max-w-[60%]">
+        <section className="w-full py-12 sm:py-24 lg:py-36 px-4 sm:px-10 lg:px-20">
+          <div className="container mx-auto max-w-full sm:max-w-[80%] lg:max-w-[60%]">
             <div className="text-center">
-              <h1 className="mb-0 text-8xl pb-0 pl-24 pr-24">
+              <h1 className="mb-4 text-4xl sm:text-6xl lg:text-8xl font-bold leading-tight">
                 Meet your sidekick
               </h1>
-              <p className="text-body mb-6 text-muted-foreground">
+              <p className="text-body mb-6 text-muted-foreground px-4 sm:px-8 lg:px-24">
                 The Ultimate Hub of Tools, Add-ons & Assets for Every Creator
               </p>
               <div className="flex justify-center">
@@ -88,17 +88,17 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="w-full py-24 px-4 sm:px-6 lg:px-8 bg-accent text-accent-foreground justify-center">
-          <div className="container mx-auto max-w-[80%] text-center">
-            <h2 className="h1 mb-2">
+        <section className="w-full py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-accent text-accent-foreground justify-center">
+          <div className="container mx-auto max-w-full sm:max-w-[90%] lg:max-w-[80%] text-center">
+            <h2 className="h1 mb-2 text-3xl sm:text-4xl lg:text-5xl font-bold">
               Smart tools. High efficiency
             </h2>
             <p className="text-body text-muted-foreground mb-6">
               Smart tools to make your working easier
             </p>
-            <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-4">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {tools.map((tool, index) => (
-                <div key={index} className="flex flex-col items-left border-0 rounded-lg shadow-sm bg-card text-card-foreground">
+                <div key={index} className="flex flex-col items-left border-0 rounded-lg shadow-sm bg-card text-card-foreground p-4">
                   <LazyImage src={tool.image} alt={tool.name} width={200} height={160} className="w-full h-[160px] object-cover rounded-lg mb-4" />
                   <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
                   <p className="text-small text-muted-foreground text-left">{tool.description}</p>
@@ -108,10 +108,10 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="w-full py-24 px-4 sm:px-6 lg:px-8 bg-background">
-          <div className="container mx-auto max-w-[80%] text-center bg-secondary p-16 rounded-lg">
-            <h2 className="h1 mb-2 text-primary">How will Juju help you?</h2>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
+        <section className="w-full py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-background">
+          <div className="container mx-auto max-w-full sm:max-w-[90%] lg:max-w-[80%] text-center bg-secondary p-8 sm:p-12 lg:p-16 rounded-lg">
+            <h2 className="h1 mb-2 text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">How will Juju help you?</h2>
+            <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-12">
               <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold mb-2 text-primary">Time-saving</h3>
                 <p className="text-body text-muted-foreground">
@@ -125,7 +125,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col items-center">
-                <h3 className="text-xl font-semibold mb-2">Powered by AI</h3>
+                <h3 className="text-xl font-semibold mb-2 text-primary">Powered by AI</h3>
                 <p className="text-body text-muted-foreground">
                   Juju's true enchantment lies in its AI-driven capabilities. What sets us apart is our ability to create personalized content that resonates perfectly with you and your audience.
                 </p>
@@ -134,46 +134,39 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="w-full py-16 pt-8 px-4 sm:px-6 lg:px-8">
-          <div className="container mx-auto max-w-[80%]">
-            <h2 className="h1 mb-2">Powerful Features for Your Brand</h2>
-            <p className="text-body text-muted-foreground mb-8">
+        <section className="w-full py-12 sm:py-24 px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto max-w-full sm:max-w-[90%] lg:max-w-[80%]">
+            <h2 className="h1 mb-2 text-3xl sm:text-4xl lg:text-5xl font-bold text-center">Powerful Features for Your Brand</h2>
+            <p className="text-body text-muted-foreground mb-8 text-center">
               Discover the tools that will elevate your brand to new heights.
             </p>
             <div className="space-y-16">
               {features.map((feature, index) => (
                 <div key={index} className={`grid gap-8 lg:grid-cols-2 lg:gap-12 ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}>
-                  {index % 2 === 0 && (
-                    <div className="flex items-center justify-center">
-                      <LazyImage src={feature.image} alt={feature.name} width={600} height={300} className="w-full h-[300px] object-cover rounded-lg" />
-                    </div>
-                  )}
-                  <div className="flex flex-col justify-center space-y-4">
+                  <div className="flex items-center justify-center order-2 lg:order-none">
+                    <LazyImage src={feature.image} alt={feature.name} width={600} height={300} className="w-full h-[300px] object-cover rounded-lg" />
+                  </div>
+                  <div className="flex flex-col justify-center space-y-4 order-1 lg:order-none">
                     <feature.icon className="w-10 h-10 text-primary mb-2" />
-                    <h3 className="h3">{feature.name}</h3>
+                    <h3 className="h3 text-2xl font-semibold">{feature.name}</h3>
                     <p className="text-body text-muted-foreground">{feature.description}</p>
                     <Button className="w-fit bg-primary text-primary-foreground hover:bg-primary/90">
                       Start Building
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
-                  {index % 2 === 1 && (
-                    <div className="flex items-center justify-center">
-                      <LazyImage src={feature.image} alt={feature.name} width={600} height={300} className="w-full h-[300px] object-cover rounded-lg" />
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="w-full py-32 px-4 sm:px-6 lg:px-8">
-          <div className="container mx-auto max-w-[80%] bg-card text-card-foreground rounded-lg p-8 py-24">
-            <h2 className="h1 text-center mb-2">
+        <section className="w-full py-12 sm:py-24 px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto max-w-full sm:max-w-[90%] lg:max-w-[80%] bg-card text-card-foreground rounded-lg p-8 py-12 sm:py-24">
+            <h2 className="h1 text-center mb-2 text-3xl sm:text-4xl lg:text-5xl font-bold">
               What Our Users Say
             </h2>
-            <p className="text-body text-muted-foreground text-center mb-16">
+            <p className="text-body text-muted-foreground text-center mb-8 sm:mb-16">
               Real stories from satisfied customers who've experienced the Juju difference.
             </p>
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -195,10 +188,10 @@ export default function LandingPage() {
 
         <ToolsFaqSection />
 
-        <section className="w-full py-24 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground">
-          <div className="container mx-auto max-w-[80%]">
+        <section className="w-full py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground">
+          <div className="container mx-auto max-w-full sm:max-w-[90%] lg:max-w-[80%]">
             <div className="flex flex-col items-center justify-center space-y-6 text-center">
-              <h2 className="h2 mb-0">
+              <h2 className="h2 mb-0 text-3xl sm:text-4xl lg:text-5xl font-bold">
                 Content Creation at Superhuman Speed
               </h2>
               <p className="text-body mb-6">

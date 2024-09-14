@@ -50,7 +50,7 @@ export default function ChangelogPage() {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl text-gray-700 dark:text-gray-300">
-      <h1 className="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-200">JujuDrops</h1>
+      <h1 className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-200">JujuDrops</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Updates from the shrine</p>
       {changelogEntries.map((entry, index) => (
         <React.Fragment key={entry.id}>

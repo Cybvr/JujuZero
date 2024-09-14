@@ -11,7 +11,7 @@ export const CTASection = () => {
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-xl font-bold mb-2">Ready to get started?</h2>
         <p className="text-base mb-6 max-w-xl mx-auto">
-          Join JujuAGI today and streamline your work processes.
+          Join Juju today and streamline your work processes.
         </p>
         <Link href="/dashboard/register" passHref>
           <Button 

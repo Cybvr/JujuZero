@@ -60,7 +60,7 @@ export default function CompressImagePage() {
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Compress Image</h1>
+        <h1 className="text-xl sm:text-xl font-bold mb-2">Compress Image</h1>
         <p className="text-muted-foreground mb-4 sm:mb-6">Reduce image file size without losing quality.</p>
 
         <Card className="bg-white shadow-md rounded-lg overflow-hidden">

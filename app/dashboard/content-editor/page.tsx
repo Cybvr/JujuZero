@@ -106,7 +106,7 @@ export default function ContentEditorPage() {
   return (
     <ToastProvider>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Content Editor</h1>
+        <h1 className="text-xl font-bold mb-6">Content Editor</h1>
         <Select onValueChange={(value) => setPage(value)} value={page} disabled={isLoading}>
           <SelectTrigger className="w-[180px] mb-4">
             <SelectValue placeholder="Select page" />

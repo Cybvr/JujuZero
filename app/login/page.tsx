@@ -75,7 +75,7 @@ export default function Login() {
               height={40}
             />
           </div>
-          <CardTitle className="text-2xl font-bold text-center text-foreground">
+          <CardTitle className="text-xl font-bold text-center text-foreground">
             Sign in to your account
           </CardTitle>
         </CardHeader>

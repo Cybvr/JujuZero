@@ -19,7 +19,7 @@ const MarketingLandingPage: React.FC = () => {
     <>
       <header className="text-center py-20 bg-gradient-to-br from-blue-100 to-purple-100 text-gray-800">
         <h1 className="h1 mb-2">Simply Charming</h1>
-        <p className="text-lg mb-8 max-w-2xl mx-auto">Transform Your Work with JujuAGI - No Fuss, All Magic</p>
+        <p className="text-lg mb-8 max-w-2xl mx-auto">Transform Your Work with Juju - No Fuss, All Magic</p>
         <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
           Get Started Now
         </Button>

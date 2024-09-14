@@ -59,7 +59,7 @@ export default function TextSummarizerPage() {
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">AI Text Summarizer</h1>
+        <h1 className="text-xl sm:text-xl font-bold mb-2">AI Text Summarizer</h1>
         <p className="text-muted-foreground mb-4 sm:mb-6">Quickly summarize long texts with our AI-powered tool</p>
         <Card className="bg-card shadow-md rounded-lg overflow-hidden">
           <CardContent className="p-4 sm:p-6">

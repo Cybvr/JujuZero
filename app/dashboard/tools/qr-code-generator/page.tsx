@@ -42,7 +42,7 @@ export default function QRCodeGenerator() {
     <div className="flex flex-col lg:flex-row">
       <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2 flex items-center text-foreground">
+          <h1 className="text-xl font-bold mb-2 flex items-center text-foreground">
             <QrCode className="mr-2 h-6 w-6" />
             QR Code Generator
           </h1>

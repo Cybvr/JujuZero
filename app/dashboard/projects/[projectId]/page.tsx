@@ -268,7 +268,7 @@ export default function ProjectDetails({ params }: { params: { projectId: string
 
           <div className="w-full sm:w-[85%] space-y-8">
             <div>
-              <h1 className="text-2xl font-semibold text-primary mb-2">{project.name}</h1>
+              <h1 className="text-xl font-semibold text-primary mb-2">{project.name}</h1>
               <p className="text-sm text-muted-foreground">{project.description}</p>
             </div>
 

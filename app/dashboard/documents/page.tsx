@@ -203,7 +203,7 @@ export default function DocumentsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Your Documents</h1>
+        <h1 className="text-xl font-bold">Your Documents</h1>
         <div className="flex space-x-2">
           {selectedDocuments.size > 0 && (
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

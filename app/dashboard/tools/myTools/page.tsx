@@ -72,7 +72,7 @@ export default function MyTools() {
           <CardContent>
             <div className="flex flex-col items-center">
               <Image src="/images/tools/Nature.svg" alt="Nature" width={160} height={160} className="mb-4" />
-              <h2 className="text-2xl font-semibold mb-2">Nothing yet. Still Tending  😔</h2>
+              <h2 className="text-xl font-semibold mb-2">Nothing yet. Still Tending  😔</h2>
               <p className="text-muted-foreground mb-6">
                 You have to sign in to save your favorite tools
               </p>

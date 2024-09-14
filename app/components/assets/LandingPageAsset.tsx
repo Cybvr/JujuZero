@@ -99,7 +99,7 @@ export default function LandingPageAsset({ content, onSave }: LandingPageAssetPr
     <TooltipProvider>
       <div className="space-y-6 bg-card p-8 rounded-md">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">Landing Page</h2>
+          <h2 className="text-xl font-semibold">Landing Page</h2>
           <div className="flex space-x-2">
             <Button size="sm" variant="outline" onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" /> Print

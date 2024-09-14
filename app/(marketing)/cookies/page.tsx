@@ -7,12 +7,12 @@ export default function CookiesPage() {
     <div className="container mx-auto px-4 py-16 max-w-4xl">
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold mb-4 text-foreground">Cookie Policy</h1>
-        <p className="text-xl text-muted-foreground">Understanding how we use cookies on JujuAGI</p>
+        <p className="text-xl text-muted-foreground">Understanding how we use cookies on Juju</p>
       </div>
 
       <Card className="mb-8 shadow-md">
         <CardHeader>
-          <CardTitle className="text-2xl">What are cookies?</CardTitle>
+          <CardTitle className="text-xl">What are cookies?</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
@@ -23,11 +23,11 @@ export default function CookiesPage() {
 
       <Card className="mb-8 shadow-md">
         <CardHeader>
-          <CardTitle className="text-2xl">How we use cookies</CardTitle>
+          <CardTitle className="text-xl">How we use cookies</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            At JujuAGI, we use cookies to:
+            At Juju, we use cookies to:
           </p>
           <ul className="list-disc list-inside text-muted-foreground">
             <li>Remember your login details</li>
@@ -41,7 +41,7 @@ export default function CookiesPage() {
 
       <Card className="mb-8 shadow-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Types of cookies we use</CardTitle>
+          <CardTitle className="text-xl">Types of cookies we use</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-4 text-muted-foreground">
@@ -63,7 +63,7 @@ export default function CookiesPage() {
 
       <Card className="mb-8 shadow-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Managing cookies</CardTitle>
+          <CardTitle className="text-xl">Managing cookies</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
@@ -77,7 +77,7 @@ export default function CookiesPage() {
 
       <Card className="shadow-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Updates to this policy</CardTitle>
+          <CardTitle className="text-xl">Updates to this policy</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">

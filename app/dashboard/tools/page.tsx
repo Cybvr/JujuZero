@@ -92,9 +92,9 @@ export default function AllTools() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-2 max-w-7xl">
+    <div className="container mx-auto px-2 sm:px-4 py-2 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2">All Tools</h1>
+        <h1 className="text-xl font-semibold mb-2">All Tools</h1>
         <p className="text-muted-foreground">Explore our collection of powerful tools to enhance your workflow</p>
       </div>
 
@@ -111,7 +111,7 @@ export default function AllTools() {
           ))}
         </TabsList>
         <TabsContent value={activeTab}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {tools
               .filter(tool => activeTab === "All" || tool.category === activeTab)
               .map((tool) => (
@@ -129,7 +129,7 @@ export default function AllTools() {
                     className="overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer"
                   >
                     <div className="relative">
-                      <img src={tool.imageSrc} alt={tool.name} className="w-full h-40 object-cover" />
+                      <img src={tool.imageSrc} alt={tool.name} className="w-full h-24 sm:h-40 object-cover" />
                       <Badge 
                         variant={getBadgeContent(tool.access).variant}
                         className="absolute top-2 right-2 p-1"
@@ -154,9 +154,9 @@ export default function AllTools() {
                         </button>
                       </div>
                     </div>
-                    <CardContent className="p-4">
-                      <h3 className="text-lg font-medium mb-1">{tool.name}</h3>
-                      <p className="text-sm text-muted-foreground">{tool.description}</p>
+                    <CardContent className="p-2 sm:p-4">
+                      <h3 className="text-sm sm:text-lg font-medium mb-1">{tool.name}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.description}</p>
                     </CardContent>
                   </Card>
                 </Link>

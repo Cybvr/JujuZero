@@ -165,7 +165,7 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
                   type="text"
                   value={title}
                   onChange={handleTitleChange}
-                  className="text-3xl font-bold w-full sm:w-auto bg-transparent border-none focus:outline-none text-foreground"
+                  className="text-xl font-bold w-full sm:w-auto bg-transparent border-none focus:outline-none text-foreground"
                   placeholder="Enter document title"
                 />
               )}

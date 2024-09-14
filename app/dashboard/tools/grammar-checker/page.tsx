@@ -59,7 +59,7 @@ export default function GrammarCheckerPage() {
   return (
     <div className="flex flex-col md:flex-row">
       <div className="flex-grow md:mr-6 mb-6 md:mb-0">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">AI Grammar Checker</h1>
+        <h1 className="text-xl md:text-xl font-bold mb-2">AI Grammar Checker</h1>
         <p className="text-muted-foreground mb-6">Improve your writing with our AI-powered grammar checker</p>
         <Card className="bg-card shadow-md rounded-lg overflow-hidden">
           <CardContent className="p-4 md:p-6">

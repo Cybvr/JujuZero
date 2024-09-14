@@ -35,8 +35,8 @@ export default function Help() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-2">Help Center</h1>
-      <p className="text-muted-foreground mb-6 text-sm">Find answers to your questions and learn how to make the most of JujuAGI.</p>
+      <h1 className="text-xl font-bold mb-2">Help Center</h1>
+      <p className="text-muted-foreground mb-6 text-sm">Find answers to your questions and learn how to make the most of Juju.</p>
       <Separator className="mb-8" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {helpCategories.map((category) => (

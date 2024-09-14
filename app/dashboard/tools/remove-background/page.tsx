@@ -62,7 +62,7 @@ export default function RemoveBackgroundPage() {
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Remove Background</h1>
+        <h1 className="text-xl sm:text-xl font-bold mb-2">Remove Background</h1>
         <p className="text-muted-foreground mb-4 sm:mb-6">AI-powered background removal</p>
         <Card className="bg-white shadow-md rounded-lg overflow-hidden">
           <CardContent className="p-4 sm:p-6">

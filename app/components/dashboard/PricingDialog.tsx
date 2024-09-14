@@ -29,7 +29,7 @@ export default function PricingDialog() {
             />
           </div>
           <div className="w-1/2 p-8">
-            <h2 className="text-2xl font-bold mb-4">Upgrade to Juju Pro</h2>
+            <h2 className="text-xl font-bold mb-4">Upgrade to Juju Pro</h2>
             <p className="text-sm text-gray-600 mb-6">
               Create without limits by upgrading to an unlimited plan.
             </p>

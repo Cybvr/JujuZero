@@ -87,7 +87,7 @@ export default function FolderPage({ params }: { params: { id: string } }) {
           <ChevronLeft className="mr-2 h-4 w-4" /> Back
         </Button>
       </div>
-      <h1 className="text-2xl font-bold mb-4">{folderName}</h1>
+      <h1 className="text-xl font-bold mb-4">{folderName}</h1>
       <Card>
         <Table>
           <TableHeader>

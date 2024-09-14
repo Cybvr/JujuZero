@@ -269,7 +269,7 @@ export default function ContentAdmin() {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <Image src="/images/logox.png" alt="Logo" width={120} height={40} />
-          <h1 className="text-3xl font-bold text-gray-900">Content Management</h1>
+          <h1 className="text-xl font-bold text-gray-900">Content Management</h1>
         </div>
       </header>
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

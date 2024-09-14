@@ -56,7 +56,7 @@ export default function AudioToMp3Page() {
   return (
     <div className="flex">
       <div className="flex-grow mr-6">
-        <h1 className="text-3xl font-bold mb-2">Audio to MP3</h1>
+        <h1 className="text-xl font-bold mb-2">Audio to MP3</h1>
         <p className="text-muted-foreground mb-6">Convert various audio formats to MP3 easily.</p>
         <Card className="bg-white shadow-md rounded-lg overflow-hidden">
           <CardContent className="p-6">

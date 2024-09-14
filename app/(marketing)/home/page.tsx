@@ -148,7 +148,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex flex-col justify-center space-y-4 order-1 lg:order-none">
                     <feature.icon className="w-10 h-10 text-primary mb-2" />
-                    <h3 className="h3 text-2xl font-semibold">{feature.name}</h3>
+                    <h3 className="h3 text-xl font-semibold">{feature.name}</h3>
                     <p className="text-body text-muted-foreground">{feature.description}</p>
                     <Button className="w-fit bg-primary text-primary-foreground hover:bg-primary/90">
                       Start Building

@@ -87,7 +87,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-semibold mb-6 text-foreground">👋 Welcome</h1>
+        <h1 className="text-xl font-semibold mb-6 text-foreground">👋 Welcome</h1>
 
         <div className="relative mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -125,7 +125,7 @@ export default function DashboardPage() {
 
         {user && (
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">Recent Activity</h2>
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Recent</h2>
             <div className="mb-4 flex items-center w-full space-x-4">
               <Input
                 placeholder="Search..."

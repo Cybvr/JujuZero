@@ -42,7 +42,7 @@ export default function Register() {
               height={40}
             />
           </div>
-          <CardTitle className="text-2xl font-bold text-center text-foreground">
+          <CardTitle className="text-xl font-bold text-center text-foreground">
             Create your account
           </CardTitle>
         </CardHeader>

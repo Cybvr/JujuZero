@@ -8,8 +8,9 @@ import FeedbackDialog from '@/components/ui/FeedbackDialog';
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Wand2, FileText, User, Plus } from 'lucide-react';
+import { Home, Wand2, User, Plus, MessageSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import QuestionButton from '@/components/dashboard/QuestionButton';
 
 const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: string; icon: React.ElementType; label?: string; isRounded?: boolean }) => {
   const pathname = usePathname();
@@ -35,13 +36,20 @@ const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: 
 };
 
 const FooterMenu = () => {
+  const pathname = usePathname();
+  const shouldHideFooter = pathname === '/dashboard/sidekick';
+
+  if (shouldHideFooter) {
+    return null;
+  }
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-2 md:hidden">
       <div className="flex justify-around items-center">
         <FooterMenuItem href="/dashboard" icon={Home} label="Home" />
         <FooterMenuItem href="/dashboard/tools" icon={Wand2} label="Tools" />
         <FooterMenuItem href="/dashboard/projects/new" icon={Plus} isRounded={true} />
-        <FooterMenuItem href="/dashboard/documents" icon={FileText} label="Documents" />
+        <FooterMenuItem href="/dashboard/sidekick" icon={MessageSquare} label="Sidekick" />
         <FooterMenuItem href="/dashboard/account" icon={User} label="Account" />
       </div>
     </nav>
@@ -55,8 +63,11 @@ export default function RootLayout({
 }) {
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBrowser, setIsBrowser] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
+    setIsBrowser(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
@@ -125,6 +136,7 @@ export default function RootLayout({
                   {children}
                 </div>
                 <FooterMenu />
+                {isBrowser && pathname !== '/dashboard/sidekick' && <QuestionButton />}
               </>
             )}
             <FeedbackDialog

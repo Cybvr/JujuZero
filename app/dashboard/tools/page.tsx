@@ -22,6 +22,9 @@ interface Tool {
 }
 
 const tools: Tool[] = [
+  { name: 'Grammar Checker', slug: 'grammar-checker', description: 'Check and improve your text\'s grammar.', imageSrc: '/images/tools/grammar-checker.png', category: 'Text', access: 'free' },
+  { name: 'Paraphraser', slug: 'paraphraser', description: 'Rephrase your text in different styles with AI.', imageSrc: '/images/tools/paraphraser.png', category: 'Text', access: 'free' },
+  { name: 'Text Summarizer', slug: 'text-summarizer', description: 'Quickly summarize long texts with AI.', imageSrc: '/images/tools/text-summarizer.png', category: 'Text', access: 'free' },
   { name: 'QR Code Generator', slug: 'qr-code-generator', description: 'Create custom QR codes easily.', imageSrc: '/images/tools/1.png', category: 'Conversion', access: 'free' },
   { name: 'Remove Background', slug: 'remove-background', description: 'Easily remove image backgrounds.', imageSrc: '/images/tools/2.png', category: 'Image', access: 'free' },
   { name: 'Compress Image', slug: 'compress-image', description: 'Reduce image file size without losing quality.', imageSrc: '/images/tools/3.png', category: 'Image', access: 'free' },

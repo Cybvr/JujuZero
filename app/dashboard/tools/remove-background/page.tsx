@@ -60,13 +60,13 @@ export default function RemoveBackgroundPage() {
   };
 
   return (
-    <div className="flex">
-      <div className="flex-grow mr-6">
-        <h1 className="text-3xl font-bold mb-2">Remove Background</h1>
-        <p className="text-muted-foreground mb-6">AI-powered background removal</p>
+    <div className="flex flex-col lg:flex-row">
+      <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Remove Background</h1>
+        <p className="text-muted-foreground mb-4 sm:mb-6">AI-powered background removal</p>
         <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-          <CardContent className="p-6">
-            <div className="space-y-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
                 <Label htmlFor="image-upload" className="block text-sm font-medium mb-2">Upload Image</Label>
                 <Input type="file" id="image-upload" className="w-full" accept="image/*" onChange={handleImageUpload} />
@@ -80,19 +80,26 @@ export default function RemoveBackgroundPage() {
               >
                 {isLoading ? 'Processing...' : 'Remove Background'}
               </Button>
-              {error && <p className="text-red-500">{error}</p>}
-              {!PHOTOROOM_API_KEY && <p className="text-red-500">API key missing. Check configuration.</p>}
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              {!PHOTOROOM_API_KEY && <p className="text-red-500 text-sm">API key missing. Check configuration.</p>}
               {processedImage && (
                 <div className="mt-4">
-                  <h1 className="text-lg font-semibold mb-2">Processed Image</h1>
-                  <img src={processedImage} alt="Processed" className="max-w-full h-auto" />
-                  <a 
-                    href={processedImage} 
-                    download="removed-background.png" 
-                    className="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  <h2 className="text-lg font-semibold mb-2">Processed Image</h2>
+                  <div className="bg-gray-100 p-2 rounded">
+                    <img src={processedImage} alt="Processed" className="max-w-full h-auto rounded" />
+                  </div>
+                  <Button 
+                    asChild
+                    variant="secondary" 
+                    className="mt-4 w-full"
                   >
-                    Download Image
-                  </a>
+                    <a 
+                      href={processedImage} 
+                      download="removed-background.png" 
+                    >
+                      Download Image
+                    </a>
+                  </Button>
                 </div>
               )}
             </div>

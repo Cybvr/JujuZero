@@ -6,11 +6,12 @@ import BrandGuidelinesAsset from '@/components/assets/BrandGuidelinesAsset'
 import MarketingCopyAsset from '@/components/assets/MarketingCopyAsset'
 import LandingPageAsset from '@/components/assets/LandingPageAsset'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Wand2, Share2, Trash2, ArrowLeft, Home, BookOpen, MessageSquare, Layout } from 'lucide-react'
+import { Wand2, Share2, Trash2, ArrowLeft, Home, BookOpen, MessageSquare, Layout, Menu } from 'lucide-react'
 import { useToast } from "@/components/ui/use-toast"
 import { db } from '@/lib/firebase'
 import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore'
 import { Badge } from "@/components/ui/badge"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 interface ProjectData {
   id: string;
@@ -36,6 +37,7 @@ export default function ProjectDetails({ params }: { params: { projectId: string
   const [project, setProject] = useState<ProjectData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     fetchProjectData()
@@ -99,7 +101,6 @@ export default function ProjectDetails({ params }: { params: { projectId: string
   }
 
   const handleShare = () => {
-    // Implement share logic here
     toast({
       title: "Share feature",
       description: "Sharing functionality is not implemented yet.",
@@ -192,23 +193,42 @@ export default function ProjectDetails({ params }: { params: { projectId: string
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
+    setIsMobileMenuOpen(false)
   }
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    setIsMobileMenuOpen(false)
   }
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div className="flex justify-center items-center h-screen">Loading...</div>
   }
 
   if (error || !project) {
-    return <div>{error || "An error occurred"}</div>
+    return <div className="flex justify-center items-center h-screen">{error || "An error occurred"}</div>
   }
+
+  const SidebarContent = () => (
+    <div className="flex flex-col space-y-4">
+      <a onClick={scrollToTop} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
+        <Home className="mr-2 h-3 w-3" /> Home
+      </a>
+      <a onClick={() => scrollToSection('brandGuidelines')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
+        <BookOpen className="mr-2 h-3 w-3" /> Brand Guidelines
+      </a>
+      <a onClick={() => scrollToSection('marketingCopy')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
+        <MessageSquare className="mr-2 h-3 w-3" /> Marketing Copy
+      </a>
+      <a onClick={() => scrollToSection('landingPage')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
+        <Layout className="mr-2 h-3 w-3" /> Landing Page
+      </a>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-card">
-      <div className="max-w-7xl mx-auto space-y-8 p-8">
+      <div className="max-w-7xl mx-auto space-y-8 p-4 sm:p-8">
         <div className="flex justify-between items-center sticky top-0 bg-card z-10 py-4">
           <Button
             onClick={() => router.push('/dashboard/projects')}
@@ -216,39 +236,37 @@ export default function ProjectDetails({ params }: { params: { projectId: string
             className="px-0"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> 
-            Back to Projects
+            <span className="hidden sm:inline">Back to Projects</span>
           </Button>
-          {project.tokenCount && <Badge variant="secondary">Tokens: {project.tokenCount}</Badge>}
-          <div className="flex space-x-4">
+          {project.tokenCount && <Badge variant="secondary" className="hidden sm:inline-flex">Tokens: {project.tokenCount}</Badge>}
+          <div className="flex space-x-2 sm:space-x-4">
             <Button 
               onClick={handleRegenerate}
               className="bg-gradient-to-r from-blue-800 to-indigo-600 hover:from-blue-700 hover:to-indigo-500 text-white"
             >
-              <Wand2 className="mr-2 h-4 w-4" /> Regenerate
+              <Wand2 className="sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Regenerate</span>
             </Button>
-            <Button onClick={handleShare}><Share2 className="mr-2 h-4 w-4" /> Share</Button>
+            <Button onClick={handleShare}><Share2 className="sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Share</span></Button>
           </div>
         </div>
 
-        <div className="flex gap-8">
-          <div className="w-[15%] border-r border-muted-foreground/30 pr-2 sticky top-20 self-start">
-            <div className="flex flex-col space-y-4">
-              <a onClick={scrollToTop} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
-                <Home className="mr-2 h-3 w-3" /> Home
-              </a>
-              <a onClick={() => scrollToSection('brandGuidelines')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
-                <BookOpen className="mr-2 h-3 w-3" /> Brand Guidelines
-              </a>
-              <a onClick={() => scrollToSection('marketingCopy')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
-                <MessageSquare className="mr-2 h-3 w-3" /> Marketing Copy
-              </a>
-              <a onClick={() => scrollToSection('landingPage')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
-                <Layout className="mr-2 h-3 w-3" /> Landing Page
-              </a>
-            </div>
+        <div className="flex flex-col sm:flex-row gap-8">
+          <div className="hidden sm:block w-full sm:w-[15%] border-r border-muted-foreground/30 pr-2 sticky top-20 self-start">
+            <SidebarContent />
           </div>
 
-          <div className="w-[85%] space-y-8">
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="sm:hidden">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SidebarContent />
+            </SheetContent>
+          </Sheet>
+
+          <div className="w-full sm:w-[85%] space-y-8">
             <div>
               <h1 className="text-2xl font-semibold text-primary mb-2">{project.name}</h1>
               <p className="text-sm text-muted-foreground">{project.description}</p>

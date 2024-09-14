@@ -39,8 +39,8 @@ export default function QRCodeGenerator() {
   };
 
   return (
-    <div className="flex">
-      <div className="flex-grow mr-6">
+    <div className="flex flex-col lg:flex-row">
+      <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-2 flex items-center text-foreground">
             <QrCode className="mr-2 h-6 w-6" />
@@ -50,10 +50,10 @@ export default function QRCodeGenerator() {
           <Separator className="my-4" />
         </div>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4 md:col-span-2">
+              <div className="space-y-6">
+                <div className="space-y-4">
                   <Label htmlFor="qr-content" className="text-sm font-medium">QR Code Content</Label>
                   <Textarea 
                     id="qr-content" 
@@ -67,53 +67,58 @@ export default function QRCodeGenerator() {
                   <h3 className="text-sm font-medium flex items-center">
                     <Settings className="mr-2 h-4 w-4" /> Configuration
                   </h3>
-                  <div>
-                    <Label htmlFor="qr-size" className="text-sm">QR Code Size</Label>
-                    <Select onValueChange={(value) => setQrSize(Number(value))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select size" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="200">Small (200x200)</SelectItem>
-                        <SelectItem value="300">Medium (300x300)</SelectItem>
-                        <SelectItem value="400">Large (400x400)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="fg-color" className="text-sm">Foreground Color</Label>
-                    <Input 
-                      type="color" 
-                      id="fg-color" 
-                      value={fgColor}
-                      onChange={(e) => setFgColor(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="bg-color" className="text-sm">Background Color</Label>
-                    <Input 
-                      type="color" 
-                      id="bg-color" 
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="qr-size" className="text-sm">QR Code Size</Label>
+                      <Select onValueChange={(value) => setQrSize(Number(value))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="200">Small (200x200)</SelectItem>
+                          <SelectItem value="300">Medium (300x300)</SelectItem>
+                          <SelectItem value="400">Large (400x400)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="fg-color" className="text-sm">Foreground Color</Label>
+                      <Input 
+                        type="color" 
+                        id="fg-color" 
+                        value={fgColor}
+                        onChange={(e) => setFgColor(e.target.value)}
+                        className="h-10 px-3 py-2"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="bg-color" className="text-sm">Background Color</Label>
+                      <Input 
+                        type="color" 
+                        id="bg-color" 
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="h-10 px-3 py-2"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-sm font-medium">Preview</h3>
                   <div className="border border-border p-4 flex justify-center items-center bg-card">
-                    {qrCodeDataURL && <img src={qrCodeDataURL} alt="Generated QR Code" />}
+                    {qrCodeDataURL && <img src={qrCodeDataURL} alt="Generated QR Code" className="max-w-full h-auto" />}
                   </div>
                 </div>
               </div>
-              <div className="flex justify-between items-center">
-                <Button variant="default" onClick={generateQRCode}>
+              <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <Button variant="default" onClick={generateQRCode} className="w-full sm:w-auto">
                   Generate QR Code
                 </Button>
                 {qrCodeDataURL && (
                   <Button 
                     variant="secondary"
                     asChild
+                    className="w-full sm:w-auto"
                   >
                     <a 
                       href={qrCodeDataURL} 

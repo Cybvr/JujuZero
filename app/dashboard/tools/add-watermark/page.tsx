@@ -94,17 +94,17 @@ export default function AddWatermarkPage() {
   };
 
   return (
-    <div className="flex">
-      <div className="flex-grow mr-6">
-        <h1 className="text-3xl font-bold mb-2">Add Watermark</h1>
-        <p className="text-muted-foreground mb-6">Easily add watermarks to your images with our tool.</p>
-        <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-          <CardContent className="p-6">
-            <div className="space-y-6">
+    <div className="flex flex-col lg:flex-row">
+      <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">Add Watermark</h1>
+        <p className="text-muted-foreground mb-4 sm:mb-6">Easily add watermarks to your images with our tool.</p>
+        <Card className="bg-background shadow-md rounded-lg overflow-hidden">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <Label htmlFor="image-upload" className="block text-sm font-medium mb-2">Upload Image</Label>
-                <Input type="file" id="image-upload" className="w-full" onChange={handleImageUpload} accept="image/*" />
-                <p className="mt-1 text-sm text-muted-foreground">Supported formats: JPG, PNG, WebP</p>
+                <Label htmlFor="image-upload" className="block text-sm font-medium mb-2 text-foreground">Upload Image</Label>
+                <Input type="file" id="image-upload" className="w-full bg-background text-foreground" onChange={handleImageUpload} accept="image/*" />
+                <p className="mt-1 text-xs sm:text-sm text-muted-foreground">Supported formats: JPG, PNG, WebP</p>
               </div>
               {image && (
                 <div className="mt-4">
@@ -112,20 +112,20 @@ export default function AddWatermarkPage() {
                 </div>
               )}
               <div>
-                <Label htmlFor="watermark-text" className="block text-sm font-medium mb-2">Watermark Text</Label>
+                <Label htmlFor="watermark-text" className="block text-sm font-medium mb-2 text-foreground">Watermark Text</Label>
                 <Input 
                   type="text" 
                   id="watermark-text" 
                   placeholder="Enter watermark text" 
-                  className="w-full"
+                  className="w-full bg-background text-foreground"
                   value={watermarkText}
                   onChange={(e) => setWatermarkText(e.target.value)}
                 />
               </div>
               <div>
-                <Label htmlFor="watermark-position" className="block text-sm font-medium mb-2">Watermark Position</Label>
+                <Label htmlFor="watermark-position" className="block text-sm font-medium mb-2 text-foreground">Watermark Position</Label>
                 <Select value={watermarkPosition} onValueChange={setWatermarkPosition}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-background text-foreground">
                     <SelectValue placeholder="Select position" />
                   </SelectTrigger>
                   <SelectContent>
@@ -138,28 +138,28 @@ export default function AddWatermarkPage() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="watermark-color" className="block text-sm font-medium mb-2">Watermark Color</Label>
+                <Label htmlFor="watermark-color" className="block text-sm font-medium mb-2 text-foreground">Watermark Color</Label>
                 <Input 
                   type="color" 
                   id="watermark-color" 
-                  className="w-full h-10"
+                  className="w-full h-10 bg-background"
                   value={watermarkColor}
                   onChange={(e) => setWatermarkColor(e.target.value)}
                 />
               </div>
               <div>
-                <Label htmlFor="additional-notes" className="block text-sm font-medium mb-2">Additional Notes</Label>
+                <Label htmlFor="additional-notes" className="block text-sm font-medium mb-2 text-foreground">Additional Notes</Label>
                 <Textarea 
                   id="additional-notes" 
                   placeholder="Enter any additional notes or instructions" 
-                  className="w-full"
+                  className="w-full bg-background text-foreground"
                   value={additionalNotes}
                   onChange={(e) => setAdditionalNotes(e.target.value)}
                 />
               </div>
               <Button 
                 variant="default" 
-                className="w-full bg-primary text-white hover:bg-primary-dark"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={applyWatermark}
               >
                 Add Watermark

@@ -4,17 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, HelpCircle, PanelLeftOpen, PanelLeftClose, FileIcon, Star, List, User, Briefcase, Moon, Sun, FileText } from 'lucide-react'; 
+import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, HelpCircle, PanelLeftOpen, PanelLeftClose, FileIcon, Star, List, User, Briefcase, Moon, Sun, FileText, MessageSquare } from 'lucide-react'; 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePricingDialog } from '@/context/PricingDialogContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from 'next-themes';
-import FeedbackDialog from '@/components/ui/FeedbackDialog';
 
 const discover = [
   { name: 'Discover', icon: CompassIcon, path: '/dashboard/tools' },
@@ -57,11 +55,9 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const [isMobile, setIsMobile] = useState(false);
   const { setIsPricingOpen } = usePricingDialog();
   const { user } = useAuth();
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [myList, setMyList] = useState<string[]>([]);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -73,9 +69,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
       const savedMyList = JSON.parse(localStorage.getItem('myList') || '[]');
-      setFavorites(savedFavorites);
       setMyList(savedMyList);
     }
   }, []);
@@ -85,8 +79,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   }
 
   const isActive = (path: string) => pathname === path;
-  const buttonClasses = (path: string) => `w-full justify-start ${isActive(path) ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`;
-  const iconClasses = (path: string) => `mr-2 h-4 w-4 ${isActive(path) ? 'text-secondary-foreground' : 'text-muted-foreground'}`;
+  const buttonClasses = (path: string) => `w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${isActive(path) ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`;
+  const iconClasses = (path: string) => `h-4 w-4 ${isActive(path) ? 'text-secondary-foreground' : 'text-muted-foreground'}`;
 
   const handleLinkClick = () => {
     if (isMobile) {
@@ -101,59 +95,47 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const renderNavItems = () => (
     <>
       <Link href="/dashboard" className={buttonClasses('/dashboard')}>
-        <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+        <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
           <HomeIcon className={iconClasses('/dashboard')} />
-          <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Home</span>
+          {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Home</span>}
         </Button>
       </Link>
       <Separator className="my-2" />
       {discover.map((item) => (
         <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
-          <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+          <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
             <item.icon className={iconClasses(item.path)} />
-            <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>
+            {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
           </Button>
         </Link>
       ))}
       <Link href="/dashboard/tools/myTools" className={buttonClasses('/dashboard/tools/myList')}>
-        <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+        <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
           <List className={iconClasses('/dashboard/tools/myList')} />
-          <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">My Tools</span>
+          {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">My Apps</span>}
+        </Button>
+      </Link>
+      <Link href="/dashboard/sidekick" className={buttonClasses('/dashboard/sidekick')}>
+        <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
+          <MessageSquare className={iconClasses('/dashboard/sidekick')} />
+          {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Sidekick</span>}
         </Button>
       </Link>
       <Separator className="my-2" />
       {folders.map((item) => (
         <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
-          <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+          <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
             <item.icon className={iconClasses(item.path)} />
-            <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>
+            {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
           </Button>
         </Link>
       ))}
       <Link href="/dashboard/projects" className={buttonClasses('/dashboard/projects')}>
-        <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
+        <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
           <Briefcase className={iconClasses('/dashboard/projects')} />
-          <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>
+          {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>}
         </Button>
       </Link>
-      <Separator className="my-2" />
-      <div className="px-3 py-2">
-        <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-muted-foreground">⭐ Favorite Tools</h2>
-        <ScrollArea className="h-[100px]">
-          {favorites.length > 0 ? (
-            favorites.map((slug) => (
-              <Link key={slug} href={`/dashboard/tools/${slug}`} className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-secondary/50">
-                <Button variant="ghost" className="w-full justify-start" onClick={handleLinkClick}>
-                  <Star className="mr-2 h-4 w-4 text-yellow-500" />
-                  <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">{slug}</span>
-                </Button>
-              </Link>
-            ))
-          ) : (
-            <p className="text-xs px-2 text-muted-foreground">No favorite tools</p>
-          )}
-        </ScrollArea>
-      </div>
     </>
   )
 
@@ -175,27 +157,6 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                 {renderNavItems()}
                 <Separator className="my-4" />
                 <div className="space-y-4">
-                  <Button
-                    variant="ghost"
-                    size="default"
-                    onClick={() => setIsFeedbackDialogOpen(true)}
-                    className="w-full justify-start text-muted-foreground hover:text-foreground"
-                  >
-                    <HelpCircle className="mr-2 h-4 w-4" />
-                    <span>Feedback</span>
-                  </Button>
-                  <Link href="/help" className="w-full justify-start text-muted-foreground hover:text-foreground">
-                    <Button variant="ghost" size="default" className="w-full justify-start">
-                      <HelpCircle className="mr-2 h-4 w-4" />
-                      <span>Help</span>
-                    </Button>
-                  </Link>
-                  <Link href="/changelog" className="w-full justify-start text-muted-foreground hover:text-foreground">
-                    <Button variant="ghost" size="default" className="w-full justify-start">
-                      <FileText className="mr-2 h-4 w-4" />
-                      <span>Changelog</span>
-                    </Button>
-                  </Link>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
                       {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
@@ -226,44 +187,13 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
             </div>
           </ScrollArea>
           <div className="p-4 border-t mt-auto">
-            {isSidebarOpen && (
-              <Card className="mb-4 bg-card">
-                <CardContent className="p-4">
-                  <p className="text-small font-medium mb-2 text-muted-foreground">👋 Try Pro!  Upgrade for more tools and task assistants.</p>
-                  <Button variant="default" size="sm" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setIsPricingOpen(true)}>
-                    Learn more
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-            <Button
-              variant="ghost"
-              size="default"
-              onClick={() => setIsFeedbackDialogOpen(true)}
-              className="w-full justify-start mb-2 text-muted-foreground hover:text-foreground"
-            >
-              <HelpCircle className="mr-2 h-4 w-4" />
-              {isSidebarOpen && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Feedback</span>}
-            </Button>
-            <Link href="/help" className="w-full justify-start text-muted-foreground hover:text-foreground">
-              <Button variant="ghost" size="default" className="w-full justify-start" onClick={handleLinkClick}>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                {isSidebarOpen && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Help</span>}
-              </Button>
-            </Link>
-            <Link href="/changelog" className="w-full justify-start text-muted-foreground hover:text-foreground">
-              <Button variant="ghost" size="default" className="w-full justify-start" onClick={handleLinkClick}>
-                <FileText className="mr-2 h-4 w-4" />
-                {isSidebarOpen && <span className="whitespace-nowrap overflow-hidden text-ellipsis text-small">Changelog</span>}
-              </Button>
-            </Link>
             <div className="flex items-center justify-between mt-2">
               {isSidebarOpen && (
                 <span className="text-sm text-muted-foreground">
                   {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
                 </span>
               )}
-              <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} className={isSidebarOpen ? '' : 'ml-auto'} />
+              <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} className={isSidebarOpen ? '' : 'mx-auto'} />
             </div>
             {isSidebarOpen && (
               <div className="mt-2 flex justify-between items-center text-small text-muted-foreground">
@@ -283,10 +213,6 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           </div>
         </aside>
       )}
-      <FeedbackDialog
-        isOpen={isFeedbackDialogOpen}
-        onClose={() => setIsFeedbackDialogOpen(false)}
-      />
     </>
   )
 }

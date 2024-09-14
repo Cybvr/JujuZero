@@ -129,32 +129,34 @@ export default function ImageCropPage() {
   };
 
   return (
-    <div className="flex">
-      <div className="flex-grow mr-6">
-        <h1 className="text-3xl font-bold mb-2">Image Crop</h1>
-        <p className="text-muted-foreground mb-6">Crop images easily to your desired dimensions.</p>
-        <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-          <CardContent className="p-6">
-            <div className="space-y-6">
+    <div className="flex flex-col lg:flex-row">
+      <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">Image Crop</h1>
+        <p className="text-muted-foreground mb-4 sm:mb-6">Crop images easily to your desired dimensions.</p>
+        <Card className="bg-background shadow-md rounded-lg overflow-hidden">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <Label htmlFor="image-upload" className="block text-sm font-medium mb-2">Upload Image</Label>
-                <Input type="file" id="image-upload" className="w-full" accept="image/*" onChange={onSelectFile} />
-                <p className="mt-1 text-sm text-muted-foreground">Supported formats: JPG, PNG, WebP, GIF</p>
+                <Label htmlFor="image-upload" className="block text-sm font-medium mb-2 text-foreground">Upload Image</Label>
+                <Input type="file" id="image-upload" className="w-full bg-background text-foreground" accept="image/*" onChange={onSelectFile} />
+                <p className="mt-1 text-xs sm:text-sm text-muted-foreground">Supported formats: JPG, PNG, WebP, GIF</p>
               </div>
               {src && (
-                <ReactCrop
-                  crop={crop}
-                  onChange={(c, percentCrop) => setCrop(percentCrop)}
-                  onComplete={(c) => setCompletedCrop(c)}
-                  aspect={aspect}
-                >
-                  <img ref={imgRef} src={src} style={{ maxWidth: '100%' }} />
-                </ReactCrop>
+                <div className="max-w-full overflow-auto">
+                  <ReactCrop
+                    crop={crop}
+                    onChange={(c, percentCrop) => setCrop(percentCrop)}
+                    onComplete={(c) => setCompletedCrop(c)}
+                    aspect={aspect}
+                  >
+                    <img ref={imgRef} src={src} style={{ maxWidth: '100%' }} />
+                  </ReactCrop>
+                </div>
               )}
               <div>
-                <Label htmlFor="aspect-ratio" className="block text-sm font-medium mb-2">Aspect Ratio</Label>
+                <Label htmlFor="aspect-ratio" className="block text-sm font-medium mb-2 text-foreground">Aspect Ratio</Label>
                 <Select value={aspectRatio} onValueChange={onAspectRatioChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-background text-foreground">
                     <SelectValue placeholder="Select aspect ratio" />
                   </SelectTrigger>
                   <SelectContent>
@@ -167,7 +169,7 @@ export default function ImageCropPage() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="zoom" className="block text-sm font-medium mb-2">Zoom</Label>
+                <Label htmlFor="zoom" className="block text-sm font-medium mb-2 text-foreground">Zoom</Label>
                 <CustomSlider
                   id="zoom"
                   min={1}
@@ -178,7 +180,11 @@ export default function ImageCropPage() {
                   className="w-full"
                 />
               </div>
-              <Button variant="default" className="w-full bg-primary text-white hover:bg-primary-dark" onClick={handleCropClick}>
+              <Button 
+                variant="default" 
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
+                onClick={handleCropClick}
+              >
                 Crop Image
               </Button>
             </div>

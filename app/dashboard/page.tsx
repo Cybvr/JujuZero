@@ -12,7 +12,6 @@ import { List, Grid, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-import { useSwipeable } from 'react-swipeable';
 
 interface Tool {
   name: string;
@@ -85,21 +84,6 @@ export default function DashboardPage() {
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handlers = useSwipeable({
-    onSwipedLeft: () => {
-      if (carouselRef.current) {
-        carouselRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-      }
-    },
-    onSwipedRight: () => {
-      if (carouselRef.current) {
-        carouselRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-      }
-    },
-    preventDefaultTouchmoveEvent: true,
-    trackMouse: true
-  });
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -117,7 +101,6 @@ export default function DashboardPage() {
             <div 
               className="flex-1 overflow-x-auto scrollbar-hide" 
               ref={carouselRef}
-              {...handlers}
             >
               <div className="flex space-x-4 px-2">
                 {tools.map((tool) => (

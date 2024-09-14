@@ -4,14 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, HelpCircle, PanelLeftOpen, PanelLeftClose, FileIcon, Star, List, User, Briefcase, Moon, Sun, FileText, MessageSquare } from 'lucide-react'; 
+import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, PanelLeftOpen, PanelLeftClose, List, Briefcase, Moon, Sun, MessageSquare } from 'lucide-react'; 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { usePricingDialog } from '@/context/PricingDialogContext';
-import { useAuth } from '@/context/AuthContext';
 import { useTheme } from 'next-themes';
 
 const discover = [
@@ -53,9 +51,6 @@ function LogoWrapper() {
 export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
-  const { setIsPricingOpen } = usePricingDialog();
-  const { user } = useAuth();
-  const [myList, setMyList] = useState<string[]>([]);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -67,26 +62,13 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedMyList = JSON.parse(localStorage.getItem('myList') || '[]');
-      setMyList(savedMyList);
-    }
-  }, []);
-
   if (!mounted) {
     return null;
   }
 
   const isActive = (path: string) => pathname === path;
-  const buttonClasses = (path: string) => `w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${isActive(path) ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`;
+  const buttonClasses = (path: string) => `w-full justify-start ${isActive(path) ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`;
   const iconClasses = (path: string) => `h-4 w-4 ${isActive(path) ? 'text-secondary-foreground' : 'text-muted-foreground'}`;
-
-  const handleLinkClick = () => {
-    if (isMobile) {
-      setIsSidebarOpen(false);
-    }
-  };
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -95,45 +77,45 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const renderNavItems = () => (
     <>
       <Link href="/dashboard" className={buttonClasses('/dashboard')}>
-        <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
+        <Button variant="ghost" className="w-full justify-start">
           <HomeIcon className={iconClasses('/dashboard')} />
-          {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Home</span>}
+          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Home</span>
         </Button>
       </Link>
       <Separator className="my-2" />
       {discover.map((item) => (
         <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
-          <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
+          <Button variant="ghost" className="w-full justify-start">
             <item.icon className={iconClasses(item.path)} />
-            {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
+            <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>
           </Button>
         </Link>
       ))}
       <Link href="/dashboard/tools/myTools" className={buttonClasses('/dashboard/tools/myList')}>
-        <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
+        <Button variant="ghost" className="w-full justify-start">
           <List className={iconClasses('/dashboard/tools/myList')} />
-          {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">My Apps</span>}
+          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">My Apps</span>
         </Button>
       </Link>
       <Link href="/dashboard/sidekick" className={buttonClasses('/dashboard/sidekick')}>
-        <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
+        <Button variant="ghost" className="w-full justify-start">
           <MessageSquare className={iconClasses('/dashboard/sidekick')} />
-          {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Sidekick</span>}
+          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Sidekick</span>
         </Button>
       </Link>
       <Separator className="my-2" />
       {folders.map((item) => (
         <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
-          <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
+          <Button variant="ghost" className="w-full justify-start">
             <item.icon className={iconClasses(item.path)} />
-            {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>}
+            <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>
           </Button>
         </Link>
       ))}
       <Link href="/dashboard/projects" className={buttonClasses('/dashboard/projects')}>
-        <Button variant="ghost" className={`w-full ${isSidebarOpen ? 'justify-start' : 'justify-center'}`} onClick={handleLinkClick}>
+        <Button variant="ghost" className="w-full justify-start">
           <Briefcase className={iconClasses('/dashboard/projects')} />
-          {isSidebarOpen && <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>}
+          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>
         </Button>
       </Link>
     </>
@@ -183,7 +165,34 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           </div>
           <ScrollArea className="flex-grow">
             <div className="p-2 space-y-1">
-              {renderNavItems()}
+              {isSidebarOpen ? renderNavItems() : (
+                <>
+                  <Button variant="ghost" className="w-full justify-center" title="Home">
+                    <HomeIcon className={iconClasses('/dashboard')} />
+                  </Button>
+                  <Separator className="my-2" />
+                  {discover.map((item) => (
+                    <Button key={item.path} variant="ghost" className="w-full justify-center" title={item.name}>
+                      <item.icon className={iconClasses(item.path)} />
+                    </Button>
+                  ))}
+                  <Button variant="ghost" className="w-full justify-center" title="My Apps">
+                    <List className={iconClasses('/dashboard/tools/myList')} />
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-center" title="Sidekick">
+                    <MessageSquare className={iconClasses('/dashboard/sidekick')} />
+                  </Button>
+                  <Separator className="my-2" />
+                  {folders.map((item) => (
+                    <Button key={item.path} variant="ghost" className="w-full justify-center" title={item.name}>
+                      <item.icon className={iconClasses(item.path)} />
+                    </Button>
+                  ))}
+                  <Button variant="ghost" className="w-full justify-center" title="Projects">
+                    <Briefcase className={iconClasses('/dashboard/projects')} />
+                  </Button>
+                </>
+              )}
             </div>
           </ScrollArea>
           <div className="p-4 border-t mt-auto">

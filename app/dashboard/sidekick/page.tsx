@@ -39,11 +39,7 @@ export default function Sidekick() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Welcome to Sidekick! 👋 I'm here to assist you with your professional development journey. To get started:
-
-1. Click the '+' button on the left to set your profession, focus area, and experience level.
-2. Once you've set your preferences, feel free to ask me anything related to your career or skills.
-3. I'll provide personalized advice based on your profile.
+      content: `Welcome to Sidekick! 👋 I'm here to assist you with your professional development journey. To get started, feel free to ask me anything related to your career or skills. If you'd like more personalized advice, you can use the '+' button to set your profession, focus area, and experience level.
 
 What would you like to discuss today?`
     }
@@ -61,10 +57,10 @@ What would you like to discuss today?`
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !selectedProfession || !selectedFocusArea || !selectedExperience) {
+    if (!inputMessage.trim()) {
       toast({
-        title: "Incomplete Information",
-        description: "Please select all options and enter a message.",
+        title: "Empty Message",
+        description: "Please enter a message before sending.",
         variant: "destructive",
       });
       return;
@@ -106,13 +102,12 @@ What would you like to discuss today?`
 
   return (
     <div className="hide-footer">
-      <div className="relative min-h-screen">
-        <div className="container mx-auto px-4 py-2">
-
+      <div className="relative min-h-screen flex flex-col">
+        <div className="flex-grow container mx-auto px-4 py-2 overflow-hidden">
           {/* Chat Messages */}
-          <Card className="mb-6 bg-background border-none">
-            <CardContent className="p-0">
-              <ScrollArea className="h-[calc(100vh-200px)] pr-4" ref={scrollAreaRef}>
+          <Card className="mb-6 bg-background border-none h-full">
+            <CardContent className="p-0 h-full">
+              <ScrollArea className="h-[calc(100vh-180px)] pr-4" ref={scrollAreaRef}>
                 {messages.map((message, index) => (
                   <div
                     key={index}
@@ -131,7 +126,7 @@ What would you like to discuss today?`
                       <div
                         className={`inline-block p-3 rounded-lg max-w-[70%] ${
                           message.role === 'user' 
-                            ? 'bg-violet-700 text-muted-foreground rounded-br-none' 
+                            ? 'bg-violet-700 text-white rounded-br-none' 
                             : 'bg-background text-muted-foreground border border-border rounded-bl-none'
                         }`}
                       >
@@ -144,11 +139,16 @@ What would you like to discuss today?`
                       </div>
                       {message.role === 'user' && (
                         <Image
-                          src="/images/user-avatar.png"
+                          src="/images/emoji.png"
                           alt="User Avatar"
                           width={32}
                           height={32}
                           className="rounded-full ml-2"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = '/images/emoji.png';
+                          }}
                         />
                       )}
                     </div>
@@ -160,7 +160,7 @@ What would you like to discuss today?`
         </div>
 
         {/* Input Field and Filter Button - Fixed at Bottom */}
-        <div className="sticky bottom-6 md:bottom-8 sm:bottom-8 left-0 right-0 bg-background p-1 border-t">
+        <div className="sticky bottom-0 left-0 right-0 bg-background p-4 border-t">
           <div className="container mx-auto flex space-x-2">
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -235,9 +235,8 @@ What would you like to discuss today?`
               disabled={isLoading}
               className="flex-grow"
             />
-            <Button onClick={handleSendMessage} disabled={isLoading} className="bg-violet-800 hover:bg-violet-900"
-              >
-              <Send className="h-4 w-4 " color="white" />
+            <Button onClick={handleSendMessage} disabled={isLoading} className="bg-violet-800 hover:bg-violet-900">
+              <Send className="h-4 w-4" color="white" />
             </Button>
           </div>
         </div>

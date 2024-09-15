@@ -1,17 +1,19 @@
 "use client";
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
-import BrandGuidelinesAsset from '@/components/assets/BrandGuidelinesAsset'
-import MarketingCopyAsset from '@/components/assets/MarketingCopyAsset'
-import LandingPageAsset from '@/components/assets/LandingPageAsset'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Wand2, Share2, Trash2, ArrowLeft, Home, BookOpen, MessageSquare, Layout, Menu } from 'lucide-react'
-import { useToast } from "@/components/ui/use-toast"
-import { db } from '@/lib/firebase'
-import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore'
-import { Badge } from "@/components/ui/badge"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import BrandGuidelinesAsset from '@/components/assets/BrandGuidelinesAsset';
+import MarketingCopyAsset from '@/components/assets/MarketingCopyAsset';
+import LandingPageAsset from '@/components/assets/LandingPageAsset';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Wand2, Share2, Trash2, ArrowLeft, Home, BookOpen, MessageSquare, Layout, Menu, Pencil, X } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
+import { db } from '@/lib/firebase';
+import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ProjectData {
   id: string;
@@ -30,278 +32,240 @@ interface ProjectData {
   tokenCount?: number;
 }
 
+const sections = [
+  { id: 'brandGuidelines', title: 'Brand Guidelines', icon: BookOpen },
+  { id: 'marketingCopy', title: 'Marketing Copy', icon: MessageSquare },
+  { id: 'landingPage', title: 'Landing Page', icon: Layout },
+];
+
 export default function ProjectDetails({ params }: { params: { projectId: string } }) {
-  const { projectId } = params
-  const router = useRouter()
-  const { toast } = useToast()
-  const [project, setProject] = useState<ProjectData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { projectId } = params;
+  const router = useRouter();
+  const { toast } = useToast();
+  const [project, setProject] = useState<ProjectData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   useEffect(() => {
-    fetchProjectData()
-  }, [projectId])
-
-  const fetchProjectData = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const docRef = doc(db, "projects", projectId)
-      const docSnap = await getDoc(docRef)
-      if (docSnap.exists()) {
-        setProject({ id: docSnap.id, ...docSnap.data() } as ProjectData)
-      } else {
-        setError("Project not found")
+    const fetchProjectData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const docRef = doc(db, "projects", projectId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProject({ id: docSnap.id, ...docSnap.data() } as ProjectData);
+        } else {
+          setError("Project not found");
+        }
+      } catch (err) {
+        console.error("Error fetching project:", err);
+        setError("Failed to load project data");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching project:", err)
-      setError("Failed to load project data")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    };
+    fetchProjectData();
+  }, [projectId]);
 
-  const handleRegenerate = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: project?.name, description: project?.description }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+  const handleAction = async (action: 'regenerate' | 'share' | 'delete') => {
+    if (action === 'regenerate') {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/openai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: project?.name, description: project?.description }),
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        await updateDoc(doc(db, "projects", projectId), { ...data, updatedAt: new Date() });
+        setProject(prev => prev ? { ...prev, ...data } : null);
+        toast({ title: "Project regenerated", description: "Your project assets have been successfully regenerated." });
+      } catch (err) {
+        console.error("Error regenerating project:", err);
+        toast({ variant: "destructive", title: "Error", description: "Failed to regenerate project. Please try again." });
+      } finally {
+        setIsLoading(false);
       }
-
-      const data = await response.json()
-
-      await updateDoc(doc(db, "projects", projectId), {
-        ...data,
-        updatedAt: new Date(),
-      })
-
-      setProject({ ...project, ...data } as ProjectData)
-
-      toast({
-        title: "Project regenerated",
-        description: "Your project assets have been successfully regenerated.",
-      })
-    } catch (err) {
-      console.error("Error regenerating project:", err)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to regenerate project. Please try again.",
-      })
-    } finally {
-      setIsLoading(false)
+    } else if (action === 'share') {
+      toast({ title: "Share feature", description: "Sharing functionality is not implemented yet." });
+    } else if (action === 'delete') {
+      try {
+        await deleteDoc(doc(db, "projects", projectId));
+        toast({ title: "Project deleted", description: "Your project has been successfully deleted." });
+        router.push('/dashboard/projects');
+      } catch (err) {
+        console.error("Error deleting project:", err);
+        toast({ variant: "destructive", title: "Error", description: "Failed to delete project. Please try again." });
+      }
     }
-  }
+  };
 
-  const handleShare = () => {
-    toast({
-      title: "Share feature",
-      description: "Sharing functionality is not implemented yet.",
-    })
-  }
-
-  const handleDelete = async () => {
+  const handleSave = async (section: string, newContent: any) => {
     try {
-      await deleteDoc(doc(db, "projects", projectId))
-      toast({
-        title: "Project deleted",
-        description: "Your project has been successfully deleted.",
-      })
-      router.push('/dashboard/projects')
-    } catch (err) {
-      console.error("Error deleting project:", err)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete project. Please try again.",
-      })
-    }
-  }
-
-  const handleSaveBrandGuidelines = async (newContent: ProjectData['brandGuidelines']) => {
-    try {
-      await updateDoc(doc(db, "projects", projectId), {
-        brandGuidelines: newContent,
-        updatedAt: new Date(),
-      })
-      setProject(prev => prev ? { ...prev, brandGuidelines: newContent } : null)
-      toast({
-        title: "Changes saved",
-        description: "Brand guidelines have been updated.",
-      })
+      await updateDoc(doc(db, "projects", projectId), { [section]: newContent, updatedAt: new Date() });
+      setProject(prev => prev ? { ...prev, [section]: newContent } : null);
+      toast({ title: "Changes saved", description: `${section} has been updated.` });
     } catch (error) {
-      console.error("Error saving brand guidelines:", error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save changes. Please try again.",
-      })
+      console.error(`Error saving ${section}:`, error);
+      toast({ variant: "destructive", title: "Error", description: "Failed to save changes. Please try again." });
     }
-  }
+  };
 
-  const handleSaveMarketingCopy = async (newContent: string) => {
+  const handleTitleChange = async (newTitle: string) => {
     try {
-      await updateDoc(doc(db, "projects", projectId), {
-        marketingCopy: newContent,
-        updatedAt: new Date(),
-      })
-      setProject(prev => prev ? { ...prev, marketingCopy: newContent } : null)
-      toast({
-        title: "Changes saved",
-        description: "Marketing copy has been updated.",
-      })
+      await updateDoc(doc(db, "projects", projectId), { name: newTitle, updatedAt: new Date() });
+      setProject(prev => prev ? { ...prev, name: newTitle } : null);
+      setIsEditingTitle(false);
+      toast({ title: "Title updated", description: "Project title has been successfully updated." });
     } catch (error) {
-      console.error("Error saving marketing copy:", error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save changes. Please try again.",
-      })
+      console.error("Error updating project title:", error);
+      toast({ variant: "destructive", title: "Error", description: "Failed to update project title. Please try again." });
     }
-  }
-
-  const handleSaveLandingPage = async (newContent: string) => {
-    try {
-      await updateDoc(doc(db, "projects", projectId), {
-        landingPage: newContent,
-        updatedAt: new Date(),
-      })
-      setProject(prev => prev ? { ...prev, landingPage: newContent } : null)
-      toast({
-        title: "Changes saved",
-        description: "Landing page has been updated.",
-      })
-    } catch (error) {
-      console.error("Error saving landing page:", error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save changes. Please try again.",
-      })
-    }
-  }
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
-    setIsMobileMenuOpen(false)
-  }
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    setIsMobileMenuOpen(false)
-  }
-
-  if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>
-  }
-
-  if (error || !project) {
-    return <div className="flex justify-center items-center h-screen">{error || "An error occurred"}</div>
-  }
+  };
 
   const SidebarContent = () => (
     <div className="flex flex-col space-y-4">
-      <a onClick={scrollToTop} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
+      <Button onClick={() => router.push('/dashboard/projects')} variant="ghost" className="justify-start">
+        <ArrowLeft className="h-4 w-4 mr-2" /> Back to Projects
+      </Button>
+      <a onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
         <Home className="mr-2 h-3 w-3" /> Home
       </a>
-      <a onClick={() => scrollToSection('brandGuidelines')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
-        <BookOpen className="mr-2 h-3 w-3" /> Brand Guidelines
-      </a>
-      <a onClick={() => scrollToSection('marketingCopy')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
-        <MessageSquare className="mr-2 h-3 w-3" /> Marketing Copy
-      </a>
-      <a onClick={() => scrollToSection('landingPage')} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
-        <Layout className="mr-2 h-3 w-3" /> Landing Page
-      </a>
+      {sections.map(({ id, title, icon: Icon }) => (
+        <a key={id} onClick={() => {
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+          setIsMobileMenuOpen(false);
+        }} className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground text-sm">
+          <Icon className="mr-2 h-3 w-3" /> {title}
+        </a>
+      ))}
     </div>
-  )
+  );
+
+  if (isLoading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (error || !project) return <div className="flex justify-center items-center h-screen">{error || "An error occurred"}</div>;
 
   return (
-    <div className="min-h-screen bg-card">
-      <div className="max-w-7xl mx-auto space-y-8 p-4 sm:p-8">
-        <div className="flex justify-between items-center sticky top-0 bg-card z-10 py-4">
-          <Button
-            onClick={() => router.push('/dashboard/projects')}
-            variant="ghost"
-            className="px-0"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" /> 
-            <span className="hidden sm:inline">Back to Projects</span>
-          </Button>
-          {project.tokenCount && <Badge variant="secondary" className="hidden sm:inline-flex">Tokens: {project.tokenCount}</Badge>}
-          <div className="flex space-x-2 sm:space-x-4">
-            <Button 
-              onClick={handleRegenerate}
-              className="bg-gradient-to-r from-blue-800 to-indigo-600 hover:from-blue-700 hover:to-indigo-500 text-white"
-            >
-              <Wand2 className="sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Regenerate</span>
-            </Button>
-            <Button onClick={handleShare}><Share2 className="sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Share</span></Button>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-8">
-          <div className="hidden sm:block w-full sm:w-[15%] border-r border-muted-foreground/30 pr-2 sticky top-20 self-start">
-            <SidebarContent />
-          </div>
-
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="sm:hidden">
-                <Menu className="h-4 w-4" />
+    <div className="min-h-screen bg-accent">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row">
+          {/* Mobile Header */}
+          <div className="lg:hidden flex justify-between items-center p-4 bg-background sticky top-0 z-10">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[240px] sm:w-[300px]">
+                <SidebarContent />
+              </SheetContent>
+            </Sheet>
+            <h1 className="text-xl font-semibold">{project?.name}</h1>
+            <div className="flex space-x-2">
+              <Button onClick={() => handleAction('regenerate')} size="icon" variant="ghost">
+                <Wand2 className="h-5 w-5" />
               </Button>
-            </SheetTrigger>
-            <SheetContent side="left">
-              <SidebarContent />
-            </SheetContent>
-          </Sheet>
-
-          <div className="w-full sm:w-[85%] space-y-8">
-            <div>
-              <h1 className="text-xl font-semibold text-primary mb-2">{project.name}</h1>
-              <p className="text-sm text-muted-foreground">{project.description}</p>
-            </div>
-
-            <div id="brandGuidelines">
-              <BrandGuidelinesAsset content={project.brandGuidelines} onSave={handleSaveBrandGuidelines} />
-            </div>
-
-            <div id="marketingCopy">
-              <MarketingCopyAsset content={project.marketingCopy} onSave={handleSaveMarketingCopy} />
-            </div>
-
-            <div id="landingPage">
-              <LandingPageAsset content={project.landingPage} onSave={handleSaveLandingPage} />
-            </div>
-
-            <div className="flex justify-center mt-8">
+              <Button onClick={() => handleAction('share')} size="icon" variant="ghost">
+                <Share2 className="h-5 w-5" />
+              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete Project
+                  <Button variant="ghost" size="icon">
+                    <Trash2 className="h-5 w-5" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete Project</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to delete this project? This action cannot be undone. 
-                      This will permanently delete your project and remove all of its data from our servers.
+                      Are you sure you want to delete this project? This action is irreversible.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    <AlertDialogAction onClick={() => handleAction('delete')} className="bg-red-500">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+
+          {/* Sidebar - hidden on mobile */}
+          <div className="hidden lg:block w-1/5 p-4 sticky top-0 self-start h-screen overflow-y-auto">
+            <SidebarContent />
+          </div>
+
+          {/* Main content */}
+          <div className="w-full lg:w-3/5 p-4 overflow-y-auto">
+            <div className="bg-accent shadow-sm rounded-lg p-4 mb-4">
+              {isEditingTitle ? (
+                <Input
+                  value={project?.name || ''}
+                  onChange={(e) => setProject(prev => prev ? { ...prev, name: e.target.value } : null)}
+                  onBlur={(e) => handleTitleChange(e.target.value)}
+                  className="text-2xl font-semibold"
+                  autoFocus
+                />
+              ) : (
+                <h1 className="text-2xl font-semibold flex items-center">
+                  {project?.name}
+                  <Button variant="ghost" size="sm" onClick={() => setIsEditingTitle(true)} className="ml-2">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </h1>
+              )}
+            </div>
+            {sections.map(({ id, title }) => (
+              <Card key={id} className="bg-accent border-0 shadow-sm p-2 mb-4" id={id}>
+                <CardContent className="p-0">
+                  {id === 'brandGuidelines' && (
+                    <BrandGuidelinesAsset content={project.brandGuidelines} onSave={(newContent) => handleSave(id, newContent)} />
+                  )}
+                  {id === 'marketingCopy' && (
+                    <MarketingCopyAsset content={project.marketingCopy} onSave={(newContent) => handleSave(id, newContent)} />
+                  )}
+                  {id === 'landingPage' && (
+                    <LandingPageAsset content={project.landingPage} onSave={(newContent) => handleSave(id, newContent)} />
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Toolbar - hidden on mobile */}
+          <div className="hidden lg:block w-16 p-2 sticky top-4 self-start h-screen">
+            <div className="flex flex-col space-y-2 bg-background p-2">
+              <Button onClick={() => handleAction('regenerate')} disabled={isLoading} className="p-2 bg-transparent">
+                <Wand2 className="h-4 w-4 text-black" />
+              </Button>
+              <Button onClick={() => handleAction('share')} disabled={isLoading} className="p-2 bg-transparent">
+                <Share2 className="h-4 w-4 text-black" />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" disabled={isLoading} className="p-2 bg-transparent">
+                    <Trash2 className="h-4 w-4 text-black" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this project? This action is irreversible.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleAction('delete')} className="bg-red-500">
+                      Delete
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -310,5 +274,5 @@ export default function ProjectDetails({ params }: { params: { projectId: string
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -9,7 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus } from 'lucide-react';
+import { Plus, Send } from 'lucide-react';
+import Image from 'next/image';
 
 const professions = [
   "Entrepreneur", "Software Developer", "Marketing Specialist", "Product Manager",
@@ -106,31 +107,50 @@ What would you like to discuss today?`
   return (
     <div className="hide-footer">
       <div className="relative min-h-screen">
-        <div className="container mx-auto px-4 py-8">
-          
+        <div className="container mx-auto px-4 py-2">
 
           {/* Chat Messages */}
-          <Card className="mb-6 bg-background">
-            <CardContent className="p-4">
+          <Card className="mb-6 bg-background border-none">
+            <CardContent className="p-0">
               <ScrollArea className="h-[calc(100vh-200px)] pr-4" ref={scrollAreaRef}>
                 {messages.map((message, index) => (
                   <div
                     key={index}
                     className={`mb-4 flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div
-                      className={`inline-block p-3 rounded-lg max-w-[70%] ${
-                        message.role === 'user' 
-                          ? 'bg-violet-700 text-white rounded-br-none' 
-                          : 'bg-background text-foreground border border-border rounded-bl-none'
-                      }`}
-                    >
-                      {message.content.split('\n').map((line, i) => (
-                        <React.Fragment key={i}>
-                          {line}
-                          {i < message.content.split('\n').length - 1 && <br />}
-                        </React.Fragment>
-                      ))}
+                    <div className="flex items-end">
+                      {message.role === 'assistant' && (
+                        <Image
+                          src="/images/logos/logov.png"
+                          alt="Juju Avatar"
+                          width={32}
+                          height={32}
+                          className="rounded-full mr-2"
+                        />
+                      )}
+                      <div
+                        className={`inline-block p-3 rounded-lg max-w-[70%] ${
+                          message.role === 'user' 
+                            ? 'bg-violet-700 text-muted-foreground rounded-br-none' 
+                            : 'bg-background text-muted-foreground border border-border rounded-bl-none'
+                        }`}
+                      >
+                        {message.content.split('\n').map((line, i) => (
+                          <React.Fragment key={i}>
+                            {line}
+                            {i < message.content.split('\n').length - 1 && <br />}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                      {message.role === 'user' && (
+                        <Image
+                          src="/images/user-avatar.png"
+                          alt="User Avatar"
+                          width={32}
+                          height={32}
+                          className="rounded-full ml-2"
+                        />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -215,8 +235,9 @@ What would you like to discuss today?`
               disabled={isLoading}
               className="flex-grow"
             />
-            <Button onClick={handleSendMessage} disabled={isLoading}>
-              {isLoading ? 'Sending...' : 'Send'}
+            <Button onClick={handleSendMessage} disabled={isLoading} className="bg-violet-800 hover:bg-violet-900"
+              >
+              <Send className="h-4 w-4 " color="white" />
             </Button>
           </div>
         </div>

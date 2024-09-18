@@ -4,13 +4,17 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, PanelLeftOpen, PanelLeftClose, List, Briefcase, Moon, Sun, MessageSquare } from 'lucide-react'; 
+import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, PanelLeftOpen, PanelLeftClose, List, Briefcase, Moon, Sun, MessageSquare, Coins } from 'lucide-react'; 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/context/AuthContext';
+import CreditBalance from '@/components/dashboard/CreditBalance';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { getUserCredits } from '@/lib/credits';
 
 const discover = [
   { name: 'Discover', icon: CompassIcon, path: '/dashboard/tools' },
@@ -53,6 +57,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const [isMobile, setIsMobile] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { user } = useAuth();
+  const [credits, setCredits] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -61,6 +67,21 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (user) {
+        const userCredits = await getUserCredits(user.uid);
+        setCredits(userCredits);
+      }
+    };
+
+    fetchCredits();
+    // Set up an interval to fetch credits periodically (e.g., every 60 seconds)
+    const intervalId = setInterval(fetchCredits, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [user]);
 
   if (!mounted) {
     return null;
@@ -138,6 +159,22 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
               <div className="p-4 space-y-4">
                 {renderNavItems()}
                 <Separator className="my-4" />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <Coins className={iconClasses('')} />
+                      <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">
+                        {credits !== null ? `${credits} Credits` : 'View Credits'}
+                      </span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Your Account Balance</DialogTitle>
+                    </DialogHeader>
+                    <CreditBalance />
+                  </DialogContent>
+                </Dialog>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
@@ -196,6 +233,24 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
             </div>
           </ScrollArea>
           <div className="p-4 border-t mt-auto">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start mb-4">
+                  <Coins className={iconClasses('')} />
+                  {isSidebarOpen && (
+                    <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-muted-foreground text-small">
+                      {credits !== null ? `${credits} Credits` : 'View Credits'}
+                    </span>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Your Credit Balance</DialogTitle>
+                </DialogHeader>
+                <CreditBalance />
+              </DialogContent>
+            </Dialog>
             <div className="flex items-center justify-between mt-2">
               {isSidebarOpen && (
                 <span className="text-sm text-muted-foreground">

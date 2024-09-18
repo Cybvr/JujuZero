@@ -14,11 +14,13 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RegenerateDialog } from '@/components/dashboard/RegenerateDialog';
 
 interface Project {
   id: string;
   name: string;
   description: string;
+  logo: string;
   brandGuidelines: {
     colors: string[];
     logos: string[];
@@ -36,6 +38,7 @@ export default function ProjectDetails({ params }: { params: { projectId: string
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isRegenerateDialogOpen, setIsRegenerateDialogOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -91,13 +94,56 @@ export default function ProjectDetails({ params }: { params: { projectId: string
     }
   };
 
+  const handleRegenerate = async (prompt: string, option: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: project?.name, 
+          description: project?.description,
+          prompt,
+          option
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to regenerate project content');
+      }
+
+      const newData = await response.json();
+
+      // Update the project with new data
+      const docRef = doc(db, 'projects', params.projectId);
+      await updateDoc(docRef, newData);
+
+      // Update local state
+      setProject(prev => prev ? { ...prev, ...newData } : null);
+
+      toast({
+        title: "Success",
+        description: "Project content regenerated successfully.",
+      });
+    } catch (error) {
+      console.error('Error regenerating project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate project content.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAction = async (action: 'regenerate' | 'share' | 'delete') => {
     if (!project) return;
     setIsLoading(true);
     try {
       switch (action) {
         case 'regenerate':
-          // Implement regenerate logic here
+          setIsRegenerateDialogOpen(true);
           break;
         case 'share':
           // Implement share logic here
@@ -175,7 +221,7 @@ export default function ProjectDetails({ params }: { params: { projectId: string
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row">
           {/* Mobile Header */}
-          <div className="lg:hidden bg-background sticky top-0 z-10 p-4">
+          <div className="lg:hidden bg-background sticky top-0 z-10 p-4 pt-0">
             <Collapsible open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
               <div className="flex justify-between items-center">
                 <CollapsibleTrigger asChild>
@@ -236,12 +282,17 @@ export default function ProjectDetails({ params }: { params: { projectId: string
                   autoFocus
                 />
               ) : (
-                <h1 className="text-2xl font-semibold flex items-center">
-                  {project?.name}
-                  <Button variant="ghost" size="sm" onClick={() => setIsEditingTitle(true)} className="ml-2">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </h1>
+                <div className="flex items-center">
+                  <h1 className="text-2xl font-semibold flex items-center">
+                    {project?.name}
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditingTitle(true)} className="ml-2">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </h1>
+                  {project.logo && (
+                    <img src={project.logo} alt="Project Logo" className="w-10 h-10 ml-4 rounded-full" />
+                  )}
+                </div>
               )}
             </div>
             {sections.map(({ id, title }) => (
@@ -251,7 +302,19 @@ export default function ProjectDetails({ params }: { params: { projectId: string
                     <BrandGuidelinesAsset content={project.brandGuidelines} onSave={(newContent) => handleSave(id, newContent)} />
                   )}
                   {id === 'marketingCopy' && (
-                    <MarketingCopyAsset content={project.marketingCopy} onSave={(newContent) => handleSave(id, newContent)} />
+                    <MarketingCopyAsset content={project.marketingCopy} onSave={(newContent) => handleSave(id, newContent)} 
+                      init={{
+                        height: 500,
+                        menubar: false,
+                        branding: false,
+                        plugins: [
+                          'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                          'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                          'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                        ],
+                        toolbar: 'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+                        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                      }}/>
                   )}
                   {id === 'landingPage' && (
                     <LandingPageAsset content={project.landingPage} onSave={(newContent) => handleSave(id, newContent)} />
@@ -295,6 +358,11 @@ export default function ProjectDetails({ params }: { params: { projectId: string
           </div>
         </div>
       </div>
+      <RegenerateDialog 
+        isOpen={isRegenerateDialogOpen}
+        onClose={() => setIsRegenerateDialogOpen(false)}
+        onRegenerate={handleRegenerate}
+      />
     </div>
   );
 }

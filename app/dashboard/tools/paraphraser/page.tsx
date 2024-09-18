@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Editor } from '@tinymce/tinymce-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -10,6 +9,7 @@ import Toolbar from '../../../components/dashboard/toolbar';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/dashboard/AuthModal';
 import { useToast } from "@/components/ui/use-toast";
+import CustomEditor from '@/components/dashboard/CustomEditor';
 
 const paraphrasingStyles = [
   { value: 'standard', label: 'Standard' },
@@ -23,7 +23,6 @@ export default function ParaphraserPage() {
   const [paraphrasedText, setParaphrasedText] = useState<string | null>(null);
   const [style, setStyle] = useState('standard');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -31,7 +30,6 @@ export default function ParaphraserPage() {
   const handleTextChange = (content: string) => {
     setText(content);
     setParaphrasedText(null);
-    setError(null);
   };
 
   const handleParaphrase = async () => {
@@ -42,7 +40,6 @@ export default function ParaphraserPage() {
     }
 
     setIsLoading(true);
-    setError(null);
 
     try {
       const response = await fetch('/api/paraphrase', {
@@ -57,9 +54,13 @@ export default function ParaphraserPage() {
 
       const data = await response.json();
       setParaphrasedText(data.paraphrasedText);
-    } catch (err) {
-      console.error('Paraphrasing failed:', err);
-      setError('Paraphrasing failed. Please try again.');
+    } catch (error) {
+      console.error('Paraphrasing failed:', error);
+      toast({
+        title: "Error",
+        description: "Paraphrasing failed. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -75,30 +76,7 @@ export default function ParaphraserPage() {
             <div className="space-y-4 sm:space-y-6">
               <div>
                 <Label htmlFor="text-input" className="block text-sm font-medium mb-2">Enter your text</Label>
-                <Editor
-                  apiKey="s2a631sfb5156httfdykdsiodaya9sij4sljhy2frrh10zb3"
-                  initialValue=""
-                  init={{
-                    height: 250,
-                    menubar: false,
-                    plugins: [
-                      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                      'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                    ],
-                    toolbar: 'undo redo | blocks | ' +
-                      'bold italic forecolor | alignleft aligncenter ' +
-                      'alignright alignjustify | bullist numlist outdent indent | ' +
-                      'removeformat | help',
-                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                    mobile: {
-                      theme: 'mobile',
-                      plugins: ['autosave', 'lists', 'autolink'],
-                      toolbar: ['undo', 'bold', 'italic', 'styleselect']
-                    }
-                  }}
-                  onEditorChange={handleTextChange}
-                />
+                <CustomEditor value={text} onChange={handleTextChange} />
               </div>
               <div>
                 <Label htmlFor="style-select" className="block text-sm font-medium mb-2">Paraphrasing Style</Label>
@@ -121,40 +99,19 @@ export default function ParaphraserPage() {
               >
                 {isLoading ? 'Paraphrasing...' : 'Paraphrase'}
               </Button>
-              {error && <p className="text-destructive">{error}</p>}
               {paraphrasedText && (
                 <div className="mt-4">
                   <h2 className="text-lg font-semibold mb-2">Paraphrased Text</h2>
-                  <Editor
-                    apiKey="s2a631sfb5156httfdykdsiodaya9sij4sljhy2frrh10zb3"
-                    initialValue={paraphrasedText}
-                    init={{
-                      height: 250,
-                      menubar: false,
-                      plugins: [
-                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                      ],
-                      toolbar: 'undo redo | blocks | ' +
-                        'bold italic forecolor | alignleft aligncenter ' +
-                        'alignright alignjustify | bullist numlist outdent indent | ' +
-                        'removeformat | help',
-                      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                      mobile: {
-                        theme: 'mobile',
-                        plugins: ['autosave', 'lists', 'autolink'],
-                        toolbar: ['undo', 'bold', 'italic', 'styleselect']
-                      }
-                    }}
-                  />
+                  <CustomEditor value={paraphrasedText} onChange={() => {}} />
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
-      <Toolbar />
+      <div className="w-full lg:w-auto">
+        <Toolbar />
+      </div>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );

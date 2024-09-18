@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Editor } from '@tinymce/tinymce-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,6 +8,7 @@ import Toolbar from '../../../components/dashboard/toolbar';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/dashboard/AuthModal';
 import { useToast } from "@/components/ui/use-toast";
+import CustomEditor from '@/components/dashboard/CustomEditor';
 
 export default function TextSummarizerPage() {
   const [text, setText] = useState<string>('');
@@ -66,30 +66,7 @@ export default function TextSummarizerPage() {
             <div className="space-y-4 sm:space-y-6">
               <div>
                 <Label htmlFor="text-input" className="block text-sm font-medium mb-2">Enter your text</Label>
-                <Editor
-                  apiKey="s2a631sfb5156httfdykdsiodaya9sij4sljhy2frrh10zb3"
-                  initialValue=""
-                  init={{
-                    height: 250,
-                    menubar: false,
-                    plugins: [
-                      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                      'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                    ],
-                    toolbar: 'undo redo | blocks | ' +
-                      'bold italic forecolor | alignleft aligncenter ' +
-                      'alignright alignjustify | bullist numlist outdent indent | ' +
-                      'removeformat | help',
-                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                    mobile: {
-                      theme: 'mobile',
-                      plugins: ['autosave', 'lists', 'autolink'],
-                      toolbar: ['undo', 'bold', 'italic', 'styleselect']
-                    }
-                  }}
-                  onEditorChange={handleTextChange}
-                />
+                <CustomEditor value={text} onChange={handleTextChange} />
               </div>
               <Button 
                 variant="default" 
@@ -103,36 +80,16 @@ export default function TextSummarizerPage() {
               {summary && (
                 <div className="mt-4">
                   <h2 className="text-lg font-semibold mb-2">Summary</h2>
-                  <Editor
-                    apiKey="s2a631sfb5156httfdykdsiodaya9sij4sljhy2frrh10zb3"
-                    initialValue={summary}
-                    init={{
-                      height: 250,
-                      menubar: false,
-                      plugins: [
-                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                      ],
-                      toolbar: 'undo redo | blocks | ' +
-                        'bold italic forecolor | alignleft aligncenter ' +
-                        'alignright alignjustify | bullist numlist outdent indent | ' +
-                        'removeformat | help',
-                      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                      mobile: {
-                        theme: 'mobile',
-                        plugins: ['autosave', 'lists', 'autolink'],
-                        toolbar: ['undo', 'bold', 'italic', 'styleselect']
-                      }
-                    }}
-                  />
+                  <CustomEditor value={summary} onChange={() => {}} />
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
-      <Toolbar />
+      <div className="w-full lg:w-auto">
+        <Toolbar />
+      </div>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );

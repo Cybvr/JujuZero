@@ -44,8 +44,23 @@ export default function NewProject() {
 
       const data = await response.json()
 
+      // Generate logo using DALL-E
+      const logoResponse = await fetch('/api/openai/logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: `${name} logo` }),
+      });
+
+      if (!logoResponse.ok) {
+        throw new Error('HTTP error! status: ' + logoResponse.status)
+      }
+
+      const logoData = await logoResponse.json();
+      const logoUrl = logoData.url;
+
       const docRef = await addDoc(collection(db, "projects"), {
         ...data,
+        logo: logoUrl, // Save the logo URL
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         userId: user ? user.uid : null,

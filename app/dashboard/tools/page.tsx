@@ -9,6 +9,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import AuthModal from '@/components/dashboard/AuthModal'
 import Link from 'next/link'
+import { getUserCredits } from '@/lib/credits'
 
 const categories = ["All", "Conversion", "Image", "Text"]
 
@@ -54,13 +55,23 @@ export default function AllTools() {
   const [favorites, setFavorites] = useState<string[]>([])
   const [myTools, setMyTools] = useState<Tool[]>([])
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [credits, setCredits] = useState<number | null>(null)
 
   useEffect(() => {
     const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]')
     const savedMyTools = JSON.parse(localStorage.getItem('myTools') || '[]')
     setFavorites(savedFavorites)
     setMyTools(savedMyTools)
-  }, [])
+
+    const fetchCredits = async () => {
+      if (user) {
+        const userCredits = await getUserCredits(user.uid)
+        setCredits(userCredits)
+      }
+    }
+
+    fetchCredits()
+  }, [user])
 
   useEffect(() => {
     localStorage.setItem('favorites', JSON.stringify(favorites))
@@ -96,6 +107,9 @@ export default function AllTools() {
       <div className="mb-8">
         <h1 className="text-xl font-semibold mb-2">All Tools</h1>
         <p className="text-muted-foreground">Explore our collection of powerful tools to enhance your workflow</p>
+        {credits !== null && (
+          <p className="mt-2 font-semibold">Your current credit balance: {credits} credits</p>
+        )}
       </div>
 
       <Tabs defaultValue="All" onValueChange={setActiveTab} className="mb-8">

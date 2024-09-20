@@ -1,6 +1,6 @@
-JujuAGI Dashboard
+Juju Dashboard
 
-Welcome to the JujuAGI Dashboard, built with Next.js 13+. This project offers a suite of file conversion and editing tools, tailored for seamless file management and manipulation.
+Welcome to the Juju Dashboard, built with Next.js 13+. This project offers a suite of file conversion and editing tools, tailored for seamless file management and manipulation.
 
 Getting Started
 
@@ -73,7 +73,7 @@ Copy
 
 Deployment
 
-JujuAGI is deployed using Vercel. The deployment process is as follows:
+Juju is deployed using Vercel. The deployment process is as follows:
 
 1. **Push Changes to GitHub:**Push your changes to the main branch.
 2. **Automatic Deployment:**Vercel automatically detects the push, builds, and deploys the updated version.
@@ -88,7 +88,7 @@ To learn more about Next.js and its features:
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Learn Next.js](https://nextjs.org/learn)
 
-For detailed technical specifics about JujuAGI’s tools and functionalities, refer to the [TechSpec.md](https://replit.com/@jide2/TaskDash).
+For detailed technical specifics about Juju’s tools and functionalities, refer to the [TechSpec.md](https://replit.com/@jide2/TaskDash).
 
 Licensing Information
 
@@ -132,4 +132,4 @@ For any issues or queries, feel free to reach out:
 - Visit our Help Center for FAQs and troubleshooting guides
 - Live chat support available during business hours.
 
-Thank you for using JujuAGI! We’re excited to help you streamline your file management tasks.
+Thank you for using Juju! We’re excited to help you streamline your file management tasks.

@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { Home, Wand2, User, Plus, MessageSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import QuestionButton from '@/components/dashboard/QuestionButton';
+import Script from 'next/script';
 
 const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: string; icon: React.ElementType; label?: string; isRounded?: boolean }) => {
   const pathname = usePathname();
@@ -119,6 +120,18 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="font-geist">
       <head>
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <Script id="pusher-beams" strategy="afterInteractive">
+          {`
+            const beamsClient = new PusherPushNotifications.Client({
+              instanceId: '2e5482d3-7571-44eb-b157-b9cc5f37662b',
+            });
+
+            beamsClient.start()
+              .then(() => beamsClient.addDeviceInterest('hello'))
+              .then(() => console.log('Successfully registered and subscribed!'))
+              .catch(console.error);
+          `}
+        </Script>
       </head>
       <body className="bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

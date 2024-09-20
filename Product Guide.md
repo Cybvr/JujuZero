@@ -1,10 +1,10 @@
-JujuAGI Product Guide
+Juju Product Guide
 
 1. Introduction
-Welcome to JujuAGI, your all-in-one platform for file conversion, editing tasks, and AI-powered branding and marketing project management. This guide will walk you through our platform's features, benefits, and how to get started.
+Welcome to Juju, your all-in-one platform for file conversion, editing tasks, and AI-powered branding and marketing project management. This guide will walk you through our platform's features, benefits, and how to get started.
 
 2. Product Overview
-JujuAGI is a web-based platform offering a suite of file conversion and editing tools, as well as AI-assisted branding and marketing project management. Our services include:
+Juju is a web-based platform offering a suite of file conversion and editing tools, as well as AI-assisted branding and marketing project management. Our services include:
 - PDF tools (conversion, merging, splitting)
 - Image editing (resizing, format conversion, background removal)
 - Text tools (case conversion, word count, grammar checking)
@@ -42,7 +42,7 @@ d. Project Details:
    - Regenerate content, share the project, or delete it as needed.
 
 5. Available Tools
-JujuAGI offers a wide range of tools to meet your file management and marketing needs:
+Juju offers a wide range of tools to meet your file management and marketing needs:
 - PDF to JPG / JPG to PDF
 - Merge PDF / Split PDF
 - Text Case Converter
@@ -65,14 +65,14 @@ JujuAGI offers a wide range of tools to meet your file management and marketing 
 - Sharing capabilities for collaboration
 
 7. Pricing and Plans
-JujuAGI offers a flexible pricing plan to suit your needs:
+Juju offers a flexible pricing plan to suit your needs:
 - Monthly subscription: $15
 - Annual subscription: $6/month (billed annually)
 - Free tier available with limited features
 Payment processed securely through our payment gateway
 
 8. Privacy and Security
-At JujuAGI, we prioritize the security of your data:
+At Juju, we prioritize the security of your data:
 - All file transfers and project data are encrypted
 - Files are only stored temporarily during processing
 - Projects are securely stored for easy access
@@ -85,4 +85,4 @@ Need help? We're here for you:
 - Visit our Help Center for FAQs and troubleshooting guides
 - Live chat support available during business hours
 
-Thank you for choosing JujuAGI. We're excited to help you streamline your file management tasks and supercharge your branding and marketing efforts!
+Thank you for choosing Juju. We're excited to help you streamline your file management tasks and supercharge your branding and marketing efforts!

@@ -46,12 +46,12 @@ const faqs = [
 
 export default function ToolsFaqSection() {
   return (
-    <section className="w-full py-12 px-4 sm:px-6 lg:px-8 bg-accent">
+    <section className="w-full py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-accent">
       <div className="container mx-auto max-w-3xl">
-        <h2 className="h2 text-center mb-2">
+        <h2 className="mb-2 text-4xl font-bold text-center">
           Frequently Asked Questions
         </h2>
-        <p className="text-small text-muted-foreground text-center mb-8">
+        <p className="text-xl text-muted-foreground text-center mb-8">
           Get quick answers to common questions about Juju.
         </p>
         <Accordion type="single" collapsible className="w-full">

@@ -10,7 +10,9 @@ import {
 import { Download, Code, Eye, Copy, Check, Printer, Save } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/components/ui/use-toast"
-import CustomEditor from '@/components/dashboard/CustomEditor'
+import dynamic from 'next/dynamic'
+
+const CodeEditor = dynamic(() => import('@/components/dashboard/CodeEditor'), { ssr: false })
 
 interface LandingPageAssetProps {
   content: string;
@@ -142,9 +144,18 @@ export default function LandingPageAsset({ content, onSave }: LandingPageAssetPr
           </TabsContent>
           <TabsContent value="code" className="mt-4">
             <div className="relative">
-              <CustomEditor
+              <CodeEditor
                 value={localContent}
                 onChange={handleContentChange}
+                language="html"
+                theme="vs-dark"
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                }}
               />
               <Tooltip>
                 <TooltipTrigger asChild>

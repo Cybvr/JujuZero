@@ -2,7 +2,7 @@
 
 ### **Platform Architecture**
 
-JujuAGI is built on a modular architecture, allowing for easy scaling and addition of new features. The core platform is divided into microservices, each handling specific file conversion and editing tasks.
+Juju is built on a modular architecture, allowing for easy scaling and addition of new features. The core platform is divided into microservices, each handling specific file conversion and editing tasks.
 
 ### **Frontend**
 
@@ -94,10 +94,10 @@ JujuAGI is built on a modular architecture, allowing for easy scaling and additi
 
 1. Q: What's the maximum file size for upload?
 A: The current limit is 100MB per file.
-2. Q: Are my files stored on JujuAGI servers?
+2. Q: Are my files stored on Juju servers?
 A: Files are only stored temporarily during processing and are deleted immediately after.
-3. Q: Can I use JujuAGI tools offline?
-A: Currently, JujuAGI requires an internet connection to function.
+3. Q: Can I use Juju tools offline?
+A: Currently, Juju requires an internet connection to function.
 4. Q: How do I report a bug or request a feature?
 A: Please email our support team at [info@visual.ng](mailto:info@visual.ng) with details.
 
@@ -129,18 +129,18 @@ For a full history of updates, please visit our changelog page.
 
 ## **8. Version Control**
 
-JujuAGI's source code is version-controlled using GitHub. This allows for:
+Juju's source code is version-controlled using GitHub. This allows for:
 
 - Efficient collaboration among development team
 - Code review process
 - Issue tracking
 - Automated CI/CD pipelines
 
-Developers can access the repository by invitation only. For inquiries about contributing to JujuAGI, please contact our development team.
+Developers can access the repository by invitation only. For inquiries about contributing to Juju, please contact our development team.
 
 ## **9. Development Environment Setup**
 
-To set up the development environment for JujuAGI:
+To set up the development environment for Juju:
 
 1. Ensure Node.js (v14 or later) and npm are installed
 2. Clone the repository from GitHub
@@ -151,7 +151,7 @@ To set up the development environment for JujuAGI:
 
 ## **10. Deployment**
 
-JujuAGI is deployed using Vercel, which integrates seamlessly with Next.js. The deployment process is as follows:
+Juju is deployed using Vercel, which integrates seamlessly with Next.js. The deployment process is as follows:
 
 1. Push changes to the main branch on GitHub
 2. Vercel automatically detects the push and starts the build process
@@ -162,7 +162,7 @@ For manual deployments or to set up a custom deployment pipeline, refer to the N
 
 ## **11. Performance Optimization**
 
-JujuAGI employs several techniques to ensure optimal performance:
+Juju employs several techniques to ensure optimal performance:
 
 - Server-side rendering for faster initial page loads
 - Code splitting and lazy loading of components
@@ -175,7 +175,7 @@ Regular performance audits are conducted using tools like Lighthouse to identify
 
 ## **12. Accessibility**
 
-JujuAGI is committed to maintaining a high level of accessibility. Key accessibility features include:
+Juju is committed to maintaining a high level of accessibility. Key accessibility features include:
 
 - Semantic HTML structure
 - ARIA attributes for complex UI components

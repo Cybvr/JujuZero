@@ -1,29 +1,31 @@
 import React from 'react';
-import dynamic from 'next/dynamic';
-import { loader } from '@monaco-editor/react';
-
-// Load Monaco Editor using dynamic import to avoid SSR issues
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
-  ssr: false,
-});
-
-// Specify the CDN version of Monaco Editor to use
-loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs' } });
+import Editor from '@monaco-editor/react';
+import { editor } from 'monaco-editor';
 
 interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
-  language?: string;
+  language: string;
   theme?: string;
-  options?: Record<string, any>;
+  options?: editor.IStandaloneEditorConstructionOptions;
 }
+
+const defaultOptions: editor.IStandaloneEditorConstructionOptions = {
+  minimap: { enabled: false },
+  fontSize: 14,
+  lineNumbers: 'on' as const,
+  scrollBeyondLastLine: false,
+  automaticLayout: true,
+  tabSize: 2,
+  wordWrap: 'on',
+};
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
   value,
   onChange,
-  language = 'html',
-  theme = 'vs-dark',
-  options = {},
+  language,
+  theme,
+  options,
 }) => {
   const handleEditorChange = (newValue: string | undefined) => {
     if (newValue !== undefined) {
@@ -31,25 +33,15 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     }
   };
 
-  const defaultOptions = {
-    minimap: { enabled: false },
-    fontSize: 14,
-    lineNumbers: 'on',
-    scrollBeyondLastLine: false,
-    automaticLayout: true,
-    tabSize: 2,
-    wordWrap: 'on',
-  };
-
   return (
-    <MonacoEditor
-      height="600px"
-      language={language}
-      theme={theme}
+    <Editor
+      height="100%"
+      defaultLanguage={language}
+      defaultValue={value}
+      theme={theme || 'vs-dark'}
       value={value}
       onChange={handleEditorChange}
       options={{ ...defaultOptions, ...options }}
-      loading={<div>Loading editor...</div>}
     />
   );
 };

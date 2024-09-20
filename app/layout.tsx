@@ -100,6 +100,17 @@ export default function RootLayout({
     metaViewport.content = 'width=device-width, initial-scale=1, maximum-scale=1';
     document.head.appendChild(metaViewport);
 
+    if (typeof window !== 'undefined' && 'PusherPushNotifications' in window) {
+      const beamsClient = new (window as any).PusherPushNotifications.Client({
+        instanceId: '2e5482d3-7571-44eb-b157-b9cc5f37662b',
+      });
+
+      beamsClient.start()
+        .then(() => beamsClient.addDeviceInterest('hello'))
+        .then(() => console.log('Successfully registered and subscribed!'))
+        .catch(console.error);
+    }
+
     return () => {
       if (document.head.contains(metaDescription)) {
         document.head.removeChild(metaDescription);
@@ -120,18 +131,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="font-geist">
       <head>
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <Script id="pusher-beams" strategy="afterInteractive">
-          {`
-            const beamsClient = new PusherPushNotifications.Client({
-              instanceId: '2e5482d3-7571-44eb-b157-b9cc5f37662b',
-            });
-
-            beamsClient.start()
-              .then(() => beamsClient.addDeviceInterest('hello'))
-              .then(() => console.log('Successfully registered and subscribed!'))
-              .catch(console.error);
-          `}
-        </Script>
+        <Script
+          src="https://js.pusher.com/beams/1.0/push-notifications-cdn.js"
+          strategy="beforeInteractive"
+        />
       </head>
       <body className="bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

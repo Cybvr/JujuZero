@@ -8,6 +8,7 @@ interface CodeEditorProps {
   language: string;
   theme?: string;
   options?: editor.IStandaloneEditorConstructionOptions;
+  height?: string;
 }
 
 const defaultOptions: editor.IStandaloneEditorConstructionOptions = {
@@ -26,6 +27,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   language,
   theme,
   options,
+  height = '400px',
 }) => {
   const handleEditorChange = (newValue: string | undefined) => {
     if (newValue !== undefined) {
@@ -34,15 +36,18 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   return (
-    <Editor
-      height="100%"
-      defaultLanguage={language}
-      defaultValue={value}
-      theme={theme || 'vs-dark'}
-      value={value}
-      onChange={handleEditorChange}
-      options={{ ...defaultOptions, ...options }}
-    />
+    <div className="w-full" style={{ height }}>
+      <Editor
+        height="100%"
+        width="100%"
+        defaultLanguage={language}
+        defaultValue={value}
+        theme={theme || 'vs-dark'}
+        value={value}
+        onChange={handleEditorChange}
+        options={{ ...defaultOptions, ...options }}
+      />
+    </div>
   );
 };
 

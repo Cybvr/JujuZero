@@ -4,15 +4,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Download, Save, Printer } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/components/ui/use-toast"
-import { Editor } from '@tinymce/tinymce-react'
+import CustomEditor from '@/components/dashboard/CustomEditor'
 
 interface MarketingCopyAssetProps {
   content: string;
   onSave: (newContent: string) => Promise<void>;
-  init?: any; // Added init prop
 }
 
-export default function MarketingCopyAsset({ content, onSave, init }: MarketingCopyAssetProps) {
+export default function MarketingCopyAsset({ content, onSave }: MarketingCopyAssetProps) {
   const [localContent, setLocalContent] = useState<string>(content)
   const [isSaving, setIsSaving] = useState(false)
   const { toast } = useToast()
@@ -21,8 +20,8 @@ export default function MarketingCopyAsset({ content, onSave, init }: MarketingC
     setLocalContent(content)
   }, [content])
 
-  const handleContentChange = (content: string, editor: any) => {
-    setLocalContent(content)
+  const handleContentChange = (newContent: string) => {
+    setLocalContent(newContent)
   }
 
   const handleSave = async () => {
@@ -92,21 +91,9 @@ export default function MarketingCopyAsset({ content, onSave, init }: MarketingC
         </div>
 
         <div className="min-h-[400px]">
-          <Editor
+          <CustomEditor
             value={localContent}
-            onEditorChange={handleContentChange}
-            init={{
-              height: 500,
-              menubar: false,
-              branding: false,
-              plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-              ],
-              toolbar: 'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-              content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-            }} // Using the init prop here
+            onChange={handleContentChange}
           />
         </div>
 

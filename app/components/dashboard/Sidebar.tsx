@@ -189,7 +189,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
         </Sheet>
       </div>
       {!isMobile && (
-        <aside className={`hidden md:flex flex-col h-full transition-all ${isSidebarOpen ? 'w-64' : 'w-16'} border-r bg-background`}>
+        <aside className={`hidden md:flex flex-col h-full transition-all ${isSidebarOpen ? 'w-64' : 'w-16'} border-r bg-card`}>
           <div className="p-4 border-b flex justify-between items-center">
             {isSidebarOpen && (
               <Link href="/dashboard" className="flex-shrink-0">

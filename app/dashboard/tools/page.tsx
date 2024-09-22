@@ -1,3 +1,5 @@
+// app/dashboard/tools/page.tsx
+
 "use client"
 
 import React, { useState, useEffect } from 'react'
@@ -34,6 +36,7 @@ const tools: Tool[] = [
   { name: 'Document to PDF', slug: 'document-to-pdf', description: 'Convert documents like Word, Excel, and PowerPoint to PDF format.', imageSrc: '/images/tools/document-to-pdf.png', category: 'Conversion', access: 'signin' },
   { name: 'Image Crop', slug: 'image-crop', description: 'Crop images easily.', imageSrc: '/images/tools/crop.png', category: 'Image', access: 'premium' },
   { name: 'Add Watermark', slug: 'add-watermark', description: 'Add watermark to images.', imageSrc: '/images/tools/add-watermark.png', category: 'Image', access: 'premium' },
+  { name: 'Visual Summarizer', slug: 'visual-summarizer', description: 'AI generates infographic-like summaries of long articles or reports.', imageSrc: '/images/tools/visual-summarizer.png', category: 'Text', access: 'free' },
 ]
 
 const getBadgeContent = (access: string): { icon: LucideIcon; variant: "default" | "secondary" | "destructive" | "outline"; tooltip: string } => {
@@ -127,7 +130,7 @@ export default function AllTools() {
                   }}
                 >
                   <Card 
-                    className="overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer"
+                    className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer"
                   >
                     <div className="relative">
                       <img src={tool.imageSrc} alt={tool.name} className="w-full h-24 sm:h-40 object-cover" />
@@ -155,7 +158,7 @@ export default function AllTools() {
                         </button>
                       </div>
                     </div>
-                    <CardContent className="p-2 sm:p-4">
+                    <CardContent className="flex-grow p-2 sm:p-4">
                       <h3 className="text-sm sm:text-lg font-medium mb-1">{tool.name}</h3>
                       <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.description}</p>
                     </CardContent>

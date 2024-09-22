@@ -29,7 +29,7 @@ export default function Subscription() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Gamma Pro</CardTitle>
+        <CardTitle>Juju Pro</CardTitle>
         <CardDescription>Unlimited credits for your creative journey</CardDescription>
       </CardHeader>
       <CardContent>

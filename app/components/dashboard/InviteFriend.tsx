@@ -31,7 +31,7 @@ export default function InviteFriend() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Give 200 credits and earn 200 credits for each new referral who signs up for Gamma.
+        Give 200 credits and earn 200 credits for each new referral who signs up for Juju.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input

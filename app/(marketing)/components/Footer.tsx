@@ -22,7 +22,7 @@ const toolCategories = {
     { name: 'Text Summarizer', href: '/dashboard/tools/text-summarizer' },
   ],
   "VIDEO": [
-    { name: 'Coming SOon', href: '#' },
+    { name: 'Coming Soon', href: '#' },
   ],
 };
 
@@ -58,7 +58,7 @@ function FooterLogo() {
 
 export default function Footer() {
   return (
-    <footer className="bg-background text-foreground">
+    <footer className="bg-card text-foreground">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {Object.entries(toolCategories).map(([category, tools]) => (

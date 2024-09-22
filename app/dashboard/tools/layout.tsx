@@ -12,7 +12,7 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border bg-background">
         <div className="container mx-auto flex justify-between items-center py-4 px-6">
           <Breadcrumbs>
             {pathSegments.map((segment, index) => {

@@ -1,11 +1,10 @@
 "use client";
 
 import './globals.css';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from 'next-themes';
 import FeedbackDialog from '@/components/ui/FeedbackDialog';
-import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Wand2, User, Plus, MessageSquare } from 'lucide-react';
@@ -20,10 +19,7 @@ const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: 
   return (
     <Link href={href} className={`flex flex-col items-center justify-center space-y-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
       {isRounded ? (
-        <Button
-          className="bg-violet-800 text-white rounded-full shadow-md hover:shadow-lg transition-shadow"
-          size="icon"
-        >
+        <Button className="bg-violet-800 text-white rounded-full shadow-md hover:shadow-lg transition-shadow" size="icon">
           <Icon className="w-6 h-6" />
         </Button>
       ) : (
@@ -62,22 +58,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isBrowser, setIsBrowser] = useState(false);
-  const pathname = usePathname();
-
-  useEffect(() => {
-    setIsBrowser(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
-
   useEffect(() => {
     document.title = 'Juju: Simple tools for everyone';
     const metaDescription = document.createElement('meta');
@@ -100,30 +80,65 @@ export default function RootLayout({
     metaViewport.content = 'width=device-width, initial-scale=1, maximum-scale=1';
     document.head.appendChild(metaViewport);
 
-    if (typeof window !== 'undefined' && 'PusherPushNotifications' in window) {
-      const beamsClient = new (window as any).PusherPushNotifications.Client({
-        instanceId: '2e5482d3-7571-44eb-b157-b9cc5f37662b',
-      });
+    const metaOgTitle = document.createElement('meta');
+    metaOgTitle.setAttribute('property', 'og:title');
+    metaOgTitle.content = 'Juju: Simple tools for everyone';
+    document.head.appendChild(metaOgTitle);
 
-      beamsClient.start()
-        .then(() => beamsClient.addDeviceInterest('hello'))
-        .then(() => console.log('Successfully registered and subscribed!'))
-        .catch(console.error);
-    }
+    const metaOgDescription = document.createElement('meta');
+    metaOgDescription.setAttribute('property', 'og:description');
+    metaOgDescription.content = 'Updates from the shrine';
+    document.head.appendChild(metaOgDescription);
+
+    const metaOgImage = document.createElement('meta');
+    metaOgImage.setAttribute('property', 'og:image');
+    metaOgImage.content = '/images/logos/cover.png'; // Replace with the path to your thumbnail image
+    document.head.appendChild(metaOgImage);
+
+    const metaOgUrl = document.createElement('meta');
+    metaOgUrl.setAttribute('property', 'og:url');
+    metaOgUrl.content = 'https://jujuagi.com'; // Replace with your website's URL
+    document.head.appendChild(metaOgUrl);
+
+    const twitterCard = document.createElement('meta');
+    twitterCard.name = 'twitter:card';
+    twitterCard.content = 'summary_large_image';
+    document.head.appendChild(twitterCard);
+
+    const twitterTitle = document.createElement('meta');
+    twitterTitle.name = 'twitter:title';
+    twitterTitle.content = 'Juju: Simple tools for everyone';
+    document.head.appendChild(twitterTitle);
+
+    const twitterDescription = document.createElement('meta');
+    twitterDescription.name = 'twitter:description';
+    twitterDescription.content = 'Updates from the shrine';
+    document.head.appendChild(twitterDescription);
+
+    const twitterImage = document.createElement('meta');
+    twitterImage.name = 'twitter:image';
+    twitterImage.content = '/images/marketing/feature1.png'; // Replace with the path to your thumbnail image
+    document.head.appendChild(twitterImage);
+
+    const twitterUrl = document.createElement('meta');
+    twitterUrl.name = 'twitter:url';
+    twitterUrl.content = 'https://yourwebsite.com'; // Replace with your website's URL
+    document.head.appendChild(twitterUrl);
 
     return () => {
-      if (document.head.contains(metaDescription)) {
-        document.head.removeChild(metaDescription);
-      }
-      if (document.head.contains(linkManifest)) {
-        document.head.removeChild(linkManifest);
-      }
-      if (document.head.contains(metaThemeColor)) {
-        document.head.removeChild(metaThemeColor);
-      }
-      if (document.head.contains(metaViewport)) {
-        document.head.removeChild(metaViewport);
-      }
+      document.head.removeChild(metaDescription);
+      document.head.removeChild(linkManifest);
+      document.head.removeChild(metaThemeColor);
+      document.head.removeChild(metaViewport);
+      document.head.removeChild(metaOgTitle);
+      document.head.removeChild(metaOgDescription);
+      document.head.removeChild(metaOgImage);
+      document.head.removeChild(metaOgUrl);
+      document.head.removeChild(twitterCard);
+      document.head.removeChild(twitterTitle);
+      document.head.removeChild(twitterDescription);
+      document.head.removeChild(twitterImage);
+      document.head.removeChild(twitterUrl);
     };
   }, []);
 
@@ -139,26 +154,12 @@ export default function RootLayout({
       <body className="bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            {isLoading ? (
-              <div className="p-8">
-                <Skeleton className="w-full h-12 mb-4" />
-                <Skeleton className="w-3/4 h-8 mb-4" />
-                <Skeleton className="w-1/2 h-8 mb-4" />
-                <Skeleton className="w-full h-64" />
-              </div>
-            ) : (
-              <>
-                <div className="pb-16 md:pb-0">
-                  {children}
-                </div>
-                <FooterMenu />
-                {isBrowser && pathname !== '/dashboard/sidekick' && <QuestionButton />}
-              </>
-            )}
-            <FeedbackDialog
-              isOpen={isFeedbackDialogOpen}
-              onClose={() => setIsFeedbackDialogOpen(false)}
-            />
+            <div className="pb-16 md:pb-0">
+              {children}
+            </div>
+            <FooterMenu />
+            <QuestionButton />
+            <FeedbackDialog isOpen={false} onClose={() => {}} />
           </AuthProvider>
         </ThemeProvider>
       </body>

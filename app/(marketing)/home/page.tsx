@@ -1,72 +1,38 @@
-import React from 'react'
-import Image from 'next/image'
-import { Button } from "@/components/ui/button"
-import { ChevronRight, Palette, FileText, Layout } from 'lucide-react'
-import dynamic from 'next/dynamic'
-import ToolsFaqSection from "@/components/website/ToolsFaqSection"
+import React, { useEffect } from 'react';
+import Image from 'next/image';
+import { Button } from "@/components/ui/button";
+import { ChevronRight, Palette, FileText, Layout } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import ToolsFaqSection from "@/components/website/ToolsFaqSection";
 
 const features = [
-  { 
-    name: 'Brand Guidelines', 
-    description: 'Create comprehensive brand guidelines with ease. Our AI-powered tool helps you define your brand\'s visual identity, voice, and values.',
-    image: '/images/marketing/feature1.png',
-    icon: Palette
-  },
-  { 
-    name: 'Marketing Copy', 
-    description: 'Develop compelling marketing copy for various channels. Our AI assists in creating engaging content that resonates with your target audience.',
-    image: '/images/marketing/feature2.png',
-    icon: FileText
-  },
-  { 
-    name: 'Landing Page', 
-    description: 'Create stunning landing pages that convert. Our AI-powered tool helps you design and optimize high-converting landing pages.',
-    image: '/images/marketing/feature3.png',
-    icon: Layout
-  },
-]
+  { name: 'Brand Guidelines', description: 'Create comprehensive brand guidelines with ease. Our AI-powered tool helps you define your brand\'s visual identity, voice, and values.', image: '/images/marketing/feature1.png', icon: Palette },
+  { name: 'Marketing Copy', description: 'Develop compelling marketing copy for various channels. Our AI assists in creating engaging content that resonates with your target audience.', image: '/images/marketing/feature2.png', icon: FileText },
+  { name: 'Landing Page', description: 'Create stunning landing pages that convert. Our AI-powered tool helps you design and optimize high-converting landing pages.', image: '/images/marketing/feature3.png', icon: Layout },
+];
 
 const tools = [
   { name: 'QR Code Generator', description: 'Create custom QR codes', image: '/images/tools/1.png' },
   { name: 'Remove Background', description: 'Remove image backgrounds', image: '/images/tools/2.png' },
   { name: 'Compress Image', description: 'Compress images to save space', image: '/images/tools/3.png' },
   { name: 'Video to MP4', description: 'Convert videos to MP4 format', image: '/images/tools/video-to-mp4.png' },
-]
+];
 
 const testimonials = [
-  {
-    content: "Juju has revolutionized our branding process. It's intuitive, powerful, and saves us countless hours.",
-    name: "Alice Liu",
-    role: "Content Creator",
-    avatar: "/images/marketing/testimonial1.png"
-  },
-  {
-    content: "As a startup, we needed efficient branding tools. Juju delivered beyond our expectations.",
-    name: "Alejandra Rodriguez",
-    role: "Startup Founder",
-    avatar: "/images/marketing/testimonial2.png"
-  },
-  {
-    content: "The AI-powered features in Juju have significantly enhanced my design workflow. Highly recommended!",
-    name: "Kola Williams",
-    role: "Freelance Designer",
-    avatar: "/images/marketing/testimonial3.png"
-  },
-  {
-    content: "Juju has transformed how we approach branding. It's an indispensable tool for our agency.",
-    name: "Jennifer McFarland",
-    role: "Creative Director",
-    avatar: "/images/marketing/testimonial4.png"
-  },
-]
+  { content: "Juju has revolutionized our branding process. It's intuitive, powerful, and saves us countless hours.", name: "Alice Liu", role: "Content Creator", avatar: "/images/marketing/testimonial1.png" },
+  { content: "As a startup, we needed efficient branding tools. Juju delivered beyond our expectations.", name: "Alejandra Rodriguez", role: "Startup Founder", avatar: "/images/marketing/testimonial2.png" },
+  { content: "The AI-powered features in Juju have significantly enhanced my design workflow. Highly recommended!", name: "Kola Williams", role: "Freelance Designer", avatar: "/images/marketing/testimonial3.png" },
+  { content: "Juju has transformed how we approach branding. It's an indispensable tool for our agency.", name: "Jennifer McFarland", role: "Creative Director", avatar: "/images/marketing/testimonial4.png" },
+];
 
-const LazyImage = dynamic(() => import('next/image'), { ssr: false })
+const LazyImage = dynamic(() => import('next/image'), { ssr: false });
 
 export default function LandingPage() {
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <main className="flex-1">
-        <section className="relative w-full py-4 sm:py-24 lg:pt-20 lg:pb-36 px-4 sm:px-10 lg:px-20 bg-no-repeat bg-bottom bg-fill bg-fixed" style={{ backgroundImage: 'url(/images/marketing/tool.png)' }}>
+        <section className="relative w-full py-4 sm:py-24 lg:pt-20 lg:pb-36 px-4 sm:px-10 lg:px-20 bg-no-repeat bg-bottom bg-fill" style={{ backgroundImage: 'url(/images/marketing/toolz.png)' }}>
           <div className="container mx-auto max-w-full sm:max-w-[80%] lg:max-w-[60%] text-center">
             <h1 className="mb-4 text-4xl sm:text-6xl lg:text-8xl font-bold leading-tight">
               Meet your sidekick
@@ -163,7 +129,7 @@ export default function LandingPage() {
               What Our Users Say
             </h2>
             <p className="text-xl text-muted-foreground text-center mb-8 sm:mb-16">
-              Real stories from satisfied customers who've experienced the Juju difference.
+              Stories from satisfied customers who've experienced the Juju difference.
             </p>
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {testimonials.map((testimonial, index) => (
@@ -178,6 +144,23 @@ export default function LandingPage() {
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="flex justify-center mt-10">
+              <div className="flex items-center space-x-2 p-4 bg-zinc-800 rounded-lg">
+                <a 
+                  href="https://www.trustpilot.com/review/jujuagi.com?utm_medium=trustbox&utm_source=TrustBoxReviewCollector" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center space-x-2 text-primary font-normal font-semibold text-white"
+                >
+                  <span>Review us on</span>
+                  <img 
+                    src="/images/marketing/trustpilot.png" 
+                    alt="Trustpilot Logo" 
+                    className="h-8" 
+                  />
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -202,5 +185,5 @@ export default function LandingPage() {
         </section>
       </main>
     </div>
-  )
+  );
 }

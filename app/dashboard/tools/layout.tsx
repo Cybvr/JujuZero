@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Breadcrumbs, BreadcrumbItem } from '@/components/ui/breadcrumbs';
+import Footer from '@/(marketing)/components/Footer'; // Import the Footer component
 
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -33,11 +34,7 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
       <main className="flex-grow container mx-auto py-6 px-6 bg-background">
         {children}
       </main>
-      <footer className="border-t border-border mt-6 py-4 bg-card">
-        <div className="container mx-auto text-center">
-          <p className="text-muted-foreground text-sm">Simple tools for charmers 👻</p>
-        </div>
-      </footer>
+      <Footer /> {/* Add the Footer component here */}
     </div>
   );
 }

@@ -151,8 +151,7 @@ export default function LandingPageAsset({ content, onSave }: LandingPageAssetPr
                   fontSize: 14,
                   lineNumbers: 'on',
                   scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  height: "400px", // Set a fixed height
+                  automaticLayout: true, // Set a fixed height
                 }}
               />
               <Tooltip>

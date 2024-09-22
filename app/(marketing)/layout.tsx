@@ -4,30 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X, LayoutDashboard, Moon, Sun } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Moon, Sun, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from "@/components/ui/button";
 import { useTheme } from 'next-themes';
-
-const navigation = [
-  { name: 'About', href: '/about' },
-  { name: 'Pricing', href: '/pricing' },
-  { name: 'Help', href: '/help' },
-  { name: 'FAQ', href: '/faq' },
-];
-
-const legalLinks = [
-  { name: 'Privacy', href: '/privacy' },
-  { name: 'Terms', href: '/terms' },
-  { name: 'Cookies', href: '/cookies' },
-];
-
-const toolLinks = [
-  { name: 'QR Code Generator', href: '/dashboard/tools/qr-code-generator' },
-  { name: 'Remove Background', href: '/dashboard/tools/remove-background' },
-  { name: 'Compress Image', href: '/dashboard/tools/compress-image' },
-  { name: 'Video to MP4', href: '/dashboard/tools/video-to-mp4' },
-];
+import NavigationMenuWrapper from './components/NavigationMenuWrapper';
+import Footer from './components/Footer';
 
 function LogoWrapper() {
   const [mounted, setMounted] = useState(false);
@@ -52,6 +34,31 @@ function LogoWrapper() {
   );
 }
 
+const navigation = [
+  { name: 'Tools', href: '#', dropdown: true },
+  { name: 'About', href: '/about' },
+  { name: 'Pricing', href: '/pricing' },
+  { name: 'Help', href: '/help' },
+  { name: 'FAQ', href: '/faq' },
+];
+
+const tools = [
+  { name: 'Grammar Checker', slug: 'grammar-checker', description: 'Check and improve your text\'s grammar.' },
+  { name: 'Paraphraser', slug: 'paraphraser', description: 'Rephrase your text in different styles with AI.' },
+  { name: 'Text Summarizer', slug: 'text-summarizer', description: 'Quickly summarize long texts with AI.' },
+  { name: 'QR Code Generator', slug: 'qr-code-generator', description: 'Create custom QR codes easily.' },
+  { name: 'Remove Background', slug: 'remove-background', description: 'Easily remove image backgrounds.' },
+  { name: 'Compress Image', slug: 'compress-image', description: 'Reduce image file size without losing quality.' },
+  { name: 'Video to MP4', slug: 'video-to-mp4', description: 'Convert various video formats to MP4.' },
+  { name: 'Audio to MP3', slug: 'audio-to-mp3', description: 'Convert audio files to MP3 format.' },
+];
+
+const groupedTools = {
+  'Text Tools': tools.slice(0, 3),
+  'Image Tools': tools.slice(3, 6),
+  'Conversion Tools': tools.slice(6),
+};
+
 export default function MarketingLayout({
   children,
 }: {
@@ -59,6 +66,7 @@ export default function MarketingLayout({
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toolsSubmenuOpen, setToolsSubmenuOpen] = useState(false);
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -73,12 +81,10 @@ export default function MarketingLayout({
     document.body.appendChild(script);
 
     script.onload = () => {
-      console.log('Chatbase script loaded');
       window.embeddedChatbotConfig = {
         chatbotId: "TB6IwCsYnWV0nUh-XJxPF",
         domain: "www.chatbase.co"
       };
-      console.log('Chatbase configuration set');
     };
 
     return () => {
@@ -102,20 +108,8 @@ export default function MarketingLayout({
                 <span className="sr-only">Juju</span>
                 <LogoWrapper />
               </Link>
-              <div className="hidden ml-10 space-x-8 lg:flex">
-                {navigation.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className={`text-sm font-medium ${
-                      pathname === link.href
-                        ? 'text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+              <div className="hidden lg:flex items-center ml-6">
+                <NavigationMenuWrapper />
               </div>
             </div>
             <div className="ml-10 space-x-4 flex items-center">
@@ -159,9 +153,9 @@ export default function MarketingLayout({
         </nav>
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden">
-            <div className="fixed inset-0 z-50" />
-            <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-background px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+          <div className="lg:hidden z-50">
+            <div className="fixed inset-0 bg-black bg-opacity-50"></div>
+            <div className="fixed inset-y-0 right-0 w-full sm:max-w-sm p-6 bg-background">
               <div className="flex items-center justify-between">
                 <Link href="/" className="-m-1.5 p-1.5">
                   <span className="sr-only">Juju</span>
@@ -176,41 +170,80 @@ export default function MarketingLayout({
                   <X className="h-6 w-6" aria-hidden="true" />
                 </Button>
               </div>
-              <div className="mt-6 flow-root">
-                <div className="-my-6 divide-y divide-border">
-                  <div className="space-y-2 py-6">
-                    {navigation.map((item) => (
+              <div className="mt-6">
+                <div className="divide-y divide-border space-y-6 pb-6">
+                  {navigation.map((item) => (
+                    item.dropdown ? (
+                      <div key={item.name}>
+                        <button
+                          onClick={() => setToolsSubmenuOpen(!toolsSubmenuOpen)}
+                          className="flex justify-between w-full items-center py-2 text-base font-semibold leading-7 text-foreground hover:bg-muted rounded-lg pr-3"
+                        >
+                          {item.name}
+                          <ChevronDown
+                            className={`h-5 w-5 transition-transform ${toolsSubmenuOpen ? 'rotate-180' : ''}`}
+                            aria-hidden="true"
+                          />
+                        </button>
+                        {toolsSubmenuOpen && (
+                          <div className="mt-2 pl-4">
+                            {Object.entries(groupedTools).map(([category, categoryTools]) => (
+                              <div key={category} className="mb-4">
+                                <h3 className="mb-2 text-sm font-medium text-muted-foreground">{category}</h3>
+                                <ul className="space-y-1">
+                                  {categoryTools.map((tool) => (
+                                    <li key={tool.slug}>
+                                      <Link
+                                        href={`/dashboard/tools/${tool.slug}`}
+                                        className="block text-sm leading-7 text-foreground hover:bg-muted rounded-lg py-1 pl-6 pr-3"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                      >
+                                        {tool.name}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
                       <Link
                         key={item.name}
                         href={item.href}
-                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-muted"
+                        className="block py-2 text-base font-semibold leading-7 text-foreground hover:bg-muted rounded-lg px-3"
+                        onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.name}
                       </Link>
-                    ))}
-                  </div>
-                  <div className="py-6">
-                    {user ? (
-                      <Link href="/dashboard">
-                        <Button variant="default" size="sm" className="w-full">
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
-                          Go to Dashboard
-                        </Button>
+                    )
+                  ))}
+                  {user ? (
+                    <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="default" size="sm" className="w-full">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Go to Dashboard
+                      </Button>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="outline" size="sm" className="w-full mb-2">Sign in</Button>
                       </Link>
-                    ) : (
-                      <Link href="/signup">
+                      <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
                         <Button variant="default" size="sm" className="w-full bg-violet-800 hover:bg-violet-900 text-white">Get Started</Button>
                       </Link>
-                    )}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                      className="w-full mt-2"
-                    >
-                      {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                    </Button>
-                  </div>
+                    </>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="w-full mt-2"
+                  >
+                    {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  </Button>
                 </div>
               </div>
             </div>
@@ -222,69 +255,7 @@ export default function MarketingLayout({
         {children}
       </main>
 
-      <footer className="bg-black text-white">
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="md:max-w-md">
-              <LogoWrapper />
-              <p className="text-sm text-gray-400 mt-4">
-                Juju is your all-in-one platform for file conversion and editing tasks. 
-                We offer a suite of tools including PDF conversion, image editing, text tools, 
-                data conversion, and AI-powered features.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
-                <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-2">
-                  Quick Links
-                </h3>
-                <ul className="space-y-2">
-                  {navigation.map((item) => (
-                    <li key={item.name}>
-                      <Link href={item.href} className="text-sm text-gray-400 hover:text-white">
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-2">
-                  Legal
-                </h3>
-                <ul className="space-y-2">
-                  {legalLinks.map((item) => (
-                    <li key={item.name}>
-                      <Link href={item.href} className="text-sm text-gray-400 hover:text-white">
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-2">
-                  Tools
-                </h3>
-                <ul className="space-y-2">
-                  {toolLinks.map((item) => (
-                    <li key={item.name}>
-                      <Link href={item.href} className="text-sm text-gray-400 hover:text-white">
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-gray-700 pt-8">
-            <p className="text-center text-sm text-gray-400">
-              &copy; 2024 Juju, Inc. All rights reserved. Powered by VisualHQ
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
       <div id="chatbase-widget"></div>
     </div>
   );

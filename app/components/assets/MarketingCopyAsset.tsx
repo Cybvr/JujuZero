@@ -9,9 +9,10 @@ import CustomEditor from '@/components/dashboard/CustomEditor'
 interface MarketingCopyAssetProps {
   content: string;
   onSave: (newContent: string) => Promise<void>;
+  init: any; // Add the new property here
 }
 
-export default function MarketingCopyAsset({ content, onSave }: MarketingCopyAssetProps) {
+export default function MarketingCopyAsset({ content, onSave, init }: MarketingCopyAssetProps) {
   const [localContent, setLocalContent] = useState<string>(content)
   const [isSaving, setIsSaving] = useState(false)
   const { toast } = useToast()

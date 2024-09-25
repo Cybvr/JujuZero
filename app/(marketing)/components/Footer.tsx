@@ -16,6 +16,9 @@ const toolCategories = {
     { name: 'Compress Image', href: '/dashboard/tools/compress-image' },
     { name: 'Image Crop', href: '/dashboard/tools/image-crop' },
     { name: 'Add Watermark', href: '/dashboard/tools/add-watermark' },
+    { name: 'Sketch to Image', href: '/dashboard/tools/sketch-to-image' },
+    { name: 'Uncrop', href: '/dashboard/tools/uncrop' },
+    { name: 'Image Reimagine', href: '/dashboard/tools/imagine' },
   ],
   "TEXT": [
     { name: 'Grammar Checker', href: '/dashboard/tools/grammar-checker' },

@@ -125,7 +125,7 @@ export default function MarketingLayout({
                   <Link href="/login">
                     <Button variant="outline" size="sm">Sign in</Button>
                   </Link>
-                  <Link href="/signup">
+                  <Link href="/register">
                     <Button variant="default" size="sm" className="bg-violet-800 hover:bg-violet-900 text-white">Get Started</Button>
                   </Link>
                 </div>

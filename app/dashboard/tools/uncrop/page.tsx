@@ -10,7 +10,7 @@ import { useDropzone } from 'react-dropzone';
 import { Loader2 } from 'lucide-react';
 
 export default function UncropToolPage() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
   const [extendValues, setExtendValues] = useState({
     left: 0,
     right: 0,
@@ -19,7 +19,7 @@ export default function UncropToolPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resultImage, setResultImage] = useState(null);
+  const [resultImage, setResultImage] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles[0]) {
@@ -64,9 +64,9 @@ export default function UncropToolPage() {
       const response = await fetch('https://clipdrop-api.co/uncrop/v1', {
         method: 'POST',
         headers: {
-          'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY,
-        },
-        body: form,
+          'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY || '' },
+        
+        body: form
       });
 
       if (!response.ok) {

@@ -6,16 +6,16 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Toolbar from '@/components/dashboard/toolbar'
 import { useDropzone } from 'react-dropzone'
-import { Loader2, Upload, Image as ImageIcon } from 'lucide-react'
+import { Loader2, Upload } from 'lucide-react'
 import { cn } from "@/lib/utils"
 
 export default function ReimagineToolPage() {
-  const [file, setFile] = useState(null)
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [resultImages, setResultImages] = useState([])
+  const [file, setFile] = useState<File | null>(null)
+  const [error, setError] = useState<string>("")
+  const [loading, setLoading] = useState<boolean>(false)
+  const [resultImages, setResultImages] = useState<string[]>([])
 
-  const onDrop = useCallback((acceptedFiles) => {
+  const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0]) {
       setFile(acceptedFiles[0])
       setError("")
@@ -28,45 +28,43 @@ export default function ReimagineToolPage() {
     multiple: false
   })
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     if (!file) {
-      setError("Please upload an image file.")
-      return
+      setError("Please upload an image file.");
+      return;
     }
 
-    setLoading(true)
-    setError("")
-    setResultImages([])
+    setLoading(true);
+    setError("");
+    setResultImages([]);
 
-    const form = new FormData()
-    form.append('image_file', file)
+    const form = new FormData();
+    form.append('image_file', file);
 
     try {
       const results = await Promise.all([1, 2].map(async () => {
         const response = await fetch('https://clipdrop-api.co/reimagine/v1/reimagine', {
           method: 'POST',
-          headers: {
-            'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY,
-          },
+          headers: { 'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY || '', },
           body: form,
-        })
+        });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const blob = await response.blob()
-        return URL.createObjectURL(blob)
-      }))
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+      }));
 
-      setResultImages(results)
+      setResultImages(results);
     } catch (error) {
-      setError("An error occurred while processing the image: " + error.message)
+      setError("An error occurred while processing the image: " + (error as Error).message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col lg:flex-row">

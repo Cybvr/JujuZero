@@ -23,12 +23,21 @@ const tools: Tool[] = [
   { name: 'Compress Image', slug: 'compress-image' },
   { name: 'Video to MP4', slug: 'video-to-mp4' },
   { name: 'Audio to MP3', slug: 'audio-to-mp3' },
+  { name: 'Document to PDF', slug: 'document-to-pdf' },
+  { name: 'Simple PDF', slug: 'simple-pdf' },
+  { name: 'Invoice Generator', slug: 'invoice-generator' },
+  { name: 'Sketch to Image', slug: 'sketch-to-image' },
+  { name: 'Uncrop', slug: 'uncrop' },
+  { name: 'Image Reimagine', slug: 'imagine' },
+  { name: 'Image Crop', slug: 'image-crop' },
+  { name: 'Add Watermark', slug: 'add-watermark' },
+  { name: 'Visual Summarizer', slug: 'visual-summarizer' },
 ]
 
 const groupedTools = {
-  'Text Tools': tools.slice(0, 3),
-  'Image Tools': tools.slice(3, 6),
-  'Conversion Tools': tools.slice(6),
+  'Text Tools': tools.filter(tool => ['grammar-checker', 'paraphraser', 'text-summarizer', 'visual-summarizer'].includes(tool.slug)),
+  'Image Tools': tools.filter(tool => ['remove-background', 'compress-image', 'sketch-to-image', 'uncrop', 'imagine', 'image-crop', 'add-watermark'].includes(tool.slug)),
+  'Conversion Tools': tools.filter(tool => ['qr-code-generator', 'video-to-mp4', 'audio-to-mp3', 'document-to-pdf', 'simple-pdf', 'invoice-generator'].includes(tool.slug)),
 }
 
 const navigation = [

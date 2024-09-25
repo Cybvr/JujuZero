@@ -8,6 +8,30 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from 'next/link';
 import { initializeUserCredits } from '@/lib/credits';
+import { useTheme } from 'next-themes';
+
+function LogoWrapper() {
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logoz.png";
+
+  return (
+    <Image 
+      src={logoSrc}
+      alt="Logo" 
+      width={96} 
+      height={24} 
+      className="w-24 h-8 object-contain"
+    />
+  );
+}
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -82,15 +106,9 @@ export default function Login() {
       <Card className="sm:mx-auto sm:w-full sm:max-w-sm">
         <CardHeader className="space-y-1">
           <div className="flex justify-center">
-            <Image
-              className="h-10 w-auto"
-              src="/images/logox.png"
-              alt="Your Company Logo"
-              width={40}
-              height={40}
-            />
+            <LogoWrapper />
           </div>
-          <CardTitle className="text-xl font-bold text-center text-foreground">
+          <CardTitle className="text-xl font-regular text-center pt-8 text-foreground">
             Sign in to your account
           </CardTitle>
         </CardHeader>

@@ -11,11 +11,11 @@ import { useDropzone } from 'react-dropzone';
 import { Loader2 } from 'lucide-react';
 
 export default function SketchToImagePage() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resultImage, setResultImage] = useState(null);
+  const [resultImage, setResultImage] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles[0]) {
@@ -52,10 +52,9 @@ export default function SketchToImagePage() {
     try {
       const response = await fetch('https://clipdrop-api.co/sketch-to-image/v1/sketch-to-image', {
         method: 'POST',
-        headers: {
-          'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY,
-        },
-        body: form,
+        headers: process.env.NEXT_PUBLIC_CLIPDROP_API_KEY ? { 'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY } : {},
+
+        body: form
       });
 
       if (!response.ok) {

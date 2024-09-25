@@ -12,7 +12,7 @@ function LogoWrapper() {
     return null;
   }
 
-  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logox.png";
+  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logoz.png";
 
   return (
     <Image 

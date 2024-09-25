@@ -28,13 +28,10 @@ interface Item {
 }
 
 const tools: Tool[] = [
+  { name: 'Visual Summarizer', slug: 'visual-summarizer', imageSrc: '/images/tools/visual-summarizer.png' },
+  { name: 'Simple PDF', slug: 'pdf-editor', imageSrc: '/images/tools/pdf-editor.png' },
   { name: 'Remove Background', slug: 'remove-background', imageSrc: '/images/tools/2.png' },
-  { name: 'Compress Image', slug: 'compress-image', imageSrc: '/images/tools/3.png' },
   { name: 'QR Code Generator', slug: 'qr-code-generator', imageSrc: '/images/tools/1.png' },
-  { name: 'Video to MP4', slug: 'video-to-mp4', imageSrc: '/images/tools/video-to-mp4.png' },
-  { name: 'Audio to MP3', slug: 'audio-to-mp3', imageSrc: '/images/tools/audio-to-mp3.png' },
-  { name: 'Document to PDF', slug: 'document-to-pdf', imageSrc: '/images/tools/document-to-pdf.png' },
-  { name: 'Image Crop', slug: 'image-crop', imageSrc: '/images/tools/crop.png' },
 ];
 
 export default function DashboardPage() {
@@ -86,40 +83,27 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 sm:py-2 sm:px-0 md:px-2 lg:px-8">
         <h1 className="text-xl font-semibold mb-6 text-foreground">👋 Welcome</h1>
 
-        <div className="relative mb-8">
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <Button 
-              onClick={() => carouselRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
-              variant="outline" 
-              size="icon"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div 
-              className="flex-1 overflow-x-auto scrollbar-hide" 
-              ref={carouselRef}
-            >
-              <div className="flex space-x-4 px-2">
-                {tools.map((tool) => (
-                  <Link key={tool.slug} href={`/dashboard/tools/${tool.slug}`} className="flex-shrink-0 w-40">
-                    <div className="hover:shadow-md transition-shadow duration-200 cursor-pointer h-full">
-                      <img src={tool.imageSrc} alt={tool.name} className="w-full h-32 object-cover mb-2 rounded-lg" />
-                      <h3 className="text-sm font-medium text-center text-foreground">{tool.name}</h3>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <Button 
-              onClick={() => carouselRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
-              variant="outline" 
-              size="icon"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <h2 className="text-xl font-semibold text-foreground">Popular Tools</h2>
+            <Link href="/dashboard/tools" passHref>
+              <Button variant="outline">View All Tools</Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {tools.map((tool) => (
+              <Link key={tool.slug} href={`/dashboard/tools/${tool.slug}`} className="block">
+                <div className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200">
+                  <img src={tool.imageSrc} alt={tool.name} className="w-full h-32 object-cover" />
+                  <div className="p-2">
+                    <h3 className="text-sm font-medium text-center">{tool.name}</h3>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
 

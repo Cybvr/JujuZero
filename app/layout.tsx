@@ -11,6 +11,7 @@ import { Home, Wand2, User, Plus, MessageSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import QuestionButton from '@/components/dashboard/QuestionButton';
 import Script from 'next/script';
+import GoogleTag from '@/components/GoogleTag';
 
 const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: string; icon: React.ElementType; label?: string; isRounded?: boolean }) => {
   const pathname = usePathname();
@@ -92,12 +93,12 @@ export default function RootLayout({
 
     const metaOgImage = document.createElement('meta');
     metaOgImage.setAttribute('property', 'og:image');
-    metaOgImage.content = '/images/logos/cover.png'; // Replace with the path to your thumbnail image
+    metaOgImage.content = '/images/logos/cover.png';
     document.head.appendChild(metaOgImage);
 
     const metaOgUrl = document.createElement('meta');
     metaOgUrl.setAttribute('property', 'og:url');
-    metaOgUrl.content = 'https://jujuagi.com'; // Replace with your website's URL
+    metaOgUrl.content = 'https://jujuagi.com';
     document.head.appendChild(metaOgUrl);
 
     const twitterCard = document.createElement('meta');
@@ -117,12 +118,12 @@ export default function RootLayout({
 
     const twitterImage = document.createElement('meta');
     twitterImage.name = 'twitter:image';
-    twitterImage.content = '/images/marketing/feature1.png'; // Replace with the path to your thumbnail image
+    twitterImage.content = '/images/marketing/feature1.png';
     document.head.appendChild(twitterImage);
 
     const twitterUrl = document.createElement('meta');
     twitterUrl.name = 'twitter:url';
-    twitterUrl.content = 'https://yourwebsite.com'; // Replace with your website's URL
+    twitterUrl.content = 'https://yourwebsite.com';
     document.head.appendChild(twitterUrl);
 
     return () => {
@@ -145,6 +146,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="font-geist">
       <head>
+        <GoogleTag />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <Script
           src="https://js.pusher.com/beams/1.0/push-notifications-cdn.js"

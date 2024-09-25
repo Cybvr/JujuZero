@@ -3,13 +3,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Zap, Users, Target, MessageSquare } from "lucide-react"
+import { Wand2, Layers, Zap, Palette } from "lucide-react"
 
 const features = [
-  { icon: Zap, title: "Powerful Tools", description: "Cutting-edge file conversion and editing capabilities" },
-  { icon: Users, title: "User-Centric", description: "Intuitive interface designed for all skill levels" },
-  { icon: Target, title: "Precision", description: "Accurate results that meet your exact needs" },
-  { icon: MessageSquare, title: "Support", description: "Dedicated team ready to assist you" },
+  { icon: Wand2, title: "Advanced Tools", description: "Access a wide range of cutting-edge tools to enhance your digital workflow." },
+  { icon: Layers, title: "All-in-One Platform", description: "From image editing to file conversion, find all the tools you need in one place." },
+  { icon: Zap, title: "Efficiency Boost", description: "Streamline your work process and increase productivity with our intuitive toolkit." },
+  { icon: Palette, title: "Creative Freedom", description: "Unleash your creativity with our versatile set of design and editing tools." },
 ]
 
 export default function About() {
@@ -19,7 +19,7 @@ export default function About() {
         <div className="absolute inset-0 z-0">
           <Image 
             src="/images/marketing/herobg.png" 
-            alt="Juju Hero" 
+            alt="Juju Toolkit" 
             fill
             style={{ objectFit: 'cover' }}
             quality={100}
@@ -28,11 +28,11 @@ export default function About() {
           <div className="absolute inset-0 bg-black/50"></div>
         </div>
         <div className="relative z-10 text-white container mx-auto max-w-6xl px-4">
-          <h1 className="text-5xl sm:text-6xl font-bold mb-4">Reimagining File Management</h1>
-          <p className="text-xl mb-8 max-w-2xl">Juju is pioneering the future of digital asset handling, making it effortless, intuitive, and powerful.</p>
+          <h1 className="text-5xl sm:text-6xl font-bold mb-4">Your All-in-One Digital Toolkit</h1>
+          <p className="text-xl mb-8 max-w-2xl">Juju brings together powerful tools and intuitive design, revolutionizing how creators and professionals work with digital assets.</p>
           <Link href="/dashboard">
-            <Button size="lg" variant="outline" className="bg-white text-black hover:bg-white/90">
-              Discover Juju
+            <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90">
+              Explore Juju
             </Button>
           </Link>
         </div>
@@ -46,7 +46,7 @@ export default function About() {
               <CardContent className="p-8">
                 <h3 className="text-2xl font-semibold mb-4">Vision</h3>
                 <p className="text-lg">
-                  We envision a world where managing digital assets is seamless and intuitive, enabling users to focus on their creativity and productivity without technological barriers.
+                  We envision a world where digital creation and management are accessible to everyone, empowering users to bring their ideas to life without technological barriers.
                 </p>
               </CardContent>
             </Card>
@@ -54,7 +54,7 @@ export default function About() {
               <CardContent className="p-8">
                 <h3 className="text-2xl font-semibold mb-4">Mission</h3>
                 <p className="text-lg">
-                  Our mission is to provide an all-in-one solution that empowers users to convert, edit, and manage their files with unprecedented ease, enhancing productivity across all levels of expertise.
+                  Our mission is to provide a comprehensive, user-friendly toolkit that combines advanced utilities with creative tools, enhancing productivity and innovation for individuals and businesses alike.
                 </p>
               </CardContent>
             </Card>
@@ -83,8 +83,8 @@ export default function About() {
 
       <section className="py-24 px-4 bg-primary text-primary-foreground">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Workflow?</h2>
-          <p className="text-xl mb-8 max-w-2xl">Join thousands of satisfied users who have revolutionized their file management with Juju.</p>
+          <h2 className="text-4xl font-bold mb-6">Ready to Amplify Your Digital Workflow?</h2>
+          <p className="text-xl mb-8 max-w-2xl">Join creators, professionals, and businesses who are leveraging Juju's comprehensive toolkit to transform their digital processes.</p>
           <Link href="/dashboard">
             <Button size="lg" variant="secondary">
               Get Started for Free

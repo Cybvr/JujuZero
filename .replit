@@ -1,6 +1,6 @@
 run = "npm run dev"
 entrypoint = "index.js"
-modules = ["nodejs-20:v9-20231020-a3526c9"]
+modules = ["nodejs-20", "nodejs-20:v9-20231020-a3526c9"]
 hidden = [".config", "package-lock.json", ".next", ".swc"]
 
 [nix]
@@ -64,9 +64,8 @@ localPort = 41713
 externalPort = 3000
 
 [[ports]]
-localPort = 42219
+localPort = 43105
 externalPort = 5000
-exposeLocalhost = true
 
 [[ports]]
 localPort = 43951

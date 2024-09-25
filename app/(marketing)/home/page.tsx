@@ -46,17 +46,6 @@ export default function LandingPage() {
           </div>
         </section>
         <section className="w-full py-24 sm:py-24 px-4 sm:px-6 lg:px-8 bg-accent text-accent-foreground justify-center">
-          <div className="container mx-auto max-w-full sm:max-w-[90%] lg:max-w-[80%] flex justify-center mb-8">
-            <a href="https://www.producthunt.com/posts/juju?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-juju" target="_blank" rel="noopener noreferrer">
-              <img 
-                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=490770&theme=light" 
-                alt="Juju - Simple tools for everyday use | Product Hunt" 
-                style={{ width: '250px', height: '54px' }} 
-                width="250" 
-                height="54" 
-              />
-            </a>
-          </div>
           <div className="container mx-auto max-w-full sm:max-w-[90%] lg:max-w-[80%] text-center">
             <h2 className="mb-2 text-4xl font-bold">
               Smart Apps. High efficiency

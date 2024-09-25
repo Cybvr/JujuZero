@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from 'react';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { useState, useEffect } from 'react';
+import { signInWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from 'next/link';
+import { initializeUserCredits } from '@/lib/credits';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,11 +15,31 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const user = result.user;
+          await initializeUserCredits(user.uid);
+          router.push('/dashboard');
+        }
+      } catch (error) {
+        console.error("Redirect sign-in error:", error);
+        setError('Error signing in with Google. Please try again.');
+      }
+    };
+
+    handleRedirectResult();
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      await initializeUserCredits(user.uid);
       router.push('/dashboard');
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error) {
@@ -43,22 +64,16 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      router.push('/dashboard');
+      console.log("Initiating Google sign-in with redirect...");
+      await signInWithRedirect(auth, provider);
     } catch (error) {
+      console.error("Error initiating Google sign-in:", error);
       if (error && typeof error === 'object' && 'code' in error) {
         const firebaseError = error as { code: string; message: string };
-        switch (firebaseError.code) {
-          case 'auth/popup-closed-by-user':
-            setError('Sign-in was cancelled. Please try again.');
-            break;
-          default:
-            setError('Error signing in with Google. Please try again.');
-        }
-      } else {
-        setError('An unexpected error occurred. Please try again.');
+        console.error("Error code:", firebaseError.code);
+        console.error("Error message:", firebaseError.message);
       }
-      console.error("Google sign-in error:", error);
+      setError('Error initiating sign-in with Google. Please try again.');
     }
   };
 

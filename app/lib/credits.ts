@@ -1,5 +1,7 @@
 import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, increment } from 'firebase/firestore';
+
+const INITIAL_CREDITS = 500; // Set the initial credit amount for new users
 
 export async function getUserCredits(userId: string): Promise<number> {
   const userRef = doc(db, 'users', userId);
@@ -58,10 +60,16 @@ export async function checkUnlimitedCredits(userId: string): Promise<boolean> {
 
 export async function initializeUserCredits(userId: string): Promise<void> {
   const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    credits: 500,
-    hasUnlimitedCredits: false
-  });
+  const userSnap = await getDoc(userRef);
+
+  // Check if the user already has credits initialized
+  if (!userSnap.exists() || !userSnap.data()?.credits) {
+    // Initialize credits and other user properties
+    await setDoc(userRef, {
+      credits: INITIAL_CREDITS,
+      hasUnlimitedCredits: false
+    }, { merge: true });
+  }
 }
 
 export async function processCredits(userId: string, amount: number): Promise<void> {

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { FileText, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import Toolbar from '../../../components/dashboard/toolbar';
 import {
   BarChart,
@@ -21,36 +21,23 @@ import {
   Cell,
 } from 'recharts';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
-const analyzeText = (text) => {
-  const words = text.toLowerCase().split(/\W+/).filter(word => word.length > 3);
-  const wordCount = words.length;
-  const uniqueWords = new Set(words).size;
-  const wordFrequency = words.reduce((acc, word) => {
-    acc[word] = (acc[word] || 0) + 1;
-    return acc;
-  }, {});
-
-  const topWords = Object.entries(wordFrequency)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([word, count]) => ({ word, count }));
-
-  const sentenceCount = text.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0).length;
-  const avgWordsPerSentence = wordCount / sentenceCount;
-
-  return { wordCount, uniqueWords, topWords, sentenceCount, avgWordsPerSentence };
-};
+interface AnalysisResult {
+  wordCount: number;
+  uniqueWords: number;
+  topWords: { word: string; count: number }[];
+  sentenceCount: number;
+  avgWordsPerSentence: number;
+}
 
 export default function VisualSummarizer() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const { toast } = useToast();
-  const resultsRef = useRef(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleSummarize = async () => {
     if (!input) {
@@ -64,7 +51,19 @@ export default function VisualSummarizer() {
 
     setIsLoading(true);
     try {
-      const result = analyzeText(input);
+      const response = await fetch('/api/visual-summarizer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze text');
+      }
+
+      const result = await response.json();
       setAnalysis(result);
     } catch (error) {
       console.error('Error during analysis:', error);
@@ -78,21 +77,36 @@ export default function VisualSummarizer() {
     }
   };
 
-  const exportAs = async (type) => {
-    if (!resultsRef.current) return;
+  const exportAsImage = async () => {
+    if (!resultsRef.current) {
+      toast({
+        title: "Error",
+        description: "No results to export.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const canvas = await html2canvas(resultsRef.current);
-    const imageData = canvas.toDataURL('image/png');
-
-    if (type === 'pdf') {
-      const pdf = new jsPDF();
-      pdf.addImage(imageData, 'PNG', 0, 0);
-      pdf.save('visual_summary.pdf');
-    } else if (type === 'jpg') {
+    try {
+      const canvas = await html2canvas(resultsRef.current);
+      const imageData = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = imageData;
-      link.download = 'visual_summary.jpg';
+      link.download = 'visual_summary.png';
       link.click();
+
+      toast({
+        title: "Success",
+        description: "Exported as PNG",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error during export:', error);
+      toast({
+        title: "Error",
+        description: "Failed to export as PNG. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -118,14 +132,9 @@ export default function VisualSummarizer() {
                   {isLoading ? 'Analyzing...' : 'Analyze Text'}
                 </Button>
                 {analysis && (
-                  <div className="flex space-x-2">
-                    <Button onClick={() => exportAs('pdf')} variant="outline">
-                      <Download className="mr-2 h-4 w-4" /> Export as PDF
-                    </Button>
-                    <Button onClick={() => exportAs('jpg')} variant="outline">
-                      <Download className="mr-2 h-4 w-4" /> Export as JPG
-                    </Button>
-                  </div>
+                  <Button onClick={exportAsImage} variant="outline">
+                    <Download className="mr-2 h-4 w-4" /> Export as PNG
+                  </Button>
                 )}
               </div>
             </div>

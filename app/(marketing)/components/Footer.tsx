@@ -6,9 +6,10 @@ import { useTheme } from 'next-themes';
 const toolCategories = {
   "CONVERSION": [
     { name: 'QR Code Generator', href: '/dashboard/tools/qr-code-generator' },
-    { name: 'Video to MP4', href: '/dashboard/tools/video-to-mp4' },
     { name: 'Audio to MP3', href: '/dashboard/tools/audio-to-mp3' },
     { name: 'Document to PDF', href: '/dashboard/tools/document-to-pdf' },
+    { name: 'Simple PDF', href: '/dashboard/tools/simple-pdf' },
+    { name: 'Invoice Generator', href: '/dashboard/tools/invoice-generator' },
   ],
   "IMAGE": [
     { name: 'Remove Background', href: '/dashboard/tools/remove-background' },
@@ -20,9 +21,10 @@ const toolCategories = {
     { name: 'Grammar Checker', href: '/dashboard/tools/grammar-checker' },
     { name: 'Paraphraser', href: '/dashboard/tools/paraphraser' },
     { name: 'Text Summarizer', href: '/dashboard/tools/text-summarizer' },
+    { name: 'Visual Summarizer', href: '/dashboard/tools/visual-summarizer' },
   ],
   "VIDEO": [
-    { name: 'Coming Soon', href: '#' },
+    { name: 'Video to MP4', href: '/dashboard/tools/video-to-mp4' },
   ],
 };
 
@@ -41,7 +43,7 @@ const legalLinks = [
 
 function FooterLogo() {
   const { resolvedTheme } = useTheme();
-  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logox.png";
+  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logoz.png";
 
   return (
     <div className="h-12">
@@ -130,7 +132,10 @@ export default function Footer() {
 
         <div className="border-t border-border py-8">
           <p className="text-center text-sm text-muted-foreground">
-            © 2024 Juju, Inc. All rights reserved. Powered by VisualHQ.
+            © 2024 Juju, Inc. All rights reserved. Powered by 
+            <Link href="http://visual.ng">
+              <span style={{fontWeight: 'bold', textDecoration: 'underline'}}>VisualCore9Systems</span>
+            </Link>.
           </p>
         </div>
       </div>

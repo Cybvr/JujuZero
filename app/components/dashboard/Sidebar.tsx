@@ -39,7 +39,7 @@ function LogoWrapper() {
     return null;
   }
 
-  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logox.png";
+  const logoSrc = resolvedTheme === 'dark' ? "/images/logoy.png" : "/images/logoz.png";
 
   return (
     <Image 
@@ -88,8 +88,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   }
 
   const isActive = (path: string) => pathname === path;
-  const buttonClasses = (path: string) => `w-full justify-start ${isActive(path) ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`;
-  const iconClasses = (path: string) => `h-4 w-4 ${isActive(path) ? 'text-secondary-foreground' : 'text-muted-foreground'}`;
+  const buttonClasses = (path: string) => `w-full justify-start ${isActive(path) ? 'bg-accent hover:bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-accent-foreground hover:bg-accent'}`;
+  const iconClasses = (path: string) => `h-4 w-4 ${isActive(path) ? 'text-accent-foreground' : 'text-muted-foreground'}`;
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -98,7 +98,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   const renderNavItems = () => (
     <>
       <Link href="/dashboard" className={buttonClasses('/dashboard')}>
-        <Button variant="ghost" className="w-full justify-start">
+        <Button variant="ghost" className={buttonClasses('/dashboard')}>
           <HomeIcon className={iconClasses('/dashboard')} />
           <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Home</span>
         </Button>
@@ -106,20 +106,20 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
       <Separator className="my-2" />
       {discover.map((item) => (
         <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button variant="ghost" className={buttonClasses(item.path)}>
             <item.icon className={iconClasses(item.path)} />
             <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>
           </Button>
         </Link>
       ))}
       <Link href="/dashboard/tools/myTools" className={buttonClasses('/dashboard/tools/myList')}>
-        <Button variant="ghost" className="w-full justify-start">
+        <Button variant="ghost" className={buttonClasses('/dashboard/tools/myList')}>
           <List className={iconClasses('/dashboard/tools/myList')} />
           <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">My Apps</span>
         </Button>
       </Link>
       <Link href="/dashboard/sidekick" className={buttonClasses('/dashboard/sidekick')}>
-        <Button variant="ghost" className="w-full justify-start">
+        <Button variant="ghost" className={buttonClasses('/dashboard/sidekick')}>
           <MessageSquare className={iconClasses('/dashboard/sidekick')} />
           <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Sidekick</span>
         </Button>
@@ -127,14 +127,14 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
       <Separator className="my-2" />
       {folders.map((item) => (
         <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button variant="ghost" className={buttonClasses(item.path)}>
             <item.icon className={iconClasses(item.path)} />
             <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">{item.name}</span>
           </Button>
         </Link>
       ))}
       <Link href="/dashboard/projects" className={buttonClasses('/dashboard/projects')}>
-        <Button variant="ghost" className="w-full justify-start">
+        <Button variant="ghost" className={buttonClasses('/dashboard/projects')}>
           <Briefcase className={iconClasses('/dashboard/projects')} />
           <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>
         </Button>

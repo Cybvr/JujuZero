@@ -12,7 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { updateProfile, signOut } from 'firebase/auth';
-import Image from 'next/image';
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Account() {
@@ -30,7 +29,6 @@ export default function Account() {
       if (!loading && !user) {
         router.push('/login');
       } else if (user) {
-        console.log("User object:", user); // Debug log
         setDisplayName(user.displayName || '');
         setEmail(user.email || '');
         setPhotoURL(user.photoURL || '');
@@ -40,9 +38,9 @@ export default function Account() {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            console.log("Firestore user data:", userData); // Debug log
             setDisplayName(userData.name || user.displayName || '');
             setPhotoURL(userData.avatar || user.photoURL || '');
+            console.log("Fetched Photo URL:", userData.avatar || user.photoURL);
           } else {
             // If the document doesn't exist, create it
             await setDoc(doc(db, 'users', user.uid), {
@@ -95,7 +93,6 @@ export default function Account() {
   };
 
   const handleDeleteAccount = async () => {
-    // Implement account deletion logic here
     console.log("Account deletion initiated");
     setIsDeleteDialogOpen(false);
     // Add actual deletion logic and error handling
@@ -124,7 +121,7 @@ export default function Account() {
   }
 
   if (!user) {
-    return null; // This will prevent any flash of content before redirect
+    return null; 
   }
 
   return (
@@ -145,7 +142,17 @@ export default function Account() {
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   {photoURL ? (
-                    <Image src={photoURL} alt="User avatar" width={100} height={100} className="rounded-full" />
+                    <img
+                      src={photoURL}
+                      alt="User avatar"
+                      width={100}
+                      height={100}
+                      className="rounded-full"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/images/default-avatar.png";
+                      }}
+                    />
                   ) : (
                     <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
                       <User className="w-12 h-12 text-gray-400" />

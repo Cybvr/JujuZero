@@ -17,7 +17,7 @@ const nextConfig = {
       };
     }
 
-    // Add this new rule
+    // Add this new rule for undici
     config.module.rules.push({
       test: /node_modules\/undici\/.*\.js$/,
       use: {
@@ -29,7 +29,28 @@ const nextConfig = {
       }
     });
 
+    // Add this for react-pdf
+    config.resolve.alias.canvas = false;
+
     return config;
+  },
+  // Add this to handle PDF files
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
+          },
+        ],
+      },
+    ];
   },
 }
 

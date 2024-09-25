@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth } from '../../lib/firebase';
-import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { 
+  signInWithPopup, 
+  signInWithRedirect, 
+  GoogleAuthProvider, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword,
+  getRedirectResult
+} from 'firebase/auth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,14 +25,37 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          console.log("Sign-in successful:", result.user);
+          onClose();
+        }
+      } catch (error) {
+        console.error("Redirect sign-in error:", error);
+        setError('Error signing in with Google. Please try again.');
+      }
+    };
+
+    handleRedirectResult();
+  }, [onClose]);
+
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      onClose();
+      console.log("Initiating Google sign-in with redirect...");
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      setError('Error signing in with Google. Please try again.');
-      console.error("Google sign-in error:", error);
+      console.error("Error initiating Google sign-in:", error);
+      if (error.code) {
+        console.error("Error code:", error.code);
+      }
+      if (error.message) {
+        console.error("Error message:", error.message);
+      }
+      setError('Error initiating sign-in with Google. Please try again.');
     }
   };
 
@@ -35,8 +65,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       await signInWithEmailAndPassword(auth, email, password);
       onClose();
     } catch (error) {
-      setError('Error signing in with email. Please check your credentials.');
       console.error("Email sign-in error:", error);
+      setError('Error signing in with email. Please check your credentials.');
     }
   };
 
@@ -46,8 +76,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       await createUserWithEmailAndPassword(auth, email, password);
       onClose();
     } catch (error) {
-      setError('Error signing up. Please try a different email or password.');
       console.error("Email sign-up error:", error);
+      setError('Error signing up. Please try a different email or password.');
     }
   };
 

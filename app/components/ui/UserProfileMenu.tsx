@@ -22,7 +22,21 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <Button variant="ghost" className="h-8 w-8 rounded-full p-0">
-          {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
+          {user.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt="User avatar"
+              width={32}
+              height={32}
+              className="rounded-full"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/images/default-avatar.png";
+              }}
+            />
+          ) : (
+            <span>{user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}</span>
+          )}
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

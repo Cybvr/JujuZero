@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import QuestionButton from '@/components/dashboard/QuestionButton';
 import Script from 'next/script';
 import GoogleTag from '@/components/GoogleTag';
+import usePageTracking from '@/hooks/usePageTracking';
 
 const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: string; icon: React.ElementType; label?: string; isRounded?: boolean }) => {
   const pathname = usePathname();
@@ -59,6 +60,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  usePageTracking(); // Add this line to use the new hook
+
   useEffect(() => {
     document.title = 'Juju: Simple tools for everyone';
     const metaDescription = document.createElement('meta');

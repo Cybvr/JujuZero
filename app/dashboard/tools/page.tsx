@@ -39,6 +39,14 @@ const tools: Tool[] = [
     access: 'free' 
   },
   { 
+    name: 'Video Notes', 
+    slug: 'video-notes', 
+    description: 'Generate FAQs, Study Guides, Table of Contents, Timelines, and Briefing Docs from YouTube videos', 
+    imageSrc: '/images/tools/video-notes.png', 
+    category: 'Video', 
+    access: 'free' 
+  },
+  { 
     name: 'Sketch to Image', 
     slug: 'sketch-to-image', 
     description: 'Generate an image from your sketch and description using AI.', 

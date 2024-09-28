@@ -13,7 +13,6 @@ export default function GoogleTag() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-
           // Google Ads Conversion ID
           gtag('config', 'AW-11237044944');
         `}

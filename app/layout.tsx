@@ -4,7 +4,6 @@ import './globals.css';
 import React, { useEffect } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from 'next-themes';
-import FeedbackDialog from '@/components/ui/FeedbackDialog';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Wand2, User, Plus, MessageSquare } from 'lucide-react';
@@ -13,6 +12,8 @@ import QuestionButton from '@/components/dashboard/QuestionButton';
 import Script from 'next/script';
 import GoogleTag from '@/components/GoogleTag';
 import usePageTracking from '@/hooks/usePageTracking';
+import Head from 'next/head';
+import { Toaster } from "@/components/ui/toaster";
 
 const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: string; icon: React.ElementType; label?: string; isRounded?: boolean }) => {
   const pathname = usePathname();
@@ -60,103 +61,34 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  usePageTracking(); // Add this line to use the new hook
-
-  useEffect(() => {
-    document.title = 'Juju: Simple tools for everyone';
-    const metaDescription = document.createElement('meta');
-    metaDescription.name = 'description';
-    metaDescription.content = 'Updates from the shrine';
-    document.head.appendChild(metaDescription);
-
-    const linkManifest = document.createElement('link');
-    linkManifest.rel = 'manifest';
-    linkManifest.href = '/manifest.json';
-    document.head.appendChild(linkManifest);
-
-    const metaThemeColor = document.createElement('meta');
-    metaThemeColor.name = 'theme-color';
-    metaThemeColor.content = '#ffffff';
-    document.head.appendChild(metaThemeColor);
-
-    const metaViewport = document.createElement('meta');
-    metaViewport.name = 'viewport';
-    metaViewport.content = 'width=device-width, initial-scale=1, maximum-scale=1';
-    document.head.appendChild(metaViewport);
-
-    const metaOgTitle = document.createElement('meta');
-    metaOgTitle.setAttribute('property', 'og:title');
-    metaOgTitle.content = 'Juju: Simple tools for everyone';
-    document.head.appendChild(metaOgTitle);
-
-    const metaOgDescription = document.createElement('meta');
-    metaOgDescription.setAttribute('property', 'og:description');
-    metaOgDescription.content = 'Updates from the shrine';
-    document.head.appendChild(metaOgDescription);
-
-    const metaOgImage = document.createElement('meta');
-    metaOgImage.setAttribute('property', 'og:image');
-    metaOgImage.content = '/images/logos/cover.png';
-    document.head.appendChild(metaOgImage);
-
-    const metaOgUrl = document.createElement('meta');
-    metaOgUrl.setAttribute('property', 'og:url');
-    metaOgUrl.content = 'https://jujuagi.com';
-    document.head.appendChild(metaOgUrl);
-
-    const twitterCard = document.createElement('meta');
-    twitterCard.name = 'twitter:card';
-    twitterCard.content = 'summary_large_image';
-    document.head.appendChild(twitterCard);
-
-    const twitterTitle = document.createElement('meta');
-    twitterTitle.name = 'twitter:title';
-    twitterTitle.content = 'Juju: Simple tools for everyone';
-    document.head.appendChild(twitterTitle);
-
-    const twitterDescription = document.createElement('meta');
-    twitterDescription.name = 'twitter:description';
-    twitterDescription.content = 'Updates from the shrine';
-    document.head.appendChild(twitterDescription);
-
-    const twitterImage = document.createElement('meta');
-    twitterImage.name = 'twitter:image';
-    twitterImage.content = '/images/marketing/feature1.png';
-    document.head.appendChild(twitterImage);
-
-    const twitterUrl = document.createElement('meta');
-    twitterUrl.name = 'twitter:url';
-    twitterUrl.content = 'https://yourwebsite.com';
-    document.head.appendChild(twitterUrl);
-
-    return () => {
-      document.head.removeChild(metaDescription);
-      document.head.removeChild(linkManifest);
-      document.head.removeChild(metaThemeColor);
-      document.head.removeChild(metaViewport);
-      document.head.removeChild(metaOgTitle);
-      document.head.removeChild(metaOgDescription);
-      document.head.removeChild(metaOgImage);
-      document.head.removeChild(metaOgUrl);
-      document.head.removeChild(twitterCard);
-      document.head.removeChild(twitterTitle);
-      document.head.removeChild(twitterDescription);
-      document.head.removeChild(twitterImage);
-      document.head.removeChild(twitterUrl);
-    };
-  }, []);
+  usePageTracking();
 
   return (
     <html lang="en" suppressHydrationWarning className="font-geist">
-      <head>
-        <GoogleTag />
+      <Head>
+        <title>Juju: Simple tools for simple tasks</title>
+        <meta name="description" content="Juju is your all-in-one platform for file conversion and editing tasks. We offer a suite of tools including PDF conversion, image editing, text tools, data conversion, and AI-powered features." />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta property="og:title" content="Juju: Simple tools for simple tasks" />
+        <meta property="og:description" content="Juju is your all-in-one platform for file conversion and editing tasks. We offer a suite of tools including PDF conversion, image editing, text tools, data conversion, and AI-powered features." />
+        <meta property="og:image" content="https://jujuagi.com/images/logos/cover.png" />
+        <meta property="og:url" content="https://jujuagi.com" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Juju: Simple tools for everyone" />
+        <meta name="twitter:description" content="Juju is your all-in-one platform for file conversion and editing tasks. We offer a suite of tools including PDF conversion, image editing, text tools, data conversion, and AI-powered features." />
+        <meta name="twitter:image" content="https://jujuagi.com/images/marketing/feature1.png" />
+        <meta name="twitter:url" content="https://jujuagi.com" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
+      </Head>
+      <body className="bg-background text-foreground">
+        <GoogleTag />
         <Script
           src="https://js.pusher.com/beams/1.0/push-notifications-cdn.js"
           strategy="beforeInteractive"
         />
-      </head>
-      <body className="bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <div className="pb-16 md:pb-0">
@@ -164,7 +96,7 @@ export default function RootLayout({
             </div>
             <FooterMenu />
             <QuestionButton />
-            <FeedbackDialog isOpen={false} onClose={() => {}} />
+            <Toaster />
           </AuthProvider>
         </ThemeProvider>
       </body>

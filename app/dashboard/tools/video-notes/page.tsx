@@ -57,7 +57,7 @@ export default function VideoNotesPage() {
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
-        <h1 className="text-xl sm:text-xl font-bold mb-2">AI Video Notes Generator</h1>
+        <h1 className="text-xl sm:text-xl font-bold mb-2">Video Notes</h1>
         <p className="text-muted-foreground mb-4 sm:mb-6">Generate notes from YouTube videos with our AI-powered tool</p>
         <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
           <Card className="lg:w-1/2">

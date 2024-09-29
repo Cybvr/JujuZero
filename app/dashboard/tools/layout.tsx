@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Breadcrumbs, BreadcrumbItem } from '@/components/ui/breadcrumbs';
-import Footer from '@/(marketing)/components/Footer'; // Import the Footer component
+import Footer from '@/(marketing)/components/Footer';
 
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -31,10 +31,11 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
           </Breadcrumbs>
         </div>
       </header>
-      <main className="flex-grow container mx-auto py-6 px-6 bg-background">
+      {/* Added pb-16 for bottom spacing */}
+      <main className="flex-grow container mx-auto py-6 px-6 sm:px-2 sm:px-1 pb-24 bg-background">
         {children}
       </main>
-      <Footer /> {/* Add the Footer component here */}
+      <Footer />
     </div>
   );
 }

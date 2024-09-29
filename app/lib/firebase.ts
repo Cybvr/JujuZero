@@ -20,7 +20,8 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-console.log("Firebase initialized. App:", app);
+console.log("Firebase initialized with config:", firebaseConfig);
+console.log("Auth instance:", auth);
 console.log("Firestore instance:", db);
 console.log("Storage instance:", storage);
 

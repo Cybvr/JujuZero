@@ -1,4 +1,5 @@
-'use client';
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -141,12 +142,11 @@ export default function AllTools() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-2 max-w-7xl">
+    <div className="container mx-auto px-2 sm:px-4 lg:px-4 max-w-7xl">{/* Updated padding classes */}
       <div className="mb-8">
         <h1 className="text-xl font-semibold mb-2 text-foreground">All Tools</h1>
         <p className="text-muted-foreground">Explore our collection of powerful tools to enhance your workflow</p>
       </div>
-
       <Tabs defaultValue="All" onValueChange={setActiveTab} className="mb-8">
         <TabsList className="mb-6">
           {categories.map((category) => (
@@ -160,7 +160,7 @@ export default function AllTools() {
           ))}
         </TabsList>
         <TabsContent value={activeTab}>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {tools
               .filter(tool => activeTab === "All" || tool.category === activeTab)
               .map((tool) => (
@@ -203,7 +203,7 @@ export default function AllTools() {
                         </button>
                       </div>
                     </div>
-                    <CardContent className="flex-grow p-2 sm:p-2">
+                    <CardContent className="flex-grow p-2 sm:p-0">
                       <h3 className="text-sm sm:text-lg font-medium mb-1 text-foreground">{tool.name}</h3>
                       <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.description}</p>
                     </CardContent>

@@ -12,7 +12,7 @@ const toolCategories = {
     { name: 'Invoice Generator', href: '/dashboard/tools/invoice-generator' },
   ],
   "IMAGE": [
-    { name: 'Remove Background', href: '/dashboard/tools/remove-background' },
+    { name: 'Remove Background', href: '/dashboard/tools/remove-background', isHot: true },
     { name: 'Compress Image', href: '/dashboard/tools/compress-image' },
     { name: 'Image Crop', href: '/dashboard/tools/image-crop' },
     { name: 'Add Watermark', href: '/dashboard/tools/add-watermark' },
@@ -24,10 +24,11 @@ const toolCategories = {
     { name: 'Grammar Checker', href: '/dashboard/tools/grammar-checker' },
     { name: 'Paraphraser', href: '/dashboard/tools/paraphraser' },
     { name: 'Text Summarizer', href: '/dashboard/tools/text-summarizer' },
-    { name: 'Visual Summarizer', href: '/dashboard/tools/visual-summarizer' },
+    { name: 'Visual Summarizer', href: '/dashboard/tools/visual-summarizer', isFresh: true },
   ],
   "VIDEO": [
     { name: 'Video to MP4', href: '/dashboard/tools/video-to-mp4' },
+    { name: 'Video Notes', href: '/dashboard/tools/video-notes', isNew: true },
   ],
 };
 
@@ -76,6 +77,21 @@ export default function Footer() {
                   <li key={tool.name}>
                     <Link href={tool.href} className="text-sm text-muted-foreground hover:text-foreground">
                       {tool.name}
+                      {tool.isNew && (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white">
+                          NEW
+                        </span>
+                      )}
+                      {tool.isHot && (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-500 text-white">
+                          HOT
+                        </span>
+                      )}
+                      {tool.isFresh && (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500 text-white">
+                          FRESH
+                        </span>
+                      )}
                     </Link>
                   </li>
                 ))}

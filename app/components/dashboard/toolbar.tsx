@@ -1,8 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Zap, Star, ArrowRight, Crop, Stamp, QrCode, Image, FileDown } from 'lucide-react'
+import { Crop, Stamp, QrCode, Image, FileDown } from 'lucide-react'
 
 const relatedTools = [
   { name: 'Image Crop', slug: 'image-crop', icon: Crop },
@@ -56,13 +55,13 @@ export default function Toolbar() {
         </ul>
       </div>
       <Separator className="my-4" />
-      <div className="bg-card p-4 rounded-lg">
-        <h3 className="font-medium text-sm mb-2 text-card-foreground">Unlock Premium Features</h3>
-        <p className="text-xs text-muted-foreground mb-4">Get access to all tools and advanced features.</p>
-        <Button variant="outline" size="sm" className="w-full text-xs">
-          Upgrade Now <ArrowRight className="ml-2" size={12} />
-        </Button>
-      </div>
+      <Link href="/dashboard/tools/video-notes">
+        <img 
+          src="/images/marketing/video-notes-banner.png" 
+          alt="Video Notes Tool" 
+          className="w-full rounded-lg hover:opacity-90 transition-opacity duration-200"
+        />
+      </Link>
     </aside>
   )
 }

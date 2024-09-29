@@ -1,0 +1,16 @@
+[debug] [2024-09-28T19:10:10.175Z] ----------------------------------------------------------------------
+[debug] [2024-09-28T19:10:10.176Z] Command:       /nix/store/alik5i1lm5kfm61fh3pg221czk7pmv4g-nodejs-20.16.0/bin/node /home/runner/JujuZero/.config/npm/node_global/bin/firebase login
+[debug] [2024-09-28T19:10:10.177Z] CLI Version:   13.20.1
+[debug] [2024-09-28T19:10:10.177Z] Platform:      linux
+[debug] [2024-09-28T19:10:10.177Z] Node Version:  v20.16.0
+[debug] [2024-09-28T19:10:10.177Z] Time:          Sat Sep 28 2024 19:10:10 GMT+0000 (Coordinated Universal Time)
+[debug] [2024-09-28T19:10:10.177Z] ----------------------------------------------------------------------
+[debug] 
+[info] i  Firebase optionally collects CLI and Emulator Suite usage and error reporting information to help improve our products. Data is collected in accordance with Google's privacy policy (https://policies.google.com/privacy) and is not used to identify you.
+ 
+[info] i  To change your data collection preference at any time, run `firebase logout` and log in again. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=1046243248&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...

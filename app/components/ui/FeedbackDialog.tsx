@@ -1,70 +1,93 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./dialog";
+import { Button } from "./button";
+import { Textarea } from "./textarea";
+import { Input } from "./input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+import { useToast } from "@/components/ui/use-toast";
 
-interface FeedbackDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export default function FeedbackDialog({ isOpen, onClose }: FeedbackDialogProps) {
+export function FeedbackDialog({ isOpen, onClose }) {
   const [email, setEmail] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await fetch('/api/send-feedback', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, feedback }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, feedback, feedbackType }),
       });
 
       if (response.ok) {
-        // Handle successful submission
-        console.log('Feedback sent successfully');
+        toast({
+          title: "Success",
+          description: "Thank you for your feedback! We've received it and will review it soon.",
+        });
+        setEmail('');
+        setFeedback('');
+        setFeedbackType('');
         onClose();
       } else {
-        // Handle error
-        console.error('Failed to send feedback');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send feedback');
       }
     } catch (error) {
       console.error('Error sending feedback:', error);
+      toast({
+        title: "Error",
+        description: "We couldn't send your feedback. Please try again later or contact support if the problem persists.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Send Feedback</DialogTitle>
           <DialogDescription>
-            We value your input. Please share your thoughts with us.
+            We value your feedback. Please let us know your thoughts or report any issues.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="grid gap-4 py-4">
             <Input
-              type="email"
+              id="email"
               placeholder="Your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+            <Select onValueChange={setFeedbackType} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select feedback type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="general">General Feedback</SelectItem>
+                <SelectItem value="bug">Bug Report</SelectItem>
+                <SelectItem value="feature">Feature Request</SelectItem>
+                <SelectItem value="ux">User Experience</SelectItem>
+              </SelectContent>
+            </Select>
             <Textarea
+              id="feedback"
               placeholder="Your feedback"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               required
             />
           </div>
-          <DialogFooter className="mt-4">
-            <Button type="submit">Send Feedback</Button>
-          </DialogFooter>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Sending...' : 'Send Feedback'}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

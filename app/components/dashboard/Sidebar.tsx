@@ -71,13 +71,17 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
   useEffect(() => {
     const fetchCredits = async () => {
       if (user) {
-        const userCredits = await getUserCredits(user.uid);
-        setCredits(userCredits);
+        try {
+          const userCredits = await getUserCredits(user.uid);
+          console.log('Fetched credits:', userCredits);
+          setCredits(userCredits);
+        } catch (error) {
+          console.error('Error fetching credits:', error);
+        }
       }
     };
 
     fetchCredits();
-    // Set up an interval to fetch credits periodically (e.g., every 60 seconds)
     const intervalId = setInterval(fetchCredits, 60000);
 
     return () => clearInterval(intervalId);

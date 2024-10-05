@@ -30,14 +30,14 @@ const freeTier = {
 const paidTiers = {
   monthly: {
     title: "Pro",
-    price: "$15.00/mo",
+    price: "$12.00/mo",
     description: "Billed monthly",
     discountedPrice: "$30.00",
     features: features
   },
   annual: {
     title: "Pro",
-    price: "$6.00/mo",
+    price: "$10.00/mo",
     description: "Billed annually",
     discountedPrice: "$12.00",
     savings: "Save 60%",

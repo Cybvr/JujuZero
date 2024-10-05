@@ -88,7 +88,7 @@ export default function DashboardPage() {
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground">Popular Tools</h2>
+            <h2 className="text-xl font-semibold text-foreground">What's New</h2>
             <Link href="/dashboard/tools" passHref>
               <Button variant="outline">View All Tools</Button>
             </Link>

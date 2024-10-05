@@ -11,6 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { QrCode, Settings } from 'lucide-react';
 import Toolbar from '../../../components/dashboard/toolbar';
+import { useAuth } from '@/context/AuthContext';
+import AuthModal from '@/components/dashboard/AuthModal';
+import { useToast } from "@/components/ui/use-toast";
+import { getUserCredits, deductCredits } from '@/lib/credits';
+
+const QR_CODE_COST = 10;
+const MAX_CREDITS = 500;
 
 export default function QRCodeGenerator() {
   const [qrContent, setQrContent] = useState('');
@@ -18,13 +25,44 @@ export default function QRCodeGenerator() {
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#FFFFFF');
   const [qrCodeDataURL, setQRCodeDataURL] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [userCredits, setUserCredits] = useState<number | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
-    generateQRCode();
-  }, [qrContent, qrSize, fgColor, bgColor]);
+    async function fetchCredits() {
+      if (user) {
+        const credits = await getUserCredits(user.uid);
+        setUserCredits(credits);
+      }
+    }
+    fetchCredits();
+  }, [user]);
 
   const generateQRCode = async () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    if (userCredits === null || userCredits < QR_CODE_COST) {
+      toast({
+        title: "Insufficient Credits",
+        description: `You need ${QR_CODE_COST} credits to generate a QR code. Please add more credits.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
+      // Deduct credits first
+      await deductCredits(user.uid, QR_CODE_COST);
+      setUserCredits(prevCredits => prevCredits !== null ? Math.max(prevCredits - QR_CODE_COST, 0) : null);
+
       const dataURL = await QRCode.toDataURL(qrContent || 'https://replit.com', {
         width: qrSize,
         color: {
@@ -33,8 +71,19 @@ export default function QRCodeGenerator() {
         }
       });
       setQRCodeDataURL(dataURL);
+      toast({
+        title: "QR Code Generated",
+        description: `${QR_CODE_COST} credits have been deducted from your account.`,
+      });
     } catch (err) {
       console.error("Error generating QR code:", err);
+      toast({
+        title: "Error",
+        description: "Failed to generate QR code. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -111,8 +160,13 @@ export default function QRCodeGenerator() {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <Button variant="default" onClick={generateQRCode} className="w-full sm:w-auto">
-                  Generate QR Code
+                <Button 
+                  variant="default" 
+                  onClick={generateQRCode} 
+                  className="w-full sm:w-auto"
+                  disabled={isLoading || (userCredits !== null && userCredits < QR_CODE_COST)}
+                >
+                  {isLoading ? 'Generating...' : `Generate QR Code (${QR_CODE_COST} credits)`}
                 </Button>
                 {qrCodeDataURL && (
                   <Button 
@@ -129,11 +183,17 @@ export default function QRCodeGenerator() {
                   </Button>
                 )}
               </div>
+              {userCredits !== null && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Your current balance: {userCredits} credits
+                </p>
+              )}
             </form>
           </CardContent>
         </Card>
       </div>
       <Toolbar />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }

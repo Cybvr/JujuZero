@@ -1,5 +1,5 @@
+// context/AuthContaext
 'use client'
-
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged, User } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
@@ -17,10 +17,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Auth state changed. User:", user);
       setUser(user)
       setLoading(false)
     })
-
     return () => unsubscribe()
   }, [])
 

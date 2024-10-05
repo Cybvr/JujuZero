@@ -46,7 +46,7 @@ export default function PricingDialog() {
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Annual</span>
                   <div className="text-right">
-                    <span className="text-lg font-bold">$6.00/mo</span>
+                    <span className="text-lg font-bold">$10.00/mo</span>
                     <span className="text-sm text-gray-500 line-through ml-2">$12.00</span>
                   </div>
                 </div>
@@ -56,7 +56,7 @@ export default function PricingDialog() {
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Monthly</span>
                   <div className="text-right">
-                    <span className="text-lg font-bold">$15.00/mo</span>
+                    <span className="text-lg font-bold">$12.00/mo</span>
                     <span className="text-sm text-gray-500 line-through ml-2">$30.00</span>
                   </div>
                 </div>

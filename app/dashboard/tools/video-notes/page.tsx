@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,6 +9,10 @@ import Toolbar from '../../../components/dashboard/toolbar';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/dashboard/AuthModal';
 import { useToast } from "@/components/ui/use-toast";
+import { getUserCredits, deductCredits } from '@/lib/credits';
+
+const VIDEO_NOTE_COST = 25;
+const MAX_CREDITS = 500;
 
 export default function VideoNotesPage() {
   const [videoUrl, setVideoUrl] = useState('');
@@ -16,8 +20,19 @@ export default function VideoNotesPage() {
   const [result, setResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [userCredits, setUserCredits] = useState<number | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchCredits() {
+      if (user) {
+        const credits = await getUserCredits(user.uid);
+        setUserCredits(credits);
+      }
+    }
+    fetchCredits();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,9 +41,22 @@ export default function VideoNotesPage() {
       return;
     }
 
+    if (userCredits === null || userCredits < VIDEO_NOTE_COST) {
+      toast({
+        title: "Insufficient Credits",
+        description: `You need ${VIDEO_NOTE_COST} credits to generate notes. Please add more credits.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // Deduct credits first
+      await deductCredits(user.uid, VIDEO_NOTE_COST);
+      setUserCredits(prevCredits => prevCredits !== null ? Math.max(prevCredits - VIDEO_NOTE_COST, 0) : null);
+
       const response = await fetch('/api/process-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -42,6 +70,10 @@ export default function VideoNotesPage() {
 
       const data = await response.json();
       setResult(data.result);
+      toast({
+        title: "Notes Generated",
+        description: `${VIDEO_NOTE_COST} credits have been deducted from your account.`,
+      });
     } catch (error) {
       console.error('Video processing failed:', error);
       toast({
@@ -94,10 +126,15 @@ export default function VideoNotesPage() {
                 <Button 
                   type="submit" 
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
-                  disabled={!videoUrl || !selectedOption || isLoading}
+                  disabled={!videoUrl || !selectedOption || isLoading || (userCredits !== null && userCredits < VIDEO_NOTE_COST)}
                 >
-                  {isLoading ? 'Generating Notes...' : 'Generate Notes'}
+                  {isLoading ? 'Generating Notes...' : `Generate Notes (${VIDEO_NOTE_COST} credits)`}
                 </Button>
+                {userCredits !== null && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Your current balance: {userCredits} credits
+                  </p>
+                )}
               </form>
             </CardContent>
           </Card>

@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     question: "What are the pricing options for Juju?",
-    answer: "Juju offers flexible pricing plans: a monthly subscription at $15, an annual subscription at $6/month (billed annually), and a free tier with limited features. Payments are processed securely through our payment gateway.",
+    answer: "Juju offers flexible pricing plans: a monthly subscription at $12, an annual subscription at $10/month (billed annually), and a free tier with limited features. Payments are processed securely through our payment gateway.",
   },
   {
     question: "What are the system requirements for using Juju?",

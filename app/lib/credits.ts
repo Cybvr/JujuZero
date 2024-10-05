@@ -1,97 +1,78 @@
 import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc, setDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, runTransaction } from 'firebase/firestore';
 
-const INITIAL_CREDITS = 500; // Set the initial credit amount for new users
+const INITIAL_CREDITS = 500;
+const MAX_CREDITS = 500;
 
 export async function getUserCredits(userId: string): Promise<number> {
   const userRef = doc(db, 'users', userId);
   const userSnap = await getDoc(userRef);
-  return userSnap.data()?.credits || 0;
+  const userData = userSnap.data();
+  return userData?.hasUnlimitedCredits ? Infinity : (userData?.credits || 0);
 }
 
 export async function deductCredits(userId: string, amount: number): Promise<void> {
-  const userRef = doc(db, 'users', userId);
+  try {
+    await runTransaction(db, async (transaction) => {
+      const userRef = doc(db, 'users', userId);
+      const userDoc = await transaction.get(userRef);
 
-  // First, check if the user has unlimited credits
-  const userSnap = await getDoc(userRef);
-  const hasUnlimitedCredits = userSnap.data()?.hasUnlimitedCredits || false;
+      if (!userDoc.exists()) {
+        throw new Error('User document does not exist!');
+      }
 
-  if (hasUnlimitedCredits) {
-    // If user has unlimited credits, no need to deduct
-    return;
+      const userData = userDoc.data();
+
+      if (userData.hasUnlimitedCredits) {
+        console.log('User has unlimited credits, no deduction needed');
+        return;
+      }
+
+      const currentCredits = userData.credits || 0;
+
+      if (currentCredits < amount) {
+        throw new Error('Not enough credits to perform this action');
+      }
+
+      const newBalance = currentCredits - amount;
+      transaction.update(userRef, { credits: newBalance });
+      console.log('Credits deducted successfully', { userId, amount, newBalance });
+    });
+  } catch (error) {
+    console.error('Error in deductCredits:', error);
+    throw error;
   }
-
-  // Check if user has enough credits
-  const currentCredits = userSnap.data()?.credits || 0;
-  if (currentCredits < amount) {
-    throw new Error('Not enough credits to perform this action');
-  }
-
-  // Deduct the credits
-  await updateDoc(userRef, {
-    credits: increment(-amount)
-  });
 }
 
 export async function addCredits(userId: string, amount: number): Promise<void> {
   const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    credits: increment(amount)
-  });
+  const userSnap = await getDoc(userRef);
+  const userData = userSnap.data();
+
+  if (userData?.hasUnlimitedCredits) {
+    return; // No need to add credits for users with unlimited credits
+  }
+
+  const currentCredits = userData?.credits || 0;
+  const newCredits = Math.min(currentCredits + amount, MAX_CREDITS);
+  await updateDoc(userRef, { credits: newCredits });
 }
 
 export async function hasEnoughCredits(userId: string, amount: number): Promise<boolean> {
   const credits = await getUserCredits(userId);
-  return credits >= amount;
-}
-
-export async function setUnlimitedCredits(userId: string, isUnlimited: boolean): Promise<void> {
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    hasUnlimitedCredits: isUnlimited
-  });
-}
-
-export async function checkUnlimitedCredits(userId: string): Promise<boolean> {
-  const userRef = doc(db, 'users', userId);
-  const userSnap = await getDoc(userRef);
-  return userSnap.data()?.hasUnlimitedCredits || false;
+  return credits === Infinity || credits >= amount;
 }
 
 export async function initializeUserCredits(userId: string): Promise<void> {
   const userRef = doc(db, 'users', userId);
   const userSnap = await getDoc(userRef);
 
-  // Check if the user already has credits initialized
-  if (!userSnap.exists() || !userSnap.data()?.credits) {
-    // Initialize credits and other user properties
-    await setDoc(userRef, {
-      credits: INITIAL_CREDITS,
-      hasUnlimitedCredits: false
-    }, { merge: true });
+  if (!userSnap.exists() || userSnap.data()?.credits === undefined) {
+    await setDoc(userRef, { credits: INITIAL_CREDITS }, { merge: true });
   }
 }
 
-export async function processCredits(userId: string, amount: number): Promise<void> {
+export async function setUnlimitedCredits(userId: string, unlimited: boolean): Promise<void> {
   const userRef = doc(db, 'users', userId);
-  const userSnap = await getDoc(userRef);
-  const userData = userSnap.data();
-
-  if (!userData) {
-    throw new Error('User data not found');
-  }
-
-  if (userData.hasUnlimitedCredits) {
-    // If user has unlimited credits, no need to deduct
-    return;
-  }
-
-  if (userData.credits < amount) {
-    throw new Error('Not enough credits to perform this action');
-  }
-
-  // Deduct the credits
-  await updateDoc(userRef, {
-    credits: increment(-amount)
-  });
+  await updateDoc(userRef, { hasUnlimitedCredits: unlimited });
 }

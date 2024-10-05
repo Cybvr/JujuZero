@@ -1,189 +1,152 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import ReactCrop, { Crop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Toolbar from '../../../components/dashboard/toolbar';
+import { useDropzone } from 'react-dropzone';
+import { useAuth } from '@/context/AuthContext';
+import AuthModal from '@/components/dashboard/AuthModal';
+import { useToast } from "@/components/ui/use-toast";
+import { getUserCredits, deductCredits } from '@/lib/credits';
 
-const CustomSlider: React.FC<{
-  id: string;
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onChange: (value: number) => void;
-  className?: string;
-}> = ({ id, min, max, step, value, onChange, className }) => {
-  return (
-    <input
-      type="range"
-      id={id}
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-      className={className}
-    />
-  );
-};
+const PDF_GENERATION_COST = 25;
 
-export default function ImageCropPage() {
-  const [src, setSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState<Crop>({
-    unit: '%',
-    width: 30,
-    height: 30,
-    x: 0,
-    y: 0
-  });
-  const [aspect, setAspect] = useState<number | undefined>(16 / 9);
-  const [completedCrop, setCompletedCrop] = useState<Crop | null>(null);
-  const [aspectRatio, setAspectRatio] = useState<string>('16:9');
-  const [zoom, setZoom] = useState<number>(1);
+export default function DocumentToPDFPage() {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<boolean>(false);
-  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [userCredits, setUserCredits] = useState<number | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const reader = new FileReader();
-      reader.addEventListener('load', () => setSrc(reader.result as string));
-      reader.readAsDataURL(e.target.files[0]);
+  useEffect(() => {
+    async function fetchCredits() {
+      if (user) {
+        const credits = await getUserCredits(user.uid);
+        setUserCredits(credits);
+      }
     }
-  };
+    fetchCredits();
+  }, [user]);
 
-  const onAspectRatioChange = (value: string) => {
-    setAspectRatio(value);
-    if (value === 'free') {
-      setAspect(undefined);
-    } else if (value === 'custom') {
-      // Handle custom aspect ratio
-    } else {
-      const [width, height] = value.split(':').map(Number);
-      setAspect(width / height);
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      const file = acceptedFiles[0];
+      if (file.size > 10 * 1024 * 1024) {
+        setError('File size exceeds the 10MB limit. Please upload a smaller file.');
+        return;
+      }
+      setDocumentFile(file);
+      setError('');
     }
-  };
+  }, []);
 
-  const onZoomChange = (newZoom: number) => {
-    setZoom(newZoom);
-    if (imgRef.current) {
-      imgRef.current.style.transform = `scale(${newZoom})`;
-    }
-  };
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/pdf': ['.pdf']
+    },
+    maxSize: 10 * 1024 * 1024
+  });
 
-  const getCroppedImg = (image: HTMLImageElement, crop: Crop) => {
-    const canvas = document.createElement('canvas');
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-    canvas.width = crop.width;
-    canvas.height = crop.height;
-    const ctx = canvas.getContext('2d');
-
-    if (ctx) {
-      ctx.drawImage(
-        image,
-        crop.x * scaleX,
-        crop.y * scaleY,
-        crop.width * scaleX,
-        crop.height * scaleY,
-        0,
-        0,
-        crop.width,
-        crop.height
-      );
-    }
-
-    return new Promise<string>((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          reject(new Error('Canvas is empty'));
-          return;
-        }
-        resolve(URL.createObjectURL(blob));
-      }, 'image/jpeg');
-    });
-  };
-
-  const handleCropClick = async () => {
-    if (!completedCrop || !imgRef.current) {
-      setError('Please select a crop area');
+  const handleGeneratePDF = async () => {
+    if (!user) {
+      setShowAuthModal(true);
       return;
     }
 
+    if (userCredits === null || userCredits < PDF_GENERATION_COST) {
+      toast({
+        title: "Insufficient Credits",
+        description: `You need ${PDF_GENERATION_COST} credits to generate a PDF. Please add more credits.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!documentFile) {
+      setError('Please upload a document file.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setSuccess(false);
+
     try {
-      const croppedImageUrl = await getCroppedImg(imgRef.current, completedCrop);
-      console.log('Cropped image URL:', croppedImageUrl);
+      await deductCredits(user.uid, PDF_GENERATION_COST);
+      setUserCredits(prevCredits => prevCredits !== null ? Math.max(prevCredits - PDF_GENERATION_COST, 0) : null);
+
+      const formData = new FormData();
+      formData.append('file', documentFile);
+
+      const response = await fetch('/api/convert-to-pdf', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('PDF conversion failed');
+      }
+
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'converted_document.pdf';
+      link.click();
+
       setSuccess(true);
-      setError('');
-      // Here you would typically send the cropped image to a server or download it
+      toast({
+        title: "PDF Generated",
+        description: `${PDF_GENERATION_COST} credits have been deducted from your account.`,
+      });
     } catch (e) {
-      setError('Failed to crop image');
+      setError('Failed to generate PDF. Please try again.');
+      console.error(e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
-        <h1 className="text-xl sm:text-xl font-bold mb-2">Image Crop</h1>
-        <p className="text-muted-foreground mb-4 sm:mb-6">Crop images easily to your desired dimensions.</p>
-        <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+        <h1 className="text-xl sm:text-2xl font-bold mb-2">Document to PDF Converter</h1>
+        <p className="text-muted-foreground mb-4 sm:mb-6">Convert your documents to PDF while maintaining formatting.</p>
+        <Card className="bg-background shadow-md rounded-lg overflow-hidden">
           <CardContent className="p-4 sm:p-6">
-            <div className="space-y-4 sm:space-y-6">
-              <div>
-                <Label htmlFor="image-upload" className="block text-sm font-medium mb-2">Upload Image</Label>
-                <Input type="file" id="image-upload" className="w-full" accept="image/*" onChange={onSelectFile} />
-                <p className="mt-1 text-xs sm:text-sm text-muted-foreground">Supported formats: JPG, PNG, WebP, GIF</p>
+            <form onSubmit={(e) => { e.preventDefault(); handleGeneratePDF(); }} className="space-y-4 sm:space-y-6">
+              <div {...getRootProps()} className="p-4 border-2 border-dashed rounded-md border-primary/50 bg-primary/5 text-center cursor-pointer transition-colors hover:border-primary">
+                <input {...getInputProps()} />
+                {isDragActive ? (
+                  <p className="text-primary">Drop the file here ...</p>
+                ) : (
+                  <p className="text-primary">Drag 'n' drop a document (.docx or .pdf) file here (max 10MB), or click to select files</p>
+                )}
               </div>
-              {src && (
-                <div className="max-w-full overflow-auto">
-                  <ReactCrop
-                    crop={crop}
-                    onChange={(c, percentCrop) => setCrop(percentCrop)}
-                    onComplete={(c) => setCompletedCrop(c)}
-                    aspect={aspect}
-                  >
-                    <img ref={imgRef} src={src} style={{ maxWidth: '100%' }} />
-                  </ReactCrop>
-                </div>
+              {documentFile && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Selected file: {documentFile.name}
+                </p>
               )}
-              <div>
-                <Label htmlFor="aspect-ratio" className="block text-sm font-medium mb-2">Aspect Ratio</Label>
-                <Select value={aspectRatio} onValueChange={onAspectRatioChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select aspect ratio" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free Form</SelectItem>
-                    <SelectItem value="1:1">1:1 (Square)</SelectItem>
-                    <SelectItem value="4:3">4:3</SelectItem>
-                    <SelectItem value="16:9">16:9</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="zoom" className="block text-sm font-medium mb-2">Zoom</Label>
-                <CustomSlider
-                  id="zoom"
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  value={zoom}
-                  onChange={onZoomChange}
-                  className="w-full"
-                />
-              </div>
-              <Button variant="default" className="w-full bg-primary text-white hover:bg-primary-dark" onClick={handleCropClick}>
-                Crop Image
+              <Button
+                type="submit"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary-dark"
+                disabled={isLoading || !documentFile || (userCredits !== null && userCredits < PDF_GENERATION_COST)}
+              >
+                {isLoading ? 'Converting...' : `Generate PDF (${PDF_GENERATION_COST} credits)`}
               </Button>
-            </div>
+              {userCredits !== null && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Your current balance: {userCredits} credits
+                </p>
+              )}
+            </form>
             {error && (
               <Alert variant="destructive" className="mt-4">
                 <AlertDescription>{error}</AlertDescription>
@@ -191,13 +154,14 @@ export default function ImageCropPage() {
             )}
             {success && (
               <Alert className="mt-4">
-                <AlertDescription>Image cropped successfully!</AlertDescription>
+                <AlertDescription>PDF generated successfully!</AlertDescription>
               </Alert>
             )}
           </CardContent>
         </Card>
       </div>
       <Toolbar />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }

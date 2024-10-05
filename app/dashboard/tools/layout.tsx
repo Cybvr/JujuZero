@@ -32,7 +32,7 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
       {/* Added pb-16 for bottom spacing */}
-      <main className="flex-grow container mx-auto py-6 px-6 sm:px-2 sm:px-1 pb-24 bg-background">
+      <main className="flex-grow container mx-auto py-6 px-6 sm:px-4 sm:px-2 pb-24 bg-background">
         {children}
       </main>
       <Footer />

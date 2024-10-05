@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { setUnlimitedCredits } from '@/lib/credits';
+import { addCredits } from '@/lib/credits';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2 } from 'lucide-react';
+
+const SUBSCRIPTION_CREDITS = 1000;
 
 export default function Subscription() {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,12 +16,10 @@ export default function Subscription() {
 
     setIsLoading(true);
     try {
-      // Here you would typically integrate with a payment processor
-      // For this example, we'll just set the user to have unlimited credits
-      await setUnlimitedCredits(user.uid, true);
-      alert('Successfully subscribed to Pro plan!');
+      await addCredits(user.uid, SUBSCRIPTION_CREDITS);
+      alert(`Successfully subscribed! ${SUBSCRIPTION_CREDITS} credits added to your account.`);
     } catch (error) {
-      console.error('Error subscribing to Pro plan:', error);
+      console.error('Error subscribing:', error);
       alert('Failed to subscribe. Please try again.');
     } finally {
       setIsLoading(false);
@@ -30,16 +30,16 @@ export default function Subscription() {
     <Card>
       <CardHeader>
         <CardTitle>Juju Pro</CardTitle>
-        <CardDescription>Unlimited credits for your creative journey</CardDescription>
+        <CardDescription>More credits for your creative journey</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="mb-4">
-          <p className="text-2xl font-bold">$15/month</p>
+          <p className="text-2xl font-bold">$12/month</p>
           <p className="text-sm text-muted-foreground">Billed monthly</p>
         </div>
         <ul className="space-y-2">
           {[
-            'Unlimited credits',
+            `${SUBSCRIPTION_CREDITS} credits per month`,
             'Priority support',
             'Early access to new features',
             'Exclusive Pro community'

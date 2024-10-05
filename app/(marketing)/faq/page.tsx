@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     question: "How much does Juju cost?",
-    answer: "Juju offers a flexible pricing plan with a monthly subscription of $10. We also have a free tier with limited features. Check our pricing page for more details."
+    answer: "Juju offers a flexible pricing plan with a monthly subscription of $15. We also have a free tier with limited features. Check our pricing page for more details."
   },
   {
     question: "Can I use Juju on my mobile device?",

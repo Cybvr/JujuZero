@@ -4,31 +4,33 @@ import Image from 'next/image';
 import { useTheme } from 'next-themes';
 
 const toolCategories = {
-  "CONVERSION": [
-    { name: 'QR Code Generator', href: '/dashboard/tools/qr-code-generator' },
+  "WORKSPACE": [
+    { name: 'Simple PDF', href: '/dashboard/tools/simple-pdf' },
     { name: 'Audio to MP3', href: '/dashboard/tools/audio-to-mp3' },
     { name: 'Document to PDF', href: '/dashboard/tools/document-to-pdf' },
-    { name: 'Simple PDF', href: '/dashboard/tools/simple-pdf' },
-    { name: 'Invoice Generator', href: '/dashboard/tools/invoice-generator' },
   ],
-  "IMAGE": [
-    { name: 'Remove Background', href: '/dashboard/tools/remove-background', isHot: true },
-    { name: 'Compress Image', href: '/dashboard/tools/compress-image' },
-    { name: 'Image Crop', href: '/dashboard/tools/image-crop' },
-    { name: 'Add Watermark', href: '/dashboard/tools/add-watermark' },
+  "AI-POWERED": [
+    { name: 'Video Notes', href: '/dashboard/tools/video-notes', isNew: true },
     { name: 'Sketch to Image', href: '/dashboard/tools/sketch-to-image' },
-    { name: 'Uncrop', href: '/dashboard/tools/uncrop' },
     { name: 'Image Reimagine', href: '/dashboard/tools/imagine' },
-  ],
-  "TEXT": [
-    { name: 'Grammar Checker', href: '/dashboard/tools/grammar-checker' },
     { name: 'Paraphraser', href: '/dashboard/tools/paraphraser' },
     { name: 'Text Summarizer', href: '/dashboard/tools/text-summarizer' },
     { name: 'Visual Summarizer', href: '/dashboard/tools/visual-summarizer', isFresh: true },
   ],
+  "PRODUCTIVITY": [
+    { name: 'Invoice Generator', href: '/dashboard/tools/invoice-generator' },
+    { name: 'QR Code Generator', href: '/dashboard/tools/qr-code-generator' },
+    { name: 'Grammar Checker', href: '/dashboard/tools/grammar-checker' },
+  ],
+  "DESIGN": [
+    { name: 'Remove Background', href: '/dashboard/tools/remove-background', isHot: true },
+    { name: 'Compress Image', href: '/dashboard/tools/compress-image' },
+    { name: 'Image Crop', href: '/dashboard/tools/image-crop' },
+    { name: 'Add Watermark', href: '/dashboard/tools/add-watermark' },
+    { name: 'Uncrop', href: '/dashboard/tools/uncrop' },
+  ],
   "VIDEO": [
     { name: 'Video to MP4', href: '/dashboard/tools/video-to-mp4' },
-    { name: 'Video Notes', href: '/dashboard/tools/video-notes', isNew: true },
   ],
 };
 
@@ -66,7 +68,7 @@ export default function Footer() {
   return (
     <footer className="bg-card text-foreground">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {Object.entries(toolCategories).map(([category, tools]) => (
             <div key={category}>
               <h3 className="text-sm font-semibold tracking-wider uppercase mb-4 text-primary">

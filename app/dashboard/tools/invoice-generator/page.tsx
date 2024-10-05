@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import AuthModal from '@/components/dashboard/AuthModal';
+import { getUserCredits, deductCredits } from '@/lib/credits';
+
+const INVOICE_GENERATION_COST = 20;
 
 const invoiceSchema = z.object({
   invoiceNumber: z.string().min(1, "Invoice number is required"),
@@ -34,6 +38,9 @@ type InvoiceFormData = z.infer<typeof invoiceSchema>;
 export default function InvoiceGeneratorPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [userCredits, setUserCredits] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { control, handleSubmit, watch } = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
@@ -55,6 +62,16 @@ export default function InvoiceGeneratorPage() {
   const watchItems = watch("items");
   const watchTaxRate = watch("taxRate");
   const watchCurrency = watch("currency");
+
+  useEffect(() => {
+    async function fetchCredits() {
+      if (user) {
+        const credits = await getUserCredits(user.uid);
+        setUserCredits(credits);
+      }
+    }
+    fetchCredits();
+  }, [user]);
 
   const calculateSubtotal = () => {
     return watchItems.reduce((total, item) => total + (item.quantity * item.price), 0);
@@ -102,11 +119,31 @@ export default function InvoiceGeneratorPage() {
   };
 
   const onSubmit = async (data: InvoiceFormData) => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    if (userCredits === null || userCredits < INVOICE_GENERATION_COST) {
+      toast({
+        title: "Insufficient Credits",
+        description: `You need ${INVOICE_GENERATION_COST} credits to generate an invoice. Please add more credits.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
+      // Deduct credits first
+      await deductCredits(user.uid, INVOICE_GENERATION_COST);
+      setUserCredits(prevCredits => prevCredits !== null ? Math.max(prevCredits - INVOICE_GENERATION_COST, 0) : null);
+
       generatePDF(data);
       toast({
         title: "Success",
-        description: "Invoice generated successfully!",
+        description: `Invoice generated successfully! ${INVOICE_GENERATION_COST} credits have been deducted from your account.`,
       });
     } catch (error) {
       console.error('PDF generation failed:', error);
@@ -115,6 +152,8 @@ export default function InvoiceGeneratorPage() {
         description: "Failed to generate invoice. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -215,9 +254,18 @@ export default function InvoiceGeneratorPage() {
                 <strong>Total: {calculateTotal().toFixed(2)} {watchCurrency}</strong>
               </div>
 
-              <div className="flex justify-end mt-4">
-                <Button type="submit">
-                  <Download className="mr-2 h-4 w-4" /> Generate Invoice
+              <div className="flex justify-between items-center mt-4">
+                {userCredits !== null && (
+                  <p className="text-sm text-muted-foreground">
+                    Your current balance: {userCredits} credits
+                  </p>
+                )}
+                <Button 
+                  type="submit"
+                  disabled={isLoading || (userCredits !== null && userCredits < INVOICE_GENERATION_COST)}
+                >
+                  <Download className="mr-2 h-4 w-4" /> 
+                  {isLoading ? 'Generating...' : `Generate Invoice (${INVOICE_GENERATION_COST} credits)`}
                 </Button>
               </div>
             </form>
@@ -227,6 +275,7 @@ export default function InvoiceGeneratorPage() {
       <div className="w-full lg:w-auto">
         <Toolbar />
       </div>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }

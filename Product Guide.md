@@ -66,8 +66,8 @@ Juju offers a wide range of tools to meet your file management and marketing nee
 
 7. Pricing and Plans
 Juju offers a flexible pricing plan to suit your needs:
-- Monthly subscription: $15
-- Annual subscription: $6/month (billed annually)
+- Monthly subscription: $12
+- Annual subscription: $10/month (billed annually)
 - Free tier available with limited features
 Payment processed securely through our payment gateway
 

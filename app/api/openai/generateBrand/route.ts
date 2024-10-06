@@ -1,5 +1,3 @@
-// File: /app/api/openai/route.ts
-
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 
@@ -13,13 +11,13 @@ export async function POST(request: Request) {
     const completion = await openai.chat.completions.create({
       model: "gpt-4-turbo-preview",
       messages: [
-        { role: "system", content: "You are a helpful assistant that generates comprehensive brand strategy and identity data for marketing projects." },
-        { role: "user", content: `Generate a complete brand project based on the following information:\nProject name: ${name}\nDescription: ${description}` }
+        { role: "system", content: "You are an expert brand strategist and designer. Generate a comprehensive brand profile based on the given name and description." },
+        { role: "user", content: `Create a full brand profile for a brand named "${name}" with the following description: "${description}"` }
       ],
       functions: [
         {
-          name: "generate_project_data",
-          description: "Generate comprehensive project data based on the project name and description",
+          name: "generate_brand_profile",
+          description: "Generate a comprehensive brand profile",
           parameters: {
             type: "object",
             properties: {
@@ -33,12 +31,11 @@ export async function POST(request: Request) {
                   targetAudience: { type: "string" },
                   positioning: { type: "string" },
                 },
-                required: ["mission", "vision", "targetAudience", "positioning"]
               },
               visualIdentity: {
                 type: "object",
                 properties: {
-                  logo: { type: "string", description: "A description of the logo" },
+                  logoDescription: { type: "string" },
                   colorPalette: { type: "array", items: { type: "string" } },
                   typography: {
                     type: "object",
@@ -46,10 +43,8 @@ export async function POST(request: Request) {
                       primary: { type: "string" },
                       secondary: { type: "string" },
                     },
-                    required: ["primary", "secondary"]
                   },
                 },
-                required: ["logo", "colorPalette", "typography"]
               },
               brandVoice: {
                 type: "object",
@@ -57,52 +52,33 @@ export async function POST(request: Request) {
                   toneOfVoice: { type: "string" },
                   keyMessages: { type: "array", items: { type: "string" } },
                 },
-                required: ["toneOfVoice", "keyMessages"]
-              },
-              design: {
-                type: "object",
-                properties: {
-                  templates: { type: "array", items: { type: "string" }, description: "Descriptions of design templates" },
-                },
-                required: ["templates"]
               },
               socialMedia: {
                 type: "object",
                 properties: {
-                  scheduledPosts: {
-                    type: "array",
-                    items: {
+                  suggestedPosts: { 
+                    type: "array", 
+                    items: { 
                       type: "object",
                       properties: {
                         content: { type: "string" },
-                        scheduledDate: { type: "string", format: "date-time" },
                         platform: { type: "string" },
                       },
-                      required: ["content", "scheduledDate", "platform"]
-                    }
+                    },
                   },
                 },
-                required: ["scheduledPosts"]
-              },
-              analytics: {
-                type: "object",
-                properties: {
-                  weeklyEngagement: { type: "number" },
-                  websiteTraffic: { type: "number" },
-                },
-                required: ["weeklyEngagement", "websiteTraffic"]
               },
             },
-            required: ["name", "tagline", "brandStrategy", "visualIdentity", "brandVoice", "design", "socialMedia", "analytics"],
+            required: ["name", "tagline", "brandStrategy", "visualIdentity", "brandVoice", "socialMedia"],
           },
         },
       ],
-      function_call: { name: "generate_project_data" },
+      function_call: { name: "generate_brand_profile" },
     });
 
     const functionCallResult = completion.choices[0].message?.function_call?.arguments;
     if (!functionCallResult) {
-      return NextResponse.json({ error: "Failed to generate project data" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to generate brand profile" }, { status: 500 });
     }
 
     const parsedResult = JSON.parse(functionCallResult);

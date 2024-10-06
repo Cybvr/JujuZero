@@ -140,7 +140,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
       <Link href="/dashboard/projects" className={buttonClasses('/dashboard/projects')}>
         <Button variant="ghost" className={buttonClasses('/dashboard/projects')}>
           <Briefcase className={iconClasses('/dashboard/projects')} />
-          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Projects</span>
+          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">BrandAI</span>
         </Button>
       </Link>
     </>
@@ -229,7 +229,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                       <item.icon className={iconClasses(item.path)} />
                     </Button>
                   ))}
-                  <Button variant="ghost" className="w-full justify-center" title="Projects">
+                  <Button variant="ghost" className="w-full justify-center" title="BrandAI">
                     <Briefcase className={iconClasses('/dashboard/projects')} />
                   </Button>
                 </>

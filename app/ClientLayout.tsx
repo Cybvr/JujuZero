@@ -35,7 +35,7 @@ const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: 
 
 const FooterMenu = () => {
   const pathname = usePathname();
-  const shouldHideFooter = pathname === '/dashboard/sidekick';
+  const shouldHideFooter = pathname === '/dashboard/projects';
 
   if (shouldHideFooter) {
     return null;
@@ -47,7 +47,7 @@ const FooterMenu = () => {
         <FooterMenuItem href="/dashboard" icon={Home} label="Home" />
         <FooterMenuItem href="/dashboard/tools" icon={Wand2} label="Apps" />
         <FooterMenuItem href="/dashboard/documents" icon={FolderIcon} label="Documents" />
-        <FooterMenuItem href="/dashboard/sidekick" icon={MessageSquare} label="Sidekick" />
+        <FooterMenuItem href="/dashboard/projects" icon={MessageSquare} label="Projects" />
       </div>
     </nav>
   );

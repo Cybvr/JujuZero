@@ -1,368 +1,243 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import BrandGuidelinesAsset from '@/components/assets/BrandGuidelinesAsset';
-import MarketingCopyAsset from '@/components/assets/MarketingCopyAsset';
-import LandingPageAsset from '@/components/assets/LandingPageAsset';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Wand2, Share2, Trash2, ArrowLeft, Home, BookOpen, MessageSquare, Layout, ChevronDown, Pencil, Plus } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast";
-import { db } from '@/lib/firebase';
-import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RegenerateDialog } from '@/components/dashboard/RegenerateDialog';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Edit, Users, DownloadCloud } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
+import { Breadcrumbs, BreadcrumbItem } from "@/components/ui/breadcrumbs";
 
-interface Project {
-  id: string;
+// Define the project type to explicitly list all properties
+type Project = {
   name: string;
-  description: string;
-  logo: string;
-  brandGuidelines: {
-    colors: string[];
-    logos: string[];
-    typography: string[];
-    brandValues: string[];
-    tagline: string;
-    missionStatement: string;
+  tagline?: string;
+  logo?: string;
+  brandStrategy?: {
+    mission?: string;
+    vision?: string;
+    targetAudience?: string;
+    positioning?: string;
   };
-  marketingCopy: string;
-  landingPage: string;
-  tokenCount?: number;
-}
+  visualIdentity?: {
+    logoDescription?: string;
+    colorPalette?: string[];
+    typography?: {
+      primary?: string;
+      secondary?: string;
+    };
+  };
+  brandVoice?: {
+    toneOfVoice?: string;
+    keyMessages?: string[];
+  };
+  socialMedia?: {
+    suggestedPosts?: {
+      content: string;
+      platform: string;
+    }[];
+  };
+};
 
-export default function ProjectDetails({ params }: { params: { projectId: string } }) {
+export default function ProjectDashboard({ params }: { params: { projectId: string } }) {
+  // Define project state with the Project type or null
   const [project, setProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [isRegenerateDialogOpen, setIsRegenerateDialogOpen] = useState(false);
-  const router = useRouter();
-  const { toast } = useToast();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchProject = async () => {
+    const fetchProjectData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const docRef = doc(db, 'projects', params.projectId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProject({ id: docSnap.id, ...docSnap.data() } as Project);
-        } else {
-          toast({
-            title: "Project not found",
-            description: "The requested project does not exist.",
-            variant: "destructive",
-          });
-          router.push('/dashboard');
+        console.log(`Fetching project data for ID: ${params.projectId}`);
+
+        const response = await fetch(`/api/projects/${params.projectId}`);
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('Error response:', errorText);
+          throw new Error(`Failed to fetch project data: ${response.status} ${errorText}`);
         }
+
+        const projectData = await response.json();
+        console.log('Fetched project data:', projectData);
+        setProject(projectData);
       } catch (error) {
-        console.error("Error fetching project:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch project details.",
-          variant: "destructive",
-        });
+        console.error("Detailed error fetching project data:", error);
+        setError(error.message);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchProject();
-  }, [params.projectId, router, toast]);
+    fetchProjectData();
+  }, [params.projectId]);
 
-  const handleTitleChange = async (newTitle: string) => {
-    if (!project) return;
-    setIsEditingTitle(false);
-    try {
-      const docRef = doc(db, 'projects', project.id);
-      await updateDoc(docRef, { name: newTitle });
-      setProject(prev => prev ? { ...prev, name: newTitle } : null);
-      toast({
-        title: "Success",
-        description: "Project title updated successfully.",
-      });
-    } catch (error) {
-      console.error("Error updating project title:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update project title.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleRegenerate = async (prompt: string, option: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: project?.name, 
-          description: project?.description,
-          prompt,
-          option
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to regenerate project content');
-      }
-
-      const newData = await response.json();
-
-      // Update the project with new data
-      const docRef = doc(db, 'projects', params.projectId);
-      await updateDoc(docRef, newData);
-
-      // Update local state
-      setProject(prev => prev ? { ...prev, ...newData } : null);
-
-      toast({
-        title: "Success",
-        description: "Project content regenerated successfully.",
-      });
-    } catch (error) {
-      console.error('Error regenerating project:', error);
-      toast({
-        title: "Error",
-        description: "Failed to regenerate project content.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAction = async (action: 'regenerate' | 'share' | 'delete') => {
-    if (!project) return;
-    setIsLoading(true);
-    try {
-      switch (action) {
-        case 'regenerate':
-          setIsRegenerateDialogOpen(true);
-          break;
-        case 'share':
-          // Implement share logic here
-          break;
-        case 'delete':
-          await deleteDoc(doc(db, 'projects', project.id));
-          toast({
-            title: "Success",
-            description: "Project deleted successfully.",
-          });
-          router.push('/dashboard');
-          break;
-      }
-    } catch (error) {
-      console.error(`Error performing ${action} action:`, error);
-      toast({
-        title: "Error",
-        description: `Failed to ${action} project.`,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSave = async (section: keyof Project, newContent: any) => {
-    if (!project) return;
-    try {
-      const docRef = doc(db, 'projects', project.id);
-      await updateDoc(docRef, { [section]: newContent });
-      setProject(prev => prev ? { ...prev, [section]: newContent } : null);
-      toast({
-        title: "Success",
-        description: `${section} updated successfully.`,
-      });
-    } catch (error) {
-      console.error(`Error updating ${section}:`, error);
-      toast({
-        title: "Error",
-        description: `Failed to update ${section}.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const sections = [
-    { id: 'brandGuidelines', title: 'Brand Guidelines' },
-    { id: 'marketingCopy', title: 'Marketing Copy' },
-    { id: 'landingPage', title: 'Landing Page' },
-  ];
-
-  const SidebarContent = () => (
-    <nav className="space-y-2">
-      <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/dashboard')}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-      </Button>
-      {sections.map(({ id, title }) => (
-        <Button key={id} variant="ghost" className="w-full justify-start" onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })}>
-          {title}
-        </Button>
-      ))}
-    </nav>
-  );
-
-  if (isLoading) {
+  if (loading) {
     return <div>Loading...</div>;
   }
 
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
+
   if (!project) {
-    return <div>Project not found</div>;
+    return <div>No project data available.</div>;
   }
 
   return (
-    <div className="min-h-screen bg-accent">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row">
-          {/* Mobile Header */}
-          <div className="lg:hidden bg-background sticky top-0 z-10 p-4 pt-0">
-            <Collapsible open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-              <div className="flex justify-between items-center">
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost">
-                    Menu <ChevronDown className="h-4 w-4 ml-2" />
-                  </Button>
-                </CollapsibleTrigger>
-                <div className="flex space-x-2">
-                  <Button onClick={() => handleAction('regenerate')} size="icon" variant="ghost">
-                    <Wand2 className="h-5 w-5" />
-                  </Button>
-                  <Button onClick={() => handleAction('share')} size="icon" variant="ghost">
-                    <Share2 className="h-5 w-5" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Project</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this project? This action is irreversible.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleAction('delete')} className="bg-red-500">
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
-              <CollapsibleContent className="mt-4">
-                <SidebarContent />
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
+    <div className="container mx-auto px-8 py-8">
+      <Breadcrumbs>
+        <BreadcrumbItem isActive={false}>
+          <Link href="/dashboard/projects">Projects</Link>
+        </BreadcrumbItem>
+        <BreadcrumbItem isActive={true}>
+          {project.name || 'Untitled Project'}
+        </BreadcrumbItem>
+      </Breadcrumbs>
 
-          {/* Sidebar - hidden on mobile */}
-          <div className="hidden lg:block w-48 p-4 sticky top-0 self-start h-screen overflow-y-auto">
-            <SidebarContent />
-          </div>
-
-          {/* Main content */}
-          <div className="w-full lg:flex-1 p-4 overflow-y-auto">
-            <div className="bg-accent shadow-sm rounded-lg p-4 mb-4">
-              {isEditingTitle ? (
-                <Input
-                  value={project?.name || ''}
-                  onChange={(e) => setProject(prev => prev ? { ...prev, name: e.target.value } : null)}
-                  onBlur={(e) => handleTitleChange(e.target.value)}
-                  className="text-2xl font-semibold"
-                  autoFocus
-                />
-              ) : (
-                <div className="flex items-center">
-                  <h1 className="text-2xl font-semibold flex items-center">
-                    {project?.name}
-                    <Button variant="ghost" size="sm" onClick={() => setIsEditingTitle(true)} className="ml-2">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </h1>
-                  {project.logo && (
-                    <img src={project.logo} alt="Project Logo" className="w-10 h-10 ml-4 rounded-full" />
-                  )}
-                </div>
-              )}
-            </div>
-            {sections.map(({ id, title }) => (
-              <Card key={id} className="bg-accent border-0 shadow-sm p-2 mb-4" id={id}>
-                <CardContent className="p-0">
-                  {id === 'brandGuidelines' && (
-                    <BrandGuidelinesAsset content={project.brandGuidelines} onSave={(newContent) => handleSave(id, newContent)} />
-                  )}
-                  {id === 'marketingCopy' && (
-                    <MarketingCopyAsset content={project.marketingCopy} onSave={(newContent) => handleSave(id, newContent)} 
-                      init={{
-                        height: 500,
-                        menubar: false,
-                        branding: false,
-                        plugins: [
-                          'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                          'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                          'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                        ],
-                        toolbar: 'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-                        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-                      }}/>
-                  )}
-                  {id === 'landingPage' && (
-                    <LandingPageAsset content={project.landingPage} onSave={(newContent) => handleSave(id, newContent)} />
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Toolbar - hidden on mobile */}
-          <div className="hidden lg:block w-16 p-2 pr-2 sticky top-4 self-start h-screen">
-            <div className="flex flex-col space-y-2 bg-background p-2">
-              <Button onClick={() => handleAction('regenerate')} disabled={isLoading} className="p-2 bg-transparent">
-                <Wand2 className="h-4 w-4 text-black" />
-              </Button>
-              <Button onClick={() => handleAction('share')} disabled={isLoading} className="p-2 bg-transparent">
-                <Share2 className="h-4 w-4 text-black" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" disabled={isLoading} className="p-2 bg-transparent">
-                    <Trash2 className="h-4 w-4 text-black" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Project</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this project? This action is irreversible.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleAction('delete')} className="bg-red-500">
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+      <div className="flex justify-between items-center mb-6 mt-4">
+        <div className="flex items-center space-x-4">
+          <Avatar 
+              src={project.logo || null} 
+              alt={project.name} 
+              className="h-20 w-20"
+          />
+          <div>
+            <h1 className="text-3xl font-bold">{project.name || 'Untitled Project'}</h1>
+            <p className="text-muted-foreground">{project.tagline || 'No tagline available'}</p>
           </div>
         </div>
+        <div className="flex space-x-2">
+          <Button variant="outline" className="border-2 border-gray-300">
+            <Users className="mr-2 h-4 w-4" />
+            Invite
+          </Button>
+          <Button variant="outline" className="border-2 border-gray-300">
+            <DownloadCloud className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Button>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Brand
+          </Button>
+        </div>
       </div>
-      <RegenerateDialog 
-        isOpen={isRegenerateDialogOpen}
-        onClose={() => setIsRegenerateDialogOpen(false)}
-        onRegenerate={handleRegenerate}
-      />
+
+      <Tabs defaultValue="strategy" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="strategy">Brand Strategy</TabsTrigger>
+          <TabsTrigger value="identity">Visual Identity</TabsTrigger>
+          <TabsTrigger value="voice">Brand Voice</TabsTrigger>
+          <TabsTrigger value="design">Design</TabsTrigger>
+          <TabsTrigger value="social">Social Media</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="strategy">
+          <Card>
+            <CardHeader>
+              <CardTitle>Strategy Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Mission: {project.brandStrategy?.mission || 'Not defined'}</p>
+              <p>Vision: {project.brandStrategy?.vision || 'Not defined'}</p>
+              <p>Target Audience: {project.brandStrategy?.targetAudience || 'Not defined'}</p>
+              <p>Positioning: {project.brandStrategy?.positioning || 'Not defined'}</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="identity">
+          <Card>
+            <CardHeader>
+              <CardTitle>Visual Identity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Logo Description: {project.visualIdentity?.logoDescription || 'Not defined'}</p>
+              <div>
+                <p>Color Palette:</p>
+                <div className="flex space-x-2 mt-2">
+                  {project.visualIdentity?.colorPalette?.map((color, index) => (
+                    <div key={index} className="w-10 h-10 rounded-full" style={{ backgroundColor: color }}></div>
+                  )) || 'Not defined'}
+                </div>
+              </div>
+              <p>Primary Font: {project.visualIdentity?.typography?.primary || 'Not defined'}</p>
+              <p>Secondary Font: {project.visualIdentity?.typography?.secondary || 'Not defined'}</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="voice">
+          <Card>
+            <CardHeader>
+              <CardTitle>Brand Voice</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Tone of Voice: {project.brandVoice?.toneOfVoice || 'Not defined'}</p>
+              <div>
+                <p>Key Messages:</p>
+                <ul className="list-disc list-inside">
+                  {project.brandVoice?.keyMessages?.map((message, index) => (
+                    <li key={index}>{message}</li>
+                  )) || 'Not defined'}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="design">
+          <Card>
+            <CardHeader>
+              <CardTitle>Design</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Design details will be displayed here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="social">
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Media</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <p>Suggested Posts:</p>
+                <ul className="list-disc list-inside">
+                  {project.socialMedia?.suggestedPosts?.map((post, index) => (
+                    <li key={index}>{post.content} (Platform: {post.platform})</li>
+                  )) || 'Not defined'}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Analytics data will be displayed here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

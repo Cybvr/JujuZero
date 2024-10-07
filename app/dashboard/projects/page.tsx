@@ -60,7 +60,7 @@ export default function ProjectsListPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 py-16 sm:py-20 md:py-24 lg:py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Your Projects</h1>
         <Link href="/dashboard/projects/new">

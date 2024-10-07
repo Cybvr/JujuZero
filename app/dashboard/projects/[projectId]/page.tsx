@@ -1,17 +1,19 @@
-'use client'
+'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Users, DownloadCloud } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from '@/context/AuthContext';
-import Link from 'next/link';
-import { Breadcrumbs, BreadcrumbItem } from "@/components/ui/breadcrumbs";
+import BrandMetrics from '@/components/dashboard/BrandMetrics';
+import ProjectHeader from '@/components/dashboard/ProjectHeader';
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
-// Define the project type to explicitly list all properties
+// Define Project type
 type Project = {
   name: string;
   tagline?: string;
@@ -43,7 +45,6 @@ type Project = {
 };
 
 export default function ProjectDashboard({ params }: { params: { projectId: string } }) {
-  // Define project state with the Project type or null
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,165 +80,317 @@ export default function ProjectDashboard({ params }: { params: { projectId: stri
     fetchProjectData();
   }, [params.projectId]);
 
+  const handleInputChange = (
+    section: keyof Project,
+    field: string,
+    value: any,
+    nestedField?: string
+  ) => {
+    setProject(prev => {
+      if (!prev) return prev;
+
+      const sectionData = prev[section] || {};
+
+      if (nestedField && typeof sectionData === 'object') {
+        return {
+          ...prev,
+          [section]: {
+            ...sectionData,
+            [field]: {
+              ...(sectionData[field] as object),
+              [nestedField]: value
+            }
+          }
+        };
+      }
+
+      if (typeof sectionData === 'object') {
+        return {
+          ...prev,
+          [section]: {
+            ...sectionData,
+            [field]: value
+          }
+        };
+      }
+
+      // Handle case where section is not an object
+      return {
+        ...prev,
+        [section]: value
+      };
+    });
+  };
+
+  const handleSave = async (section: keyof Project) => {
+    try {
+      const response = await fetch(`/api/projects/${params.projectId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ [section]: project?.[section] }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save changes');
+      }
+
+      console.log(`${section} updated successfully`);
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      setError('Failed to save changes. Please try again.');
+    }
+  };
+
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   if (error) {
     return (
-      <Alert variant="destructive">
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
+      <div className="p-4">
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   if (!project) {
-    return <div>No project data available.</div>;
+    return <div className="p-4">No project data available.</div>;
   }
 
   return (
-    <div className="container mx-auto px-8 py-8">
-      <Breadcrumbs>
-        <BreadcrumbItem isActive={false}>
-          <Link href="/dashboard/projects">Projects</Link>
-        </BreadcrumbItem>
-        <BreadcrumbItem isActive={true}>
-          {project.name || 'Untitled Project'}
-        </BreadcrumbItem>
-      </Breadcrumbs>
+    <div className="container mx-auto px-4 sm:px-6 md:px-8 py-16 sm:py-20 md:py-24 lg:py-8">
+      <ProjectHeader 
+        projectName={project.name}
+        projectTagline={project.tagline}
+        projectLogo={project.logo}
+      />
 
-      <div className="flex justify-between items-center mb-6 mt-4">
-        <div className="flex items-center space-x-4">
-          <Avatar 
-              src={project.logo || null} 
-              alt={project.name} 
-              className="h-20 w-20"
-          />
-          <div>
-            <h1 className="text-3xl font-bold">{project.name || 'Untitled Project'}</h1>
-            <p className="text-muted-foreground">{project.tagline || 'No tagline available'}</p>
-          </div>
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="w-full lg:w-3/4">
+          <Tabs defaultValue="strategy" className="space-y-6">
+            <TabsList className="flex overflow-x-auto overflow-y-hidden whitespace-nowrap pb-2 mb-4 justify-start no-scrollbar">
+              <TabsTrigger value="strategy" className="px-4 py-2 flex-shrink-0">Brand Strategy</TabsTrigger>
+              <TabsTrigger value="identity" className="px-4 py-2 flex-shrink-0">Visual Identity</TabsTrigger>
+              <TabsTrigger value="voice" className="px-4 py-2 flex-shrink-0">Brand Voice</TabsTrigger>
+              <TabsTrigger value="social" className="px-4 py-2 flex-shrink-0">Social Media</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="strategy">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Strategy Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <label htmlFor="mission" className="block text-sm font-medium mb-2">Mission:</label>
+                      <Textarea
+                        id="mission"
+                        value={project.brandStrategy?.mission || ''}
+                        onChange={(e) => handleInputChange('brandStrategy', 'mission', e.target.value)}
+                        className="w-full"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="vision" className="block text-sm font-medium mb-2">Vision:</label>
+                      <Textarea
+                        id="vision"
+                        value={project.brandStrategy?.vision || ''}
+                        onChange={(e) => handleInputChange('brandStrategy', 'vision', e.target.value)}
+                        className="w-full"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="targetAudience" className="block text-sm font-medium mb-2">Target Audience:</label>
+                      <Textarea
+                        id="targetAudience"
+                        value={project.brandStrategy?.targetAudience || ''}
+                        onChange={(e) => handleInputChange('brandStrategy', 'targetAudience', e.target.value)}
+                        className="w-full"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="positioning" className="block text-sm font-medium mb-2">Positioning:</label>
+                      <Textarea
+                        id="positioning"
+                        value={project.brandStrategy?.positioning || ''}
+                        onChange={(e) => handleInputChange('brandStrategy', 'positioning', e.target.value)}
+                        className="w-full"
+                        rows={3}
+                      />
+                    </div>
+                    <Button onClick={() => handleSave('brandStrategy')} className="w-full sm:w-auto">Save Changes</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="identity">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Visual Identity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <label htmlFor="logoDescription" className="block text-sm font-medium mb-2">Logo Description:</label>
+                      <Textarea
+                        id="logoDescription"
+                        value={project.visualIdentity?.logoDescription || ''}
+                        onChange={(e) => handleInputChange('visualIdentity', 'logoDescription', e.target.value)}
+                        className="w-full"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Color Palette:</label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {project.visualIdentity?.colorPalette?.map((color, index) => (
+                          <div key={index} className="flex flex-col items-center">
+                            <Input
+                              type="color"
+                              value={color}
+                              onChange={(e) => {
+                                const newPalette = [...(project.visualIdentity?.colorPalette || [])];
+                                newPalette[index] = e.target.value;
+                                handleInputChange('visualIdentity', 'colorPalette', newPalette);
+                              }}
+                              className="w-12 h-12 p-1 rounded-full"
+                            />
+                            <span className="text-xs mt-1">{color}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="primaryFont" className="block text-sm font-medium mb-2">Primary Font:</label>
+                      <Input
+                        id="primaryFont"
+                        value={project.visualIdentity?.typography?.primary || ''}
+                        onChange={(e) => handleInputChange('visualIdentity', 'typography', e.target.value, 'primary')}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="secondaryFont" className="block text-sm font-medium mb-2">Secondary Font:</label>
+                      <Input
+                        id="secondaryFont"
+                        value={project.visualIdentity?.typography?.secondary || ''}
+                        onChange={(e) => handleInputChange('visualIdentity', 'typography', e.target.value, 'secondary')}
+                        className="w-full"
+                      />
+                    </div>
+                    <Button onClick={() => handleSave('visualIdentity')} className="w-full sm:w-auto">Save Changes</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="voice">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Brand Voice</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <label htmlFor="toneOfVoice" className="block text-sm font-medium mb-2">Tone of Voice:</label>
+                      <Textarea
+                        id="toneOfVoice"
+                        value={project.brandVoice?.toneOfVoice || ''}
+                        onChange={(e) => handleInputChange('brandVoice', 'toneOfVoice', e.target.value)}
+                        className="w-full"
+                        rows={4}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Key Messages:</label>
+                      {project.brandVoice?.keyMessages?.map((message, index) => (
+                        <Input
+                          key={index}
+                          value={message}
+                          onChange={(e) => {
+                            const newMessages = [...(project.brandVoice?.keyMessages || [])];
+                            newMessages[index] = e.target.value;
+                            handleInputChange('brandVoice', 'keyMessages', newMessages);
+                          }}
+                          className="w-full mt-2"
+                        />
+                      ))}
+                    </div>
+                    <Button onClick={() => handleSave('brandVoice')} className="w-full sm:w-auto">Save Changes</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="social">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Social Media</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <label className="block text-sm font-medium mb-2">Suggested Posts:</label>
+                    <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                      {project.socialMedia?.suggestedPosts?.map((post, index) => (
+                        <div key={index} className="mb-4 p-4 bg-muted rounded-lg">
+                          <Textarea
+                            value={post.content}
+                            onChange={(e) => {
+                              const newPosts = [...(project.socialMedia?.suggestedPosts || [])];
+                              newPosts[index] = { ...post, content: e.target.value };
+                              handleInputChange('socialMedia', 'suggestedPosts', newPosts);
+                            }}
+                            className="w-full mb-2"
+                            rows={3}
+                          />
+                          <Input
+                            value={post.platform}
+                            onChange={(e) => {
+                              const newPosts = [...(project.socialMedia?.suggestedPosts || [])];
+                              newPosts[index] = { ...post, platform: e.target.value };
+                              handleInputChange('socialMedia', 'suggestedPosts', newPosts);
+                            }}
+                            className="w-full"
+                            placeholder="Platform"
+                          />
+                        </div>
+                      ))}
+                    </ScrollArea>
+                    <Button onClick={() => handleSave('socialMedia')} className="w-full sm:w-auto">Save Changes</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" className="border-2 border-gray-300">
-            <Users className="mr-2 h-4 w-4" />
-            Invite
-          </Button>
-          <Button variant="outline" className="border-2 border-gray-300">
-            <DownloadCloud className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Brand
-          </Button>
+
+        <div className="w-full lg:w-1/4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Brand Metrics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BrandMetrics 
+                healthScore={85}
+                healthMessage="Your brand is strong. Keep up the good work!"
+                achievements={["Social Media Guru", "Content Creator", "Brand Strategist"]}
+                level={3}
+                xp={65}
+                maxXp={100}
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      <Tabs defaultValue="strategy" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="strategy">Brand Strategy</TabsTrigger>
-          <TabsTrigger value="identity">Visual Identity</TabsTrigger>
-          <TabsTrigger value="voice">Brand Voice</TabsTrigger>
-          <TabsTrigger value="design">Design</TabsTrigger>
-          <TabsTrigger value="social">Social Media</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="strategy">
-          <Card>
-            <CardHeader>
-              <CardTitle>Strategy Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Mission: {project.brandStrategy?.mission || 'Not defined'}</p>
-              <p>Vision: {project.brandStrategy?.vision || 'Not defined'}</p>
-              <p>Target Audience: {project.brandStrategy?.targetAudience || 'Not defined'}</p>
-              <p>Positioning: {project.brandStrategy?.positioning || 'Not defined'}</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="identity">
-          <Card>
-            <CardHeader>
-              <CardTitle>Visual Identity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Logo Description: {project.visualIdentity?.logoDescription || 'Not defined'}</p>
-              <div>
-                <p>Color Palette:</p>
-                <div className="flex space-x-2 mt-2">
-                  {project.visualIdentity?.colorPalette?.map((color, index) => (
-                    <div key={index} className="w-10 h-10 rounded-full" style={{ backgroundColor: color }}></div>
-                  )) || 'Not defined'}
-                </div>
-              </div>
-              <p>Primary Font: {project.visualIdentity?.typography?.primary || 'Not defined'}</p>
-              <p>Secondary Font: {project.visualIdentity?.typography?.secondary || 'Not defined'}</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="voice">
-          <Card>
-            <CardHeader>
-              <CardTitle>Brand Voice</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Tone of Voice: {project.brandVoice?.toneOfVoice || 'Not defined'}</p>
-              <div>
-                <p>Key Messages:</p>
-                <ul className="list-disc list-inside">
-                  {project.brandVoice?.keyMessages?.map((message, index) => (
-                    <li key={index}>{message}</li>
-                  )) || 'Not defined'}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="design">
-          <Card>
-            <CardHeader>
-              <CardTitle>Design</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Design details will be displayed here.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="social">
-          <Card>
-            <CardHeader>
-              <CardTitle>Social Media</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div>
-                <p>Suggested Posts:</p>
-                <ul className="list-disc list-inside">
-                  {project.socialMedia?.suggestedPosts?.map((post, index) => (
-                    <li key={index}>{post.content} (Platform: {post.platform})</li>
-                  )) || 'Not defined'}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Analytics data will be displayed here.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, PanelLeftOpen, PanelLeftClose, List, Briefcase, Moon, Sun, MessageSquare, Coins } from 'lucide-react'; 
+import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, PanelLeftOpen, PanelLeftClose, List, Briefcase, Moon, Sun, MessageSquare, Coins, User } from 'lucide-react'; 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -141,6 +141,13 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
         <Button variant="ghost" className={buttonClasses('/dashboard/projects')}>
           <Briefcase className={iconClasses('/dashboard/projects')} />
           <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">BrandAI</span>
+        </Button>
+      </Link>
+      <Separator className="my-2" />
+      <Link href="/dashboard/account" className={buttonClasses('/dashboard/account')}>
+        <Button variant="ghost" className={buttonClasses('/dashboard/account')}>
+          <User className={iconClasses('/dashboard/account')} />
+          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Account</span>
         </Button>
       </Link>
     </>

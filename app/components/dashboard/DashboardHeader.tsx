@@ -15,7 +15,7 @@ export default function DashboardHeader({ className }: DashboardHeaderProps) {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   return (
-    <header className={`flex justify-between items-center p-4 bg-background ${className ?? ''}`}>
+    <header className={`flex justify-between items-center p-4 bg-purple-700 ${className ?? ''}`}>
       <div className="flex items-center space-x-2">
         <ToolsSearch />
       </div>

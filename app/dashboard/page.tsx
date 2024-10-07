@@ -82,7 +82,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-4 py-8 sm:py-2 sm:px-0 md:px-2 lg:px-8">
         <h1 className="text-xl font-semibold mb-6 text-foreground">👋 Welcome</h1>
 

@@ -1,3 +1,5 @@
+// app/(marketing)/components/NavigationMenuWrapper.tsx
+
 import React from 'react'
 import Link from 'next/link'
 import {
@@ -30,19 +32,20 @@ const tools: Tool[] = [
   { name: 'Invoice Generator', slug: 'invoice-generator' },
   { name: 'QR Code Generator', slug: 'qr-code-generator' },
   { name: 'Grammar Checker', slug: 'grammar-checker' },
-  { name: 'Remove Background', slug: 'remove-background', isHot: true },
+  { name: 'Remove Background', slug: 'remove-background' },
   { name: 'Compress Image', slug: 'compress-image' },
   { name: 'Image Crop', slug: 'image-crop' },
   { name: 'Add Watermark', slug: 'add-watermark' },
   { name: 'Uncrop', slug: 'uncrop' },
   { name: 'Video to MP4', slug: 'video-to-mp4' },
+  { name: 'Text Behind Image', slug: 'text-behind-image', isHot: true },
 ]
 
 const groupedTools = {
   'Workspace': tools.filter(tool => ['simple-pdf', 'audio-to-mp3', 'document-to-pdf'].includes(tool.slug)),
   'AI-powered': tools.filter(tool => ['video-notes', 'sketch-to-image', 'imagine', 'paraphraser', 'text-summarizer', 'visual-summarizer'].includes(tool.slug)),
   'Productivity': tools.filter(tool => ['invoice-generator', 'qr-code-generator', 'grammar-checker'].includes(tool.slug)),
-  'Design': tools.filter(tool => ['remove-background', 'compress-image', 'image-crop', 'add-watermark', 'uncrop'].includes(tool.slug)),
+  'Design': tools.filter(tool => ['remove-background', 'compress-image', 'image-crop', 'add-watermark', 'uncrop', 'text-behind-image'].includes(tool.slug)),
   'Video': tools.filter(tool => ['video-to-mp4'].includes(tool.slug)),
 }
 

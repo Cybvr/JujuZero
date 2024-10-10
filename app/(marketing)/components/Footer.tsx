@@ -1,3 +1,5 @@
+// app/(marketing)/components/Footer.tsx
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -23,11 +25,12 @@ const toolCategories = {
     { name: 'Grammar Checker', href: '/dashboard/tools/grammar-checker' },
   ],
   "DESIGN": [
-    { name: 'Remove Background', href: '/dashboard/tools/remove-background', isHot: true },
+    { name: 'Remove Background', href: '/dashboard/tools/remove-background' },
     { name: 'Compress Image', href: '/dashboard/tools/compress-image' },
     { name: 'Image Crop', href: '/dashboard/tools/image-crop' },
     { name: 'Add Watermark', href: '/dashboard/tools/add-watermark' },
     { name: 'Uncrop', href: '/dashboard/tools/uncrop' },
+    { name: 'Text Behind Image', href: '/dashboard/tools/text-behind-image', isHot: true },
   ],
   "VIDEO": [
     { name: 'Video to MP4', href: '/dashboard/tools/video-to-mp4' },

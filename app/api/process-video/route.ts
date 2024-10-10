@@ -58,6 +58,7 @@ async function fetchTranscript(videoId: string): Promise<string> {
 
 async function processTranscript(transcript: string, option: string): Promise<string> {
   const instructions = {
+    summary: "Provide a concise summary of the main points discussed in the video, capturing the key ideas and conclusions in about 3-5 paragraphs.",
     faq: "Generate a FAQ with 5 question-answer pairs based on the transcript.",
     studyGuide: "Create a study guide with 5-7 key points based on the transcript.",
     tableOfContents: "Generate a table of contents with 5-7 main sections and timestamps based on the transcript.",

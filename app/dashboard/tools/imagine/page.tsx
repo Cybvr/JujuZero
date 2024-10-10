@@ -6,14 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Toolbar from '@/components/dashboard/toolbar'
 import { useDropzone } from 'react-dropzone'
-import { Loader2, Upload } from 'lucide-react'
+import { Loader2, Upload, AlertCircle } from 'lucide-react'
 import { cn } from "@/lib/utils"
+import { useAuth } from '@/context/AuthContext'
+import { useToast } from '@/components/ui/use-toast'
+
+const REIMAGINE_COST = 50; // Cost is now only used for backend reference
 
 export default function ReimagineToolPage() {
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState<string>("")
   const [loading, setLoading] = useState<boolean>(false)
   const [resultImages, setResultImages] = useState<string[]>([])
+  const [progress, setProgress] = useState<string>("")
+  const { user } = useAuth()
+  const { toast } = useToast()
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0]) {
@@ -30,6 +37,15 @@ export default function ReimagineToolPage() {
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to use the reimagine tool.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!file) {
       setError("Please upload an image file.");
       return;
@@ -38,32 +54,79 @@ export default function ReimagineToolPage() {
     setLoading(true);
     setError("");
     setResultImages([]);
+    setProgress("");
+
+    // Input validation
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      setError("File size too large. Please upload an image smaller than 5MB.");
+      setLoading(false);
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Invalid file type. Please upload a JPEG, PNG, or GIF image.");
+      setLoading(false);
+      return;
+    }
 
     const form = new FormData();
     form.append('image_file', file);
 
-    try {
-      const results = await Promise.all([1, 2].map(async () => {
-        const response = await fetch('https://clipdrop-api.co/reimagine/v1/reimagine', {
-          method: 'POST',
-          headers: { 'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY || '', },
-          body: form,
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        setProgress(`Attempt ${attempt + 1} of ${maxRetries}...`);
+        const results = await Promise.all([1, 2].map(async () => {
+          const response = await fetch('https://clipdrop-api.co/reimagine/v1/reimagine', {
+            method: 'POST',
+            headers: { 'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY || '', },
+            body: form,
+          });
+
+          if (!response.ok) {
+            if (response.status === 400) {
+              throw new Error("Bad request. Please check your input and try again.");
+            } else if (response.status === 401) {
+              throw new Error("Unauthorized. Please check your API key.");
+            } else if (response.status === 429) {
+              throw new Error("Too many requests. Please try again later.");
+            } else {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+          }
+
+          const blob = await response.blob();
+          return URL.createObjectURL(blob);
+        }));
+
+        setResultImages(results);
+        setProgress("");
+
+        toast({
+          title: 'Images Reimagined',
+          description: 'Your images have been successfully reimagined.',
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        break; // Success, exit the retry loop
+      } catch (error) {
+        console.error("Attempt " + (attempt + 1) + " failed:", error);
+        if (attempt === maxRetries - 1) {
+          if (error instanceof Error) {
+            setError("An error occurred: " + error.message);
+          } else {
+            setError("An unexpected error occurred. Please try again.");
+          }
+        } else {
+          // Wait before retrying (exponential backoff)
+          const delay = 1000 * Math.pow(2, attempt);
+          setProgress(`Retrying in ${delay / 1000} seconds...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
-
-        const blob = await response.blob();
-        return URL.createObjectURL(blob);
-      }));
-
-      setResultImages(results);
-    } catch (error) {
-      setError("An error occurred while processing the image: " + (error as Error).message);
-    } finally {
-      setLoading(false);
+      }
     }
+
+    setLoading(false);
   };
 
   return (
@@ -95,7 +158,7 @@ export default function ReimagineToolPage() {
                 <img src={URL.createObjectURL(file)} alt="Selected" className="mt-2 max-h-64 mx-auto rounded-md" />
               </div>
             )}
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-start">
               <Button onClick={handleSubmit} disabled={!file || loading}>
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Generate
@@ -103,7 +166,13 @@ export default function ReimagineToolPage() {
             </div>
             {error && (
               <Alert variant="destructive" className="mt-4">
+                <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {progress && (
+              <Alert className="mt-4">
+                <AlertDescription>{progress}</AlertDescription>
               </Alert>
             )}
           </CardContent>

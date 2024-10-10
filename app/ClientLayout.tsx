@@ -1,7 +1,7 @@
 "use client";
 
 import './globals.css';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from 'next-themes';
 import Link from 'next/link';
@@ -10,7 +10,6 @@ import { Home, Wand2, User, Plus, MessageSquare, FolderIcon } from 'lucide-react
 import { Button } from "@/components/ui/button";
 import QuestionButton from '@/components/dashboard/QuestionButton';
 import Script from 'next/script';
-import usePageTracking from '@/hooks/usePageTracking';
 import { Toaster } from "@/components/ui/toaster";
 
 const FooterMenuItem = ({ href, icon: Icon, label, isRounded = false }: { href: string; icon: React.ElementType; label?: string; isRounded?: boolean }) => {
@@ -53,13 +52,17 @@ const FooterMenu = () => {
   );
 };
 
+const LoadingFallback = () => (
+  <div className="flex justify-center items-center h-screen">
+    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+  </div>
+);
+
 export default function ClientLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  usePageTracking();
-
   return (
     <html lang="en" suppressHydrationWarning className="font-geist">
       <body className="bg-background text-foreground">
@@ -69,14 +72,16 @@ export default function ClientLayout({
         />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <div className="pb-16 md:pb-0">
-              {children}
-            </div>
-            <FooterMenu />
-            <div className="hidden md:block">
-              <QuestionButton />
-            </div>
-            <Toaster />
+            <Suspense fallback={<LoadingFallback />}>
+              <div className="pb-16 md:pb-0">
+                {children}
+              </div>
+              <FooterMenu />
+              <div className="hidden md:block">
+                <QuestionButton />
+              </div>
+              <Toaster />
+            </Suspense>
           </AuthProvider>
         </ThemeProvider>
       </body>

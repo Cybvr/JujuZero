@@ -1,207 +1,134 @@
-// File: /app/components/BrandWizard.tsx
-'use client';
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, PlusCircle, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+"use client";
+
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent } from "@/components/ui/card"
+import Toolbar from '../../../components/dashboard/toolbar';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/components/ui/use-toast';
-import { getUserCredits, deductCredits } from '@/lib/credits';
+import AuthModal from '@/components/dashboard/AuthModal';
+import { useToast } from "@/components/ui/use-toast";
+import { deductCredits } from '@/lib/credits';
 
-const BRAND_GENERATION_COST = 100;
+const VIDEO_NOTE_COST = 25; // Kept for backend use, not displayed
 
-const samplePrompts = [
-  {
-    title: 'Snippet 1',
-    fullText: 'Hi, my brand is a lemonade store selling fresh and organic lemonade to health-conscious consumers.',
-  },
-  {
-    title: 'Snippet 2',
-    fullText: 'Hello there! We are a tech startup focused on AI solutions that automate simple daily tasks.',
-  },
-  {
-    title: 'Snippet 3',
-    fullText: 'Greetings! Our brand champions eco-friendly clothing for a sustainable future.',
-  },
-];
-
-export default function BrandWizard() {
-  const [initialInput, setInitialInput] = useState({
-    name: '',
-    description: '',
-  });
-  const [projectData, setProjectData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [currentStep, setCurrentStep] = useState('input');
-  const [userCredits, setUserCredits] = useState<number | null>(null);
+export default function VideoNotesPage() {
+  const [videoUrl, setVideoUrl] = useState('');
+  const [selectedOption, setSelectedOption] = useState('');
+  const [result, setResult] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    async function fetchCredits() {
-      if (user) {
-        const credits = await getUserCredits(user.uid);
-        setUserCredits(credits);
-      }
-    }
-    fetchCredits();
-  }, [user]);
-
-  const maxDescriptionLength = 500;
-
-  const validateInput = () => {
-    if (initialInput.name.trim() === '') {
-      setError('Brand name is required');
-      return false;
-    }
-    if (initialInput.description.trim() === '') {
-      setError('Brand description is required');
-      return false;
-    }
-    if (initialInput.description.length < 10) {
-      setError('Brand description should be at least 10 characters long');
-      return false;
-    }
-    return true;
-  };
-
-  const generateFullBrand = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!user) {
-      toast({
-        title: 'Authentication Required',
-        description: 'Please log in to generate a brand.',
-        variant: 'destructive',
-      });
+      setShowAuthModal(true);
       return;
     }
 
-    if (userCredits === null || userCredits < BRAND_GENERATION_COST) {
-      toast({
-        title: 'Insufficient Credits',
-        description: `You need ${BRAND_GENERATION_COST} credits to generate a brand. Please add more credits.`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!validateInput()) return;
-
-    setLoading(true);
-    setError('');
+    setIsLoading(true);
 
     try {
-      await deductCredits(user.uid, BRAND_GENERATION_COST);
-      setUserCredits((prevCredits) => (prevCredits !== null ? Math.max(prevCredits - BRAND_GENERATION_COST, 0) : null));
+      // Credit deduction happens on the backend
+      await deductCredits(user.uid, VIDEO_NOTE_COST);
 
-      const response = await fetch('/api/openai/generateBrand', {
+      const response = await fetch('/api/process-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(initialInput),
+        body: JSON.stringify({ video_url: videoUrl, option: selectedOption }),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process video');
       }
 
       const data = await response.json();
-      setProjectData(data);
-      setCurrentStep('review');
+      setResult(data.result);
       toast({
-        title: 'Brand Generated',
-        description: `${BRAND_GENERATION_COST} credits have been deducted from your account.`,
+        title: "Notes Generated",
+        description: "Your notes have been successfully generated.",
       });
     } catch (error) {
-      console.error('Error generating brand:', error);
-      setError('Failed to generate brand. Please try again.');
+      console.error('Video processing failed:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Video processing failed. Please try again.",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
-
-  const onDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (e.target.value.length <= maxDescriptionLength) {
-      setInitialInput((prev) => ({ ...prev, description: e.target.value }));
-    }
-  };
-
-  const renderInputStep = () => (
-    <div className="space-y-2">
-      <Input
-        placeholder="Brand Name"
-        value={initialInput.name}
-        onChange={(e) => setInitialInput((prev) => ({ ...prev, name: e.target.value }))}
-        className="w-full"
-      />
-      <Textarea
-        placeholder="Brief description or concept for your brand"
-        value={initialInput.description}
-        onChange={onDescriptionChange}
-        className="w-full"
-      />
-      <p className="text-xs text-muted-foreground text-right">
-        {initialInput.description.length}/{maxDescriptionLength}
-      </p>
-      <div className="space-y-1">
-        <p className="text-xs text-muted-foreground">Select a sample description to insert:</p>
-        <div className="flex space-x-2">
-          {samplePrompts.map((prompt, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              size="sm"
-              className="h-8 w-auto flex items-center space-x-1"
-              onClick={() => setInitialInput((prev) => ({ ...prev, description: prompt.fullText }))}
-            >
-              <PlusCircle className="h-3 w-3" />
-              <span>{prompt.title}</span>
-            </Button>
-          ))}
-        </div>
-      </div>
-      <div className="flex justify-end">
-        <Button onClick={generateFullBrand} disabled={loading} className="flex items-center space-x-2">
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          <span>Build ({BRAND_GENERATION_COST} credits)</span>
-        </Button>
-      </div>
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-    </div>
-  );
-
-  const renderReviewStep = () => (
-    <div>
-      <p>Review your generated brand data here...</p>
-    </div>
-  );
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>{currentStep === 'input' ? 'Create Your Brand' : 'Review Your Brand'}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {currentStep === 'input' ? renderInputStep() : renderReviewStep()}
-        {currentStep === 'review' && (
-          <div className="mt-4 space-x-4">
-            <Button onClick={() => setCurrentStep('input')}>Start Over</Button>
-            <Button>Save Brand</Button>
-          </div>
-        )}
-      </CardContent>
-      {userCredits !== null && (
-        <p className="text-sm text-muted-foreground mt-2 text-center">
-          Your current balance: {userCredits} credits
-        </p>
-      )}
-    </Card>
+    <div className="flex flex-col lg:flex-row">
+      <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
+        <h1 className="text-xl sm:text-xl font-bold mb-2">Video Notes</h1>
+        <p className="text-muted-foreground mb-4 sm:mb-6">Generate notes from YouTube videos with our AI-powered tool</p>
+        <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+          <Card className="lg:w-1/2">
+            <CardContent className="p-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="videoUrl" className="block text-sm font-medium mb-2">YouTube Video URL</label>
+                  <Input
+                    id="videoUrl"
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    required
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="option" className="block text-sm font-medium mb-2">Note Type</label>
+                  <select
+                    id="option"
+                    value={selectedOption}
+                    onChange={(e) => setSelectedOption(e.target.value)}
+                    required
+                    className="w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+                  >
+                    <option value="">Select a note type</option>
+                    <option value="summary">Summary</option>
+                    <option value="faq">FAQ</option>
+                    <option value="studyGuide">Study Guide</option>
+                    <option value="tableOfContents">Table of Contents</option>
+                    <option value="timeline">Timeline</option>
+                    <option value="briefingDoc">Briefing Document</option>
+                  </select>
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
+                  disabled={!videoUrl || !selectedOption || isLoading}
+                >
+                  {isLoading ? 'Generating Notes...' : 'Generate Notes'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+          <Card className="lg:w-1/2">
+            <CardContent className="p-4">
+              <h3 className="text-lg font-semibold mb-2">Generated Notes:</h3>
+              <Textarea
+                value={result}
+                readOnly
+                className="w-full h-[calc(100vh-400px)]"
+                placeholder="Your generated notes will appear here..."
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      <div className="w-full lg:w-auto">
+        <Toolbar />
+      </div>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+    </div>
   );
 }

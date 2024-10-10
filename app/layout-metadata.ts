@@ -1,5 +1,5 @@
-// app/layout-metadata
-import { Metadata } from 'next'; 
+// app/layout-metadata.ts
+import { Metadata, Viewport } from 'next'; 
 
 export const metadata: Metadata = {
   title: 'Juju: Simple tools for simple tasks',
@@ -9,8 +9,6 @@ export const metadata: Metadata = {
     apple: '/icon-192x192.png',
   },
   manifest: '/manifest.json',
-  themeColor: '#ffffff',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
   openGraph: {
     title: 'Juju: Simple tools for simple tasks',
     description: 'Juju is your all-in-one platform for file conversion and editing tasks. We offer a suite of tools including PDF conversion, image editing, text tools, data conversion, and AI-powered features.',
@@ -24,3 +22,12 @@ export const metadata: Metadata = {
     images: ['https://jujuagi.com/images/marketing/feature1.png'],
   },
 };
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
+// If you need to set a theme color, you can do it like this:
+export const themeColor = '#ffffff';

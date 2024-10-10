@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Wand2, QrCode, Image, Video, FileAudio, FileText, Crop, Stamp, Search } from 'lucide-react';
+import { Wand2, QrCode, Image, Video, FileAudio, FileText, Crop, Stamp, Search, FileVideo, PenTool, RefreshCw, Sparkles, FileSpreadsheet } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -17,17 +17,24 @@ import {
 } from "@/components/ui/popover";
 
 const tools = [
-  { name: 'Grammar Checker', slug: 'grammar-checker', description: 'Check and improve your text\'s grammar.', icon: FileText, category: 'Text', access: 'free' },
-  { name: 'Paraphraser', slug: 'paraphraser', description: 'Rephrase your text in different styles with AI.', icon: FileText, category: 'Text', access: 'free' },
-  { name: 'Text Summarizer', slug: 'text-summarizer', description: 'Quickly summarize long texts with AI.', icon: FileText, category: 'Text', access: 'free' },
-  { name: 'QR Code Generator', slug: 'qr-code-generator', description: 'Create custom QR codes easily.', icon: QrCode, category: 'Conversion', access: 'free' },
-  { name: 'Remove Background', slug: 'remove-background', description: 'Easily remove image backgrounds.', icon: Image, category: 'Image', access: 'free' },
-  { name: 'Compress Image', slug: 'compress-image', description: 'Reduce image file size without losing quality.', icon: Image, category: 'Image', access: 'free' },
-  { name: 'Video to MP4', slug: 'video-to-mp4', description: 'Convert various video formats to MP4.', icon: Video, category: 'Conversion', access: 'free' },
-  { name: 'Audio to MP3', slug: 'audio-to-mp3', description: 'Convert audio files to MP3 format.', icon: FileAudio, category: 'Conversion', access: 'signin' },
-  { name: 'Document to PDF', slug: 'document-to-pdf', description: 'Convert documents like Word, Excel, and PowerPoint to PDF format.', icon: FileText, category: 'Conversion', access: 'signin' },
-  { name: 'Image Crop', slug: 'image-crop', description: 'Crop images easily.', icon: Crop, category: 'Image', access: 'premium' },
-  { name: 'Add Watermark', slug: 'add-watermark', description: 'Add watermark to images.', icon: Stamp, category: 'Image', access: 'premium' },
+  { name: 'Simple PDF', slug: 'simple-pdf', description: 'Work with PDF files easily.', icon: FileText, category: 'Workspace', access: 'free' },
+  { name: 'Audio to MP3', slug: 'audio-to-mp3', description: 'Convert audio files to MP3 format.', icon: FileAudio, category: 'Workspace', access: 'free' },
+  { name: 'Document to PDF', slug: 'document-to-pdf', description: 'Convert documents to PDF format.', icon: FileText, category: 'Workspace', access: 'free' },
+  { name: 'Video Notes', slug: 'video-notes', description: 'Take notes while watching videos.', icon: FileVideo, category: 'AI-Powered', access: 'premium', isNew: true },
+  { name: 'Sketch to Image', slug: 'sketch-to-image', description: 'Convert sketches to images using AI.', icon: PenTool, category: 'AI-Powered', access: 'premium' },
+  { name: 'Image Reimagine', slug: 'imagine', description: 'Reimagine images with AI.', icon: Wand2, category: 'AI-Powered', access: 'premium' },
+  { name: 'Paraphraser', slug: 'paraphraser', description: 'Rephrase text using AI.', icon: RefreshCw, category: 'AI-Powered', access: 'free' },
+  { name: 'Text Summarizer', slug: 'text-summarizer', description: 'Summarize text using AI.', icon: FileText, category: 'AI-Powered', access: 'free' },
+  { name: 'Visual Summarizer', slug: 'visual-summarizer', description: 'Summarize visuals using AI.', icon: Image, category: 'AI-Powered', access: 'premium', isFresh: true },
+  { name: 'Invoice Generator', slug: 'invoice-generator', description: 'Generate professional invoices.', icon: FileSpreadsheet, category: 'Productivity', access: 'free' },
+  { name: 'QR Code Generator', slug: 'qr-code-generator', description: 'Create QR codes easily.', icon: QrCode, category: 'Productivity', access: 'free' },
+  { name: 'Grammar Checker', slug: 'grammar-checker', description: 'Check and correct grammar in text.', icon: FileText, category: 'Productivity', access: 'free' },
+  { name: 'Remove Background', slug: 'remove-background', description: 'Remove image backgrounds.', icon: Image, category: 'Design', access: 'free', isHot: true },
+  { name: 'Compress Image', slug: 'compress-image', description: 'Compress images without losing quality.', icon: Image, category: 'Design', access: 'free' },
+  { name: 'Image Crop', slug: 'image-crop', description: 'Crop images easily.', icon: Crop, category: 'Design', access: 'free' },
+  { name: 'Add Watermark', slug: 'add-watermark', description: 'Add watermarks to images.', icon: Stamp, category: 'Design', access: 'free' },
+  { name: 'Uncrop', slug: 'uncrop', description: 'Expand images beyond their original borders.', icon: Sparkles, category: 'Design', access: 'premium' },
+  { name: 'Video to MP4', slug: 'video-to-mp4', description: 'Convert videos to MP4 format.', icon: Video, category: 'Video', access: 'free' },
 ];
 
 export default function ToolsSearch() {
@@ -67,6 +74,21 @@ export default function ToolsSearch() {
                   <CommandItem onSelect={() => setOpen(false)}>
                     <tool.icon className="mr-2 h-4 w-4" />
                     <span>{tool.name}</span>
+                    {tool.isNew && (
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white">
+                        NEW
+                      </span>
+                    )}
+                    {tool.isHot && (
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-500 text-white">
+                        HOT
+                      </span>
+                    )}
+                    {tool.isFresh && (
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500 text-white">
+                        FRESH
+                      </span>
+                    )}
                   </CommandItem>
                 </Link>
               ))}

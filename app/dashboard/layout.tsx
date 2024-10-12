@@ -4,10 +4,13 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import PricingDialog from '@/components/dashboard/PricingDialog';
 import { PricingDialogProvider } from '@/context/PricingDialogContext';
+import { useTheme } from 'next-themes';
+import Script from 'next/script';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const { theme, resolvedTheme } = useTheme();
 
   useEffect(() => {
     const handleResize = () => {
@@ -20,11 +23,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Add resize event listener
     window.addEventListener('resize', handleResize);
 
-    // Clean up event listener on component unmount
+    // Update theme color
+    const updateThemeColor = () => {
+      const themeColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor);
+    };
+    updateThemeColor();
+
+    // Clean up event listeners on component unmount
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [resolvedTheme]);
 
   return (
     <PricingDialogProvider>
@@ -38,6 +48,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
       <PricingDialog />
+      <Script
+        src="https://js.stripe.com/v3/"
+        strategy="lazyOnload"
+      />
     </PricingDialogProvider>
   );
 }

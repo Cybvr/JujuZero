@@ -1,3 +1,7 @@
+'use client'
+
+// app/components/dashboard/ToolsSearch.tsx
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Wand2, QrCode, Image, Video, FileAudio, FileText, Crop, Stamp, Search, FileVideo, PenTool, RefreshCw, Sparkles, FileSpreadsheet } from 'lucide-react';
@@ -29,12 +33,13 @@ const tools = [
   { name: 'Invoice Generator', slug: 'invoice-generator', description: 'Generate professional invoices.', icon: FileSpreadsheet, category: 'Productivity', access: 'free' },
   { name: 'QR Code Generator', slug: 'qr-code-generator', description: 'Create QR codes easily.', icon: QrCode, category: 'Productivity', access: 'free' },
   { name: 'Grammar Checker', slug: 'grammar-checker', description: 'Check and correct grammar in text.', icon: FileText, category: 'Productivity', access: 'free' },
-  { name: 'Remove Background', slug: 'remove-background', description: 'Remove image backgrounds.', icon: Image, category: 'Design', access: 'free', isHot: true },
+  { name: 'Remove Background', slug: 'remove-background', description: 'Remove image backgrounds.', icon: Image, category: 'Design', access: 'free' },
   { name: 'Compress Image', slug: 'compress-image', description: 'Compress images without losing quality.', icon: Image, category: 'Design', access: 'free' },
   { name: 'Image Crop', slug: 'image-crop', description: 'Crop images easily.', icon: Crop, category: 'Design', access: 'free' },
   { name: 'Add Watermark', slug: 'add-watermark', description: 'Add watermarks to images.', icon: Stamp, category: 'Design', access: 'free' },
   { name: 'Uncrop', slug: 'uncrop', description: 'Expand images beyond their original borders.', icon: Sparkles, category: 'Design', access: 'premium' },
   { name: 'Video to MP4', slug: 'video-to-mp4', description: 'Convert videos to MP4 format.', icon: Video, category: 'Video', access: 'free' },
+  { name: 'Text Behind Image', slug: 'text-behind-image', description: 'Add text behind your images.', icon: Image, category: 'Design', access: 'free', isHot: true },
 ];
 
 export default function ToolsSearch() {

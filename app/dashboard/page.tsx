@@ -1,47 +1,57 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { List, Grid, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { FileText, Wand2, QrCode, Image, Video, FileAudio, FileSpreadsheet, Crop, Stamp, PenTool, RefreshCw, Sparkles, FileVideo } from 'lucide-react';
+import ToolsSearch from '@/components/dashboard/ToolsSearch';
 
 interface Tool {
   name: string;
   slug: string;
+  description: string;
   imageSrc: string;
+  category: string;
+  access: string;
+  icon: React.ElementType;
 }
 
 interface Item {
   id: string;
   name: string;
-  description?: string;
   createdAt: { seconds: number; nanoseconds: number };
   type: 'project' | 'document';
 }
 
 const tools: Tool[] = [
-  { name: 'Visual Summarizer', slug: 'visual-summarizer', imageSrc: '/images/tools/visual-summarizer.png' },
-  { name: 'Simple PDF', slug: 'pdf-editor', imageSrc: '/images/tools/pdf-editor.png' },
-  { name: 'Remove Background', slug: 'remove-background', imageSrc: '/images/tools/2.png' },
-  { name: 'QR Code Generator', slug: 'qr-code-generator', imageSrc: '/images/tools/1.png' },
+  { name: 'Visual Summarizer', slug: 'visual-summarizer', description: 'AI generates infographic-like summaries of long articles or reports.', imageSrc: '/images/tools/visual-summarizer.png', category: 'AI-powered', access: 'free', icon: Wand2 },
+  { name: 'Simple PDF', slug: 'simple-pdf', description: 'Simple tool to edit PDF files', imageSrc: '/images/tools/pdf-editor.png', category: 'Workspace', access: 'free', icon: FileText },
+  { name: 'Invoice Generator', slug: 'invoice-generator', description: 'Create professional invoices easily', imageSrc: '/images/tools/invoice-generator.png', category: 'Productivity', access: 'free', icon: FileSpreadsheet },
+  { name: 'Text Behind Image', slug: 'text-behind-image', description: 'Add text behind your images', imageSrc: '/images/tools/text-behind-image.png', category: 'Design', access: 'free', icon: Image },
+  { name: 'Video Notes', slug: 'video-notes', description: 'Generate FAQs, Study Guides, Table of Contents, Timelines, and Briefing Docs from YouTube videos', imageSrc: '/images/tools/video-notes.png', category: 'AI-powered', access: 'free', icon: Video },
+  { name: 'Sketch to Image', slug: 'sketch-to-image', description: 'Generate an image from your sketch and description using AI.', imageSrc: '/images/tools/sketch-to-image.png', category: 'AI-powered', access: 'signin', icon: PenTool },
+  { name: 'Uncrop', slug: 'uncrop', description: 'Extend or crop your image using AI.', imageSrc: '/images/tools/uncrop.png', category: 'Design', access: 'signin', icon: Crop },
+  { name: 'Image Reimagine', slug: 'imagine', description: 'Reimagine your image with AI.', imageSrc: '/images/tools/imagine.png', category: 'AI-powered', access: 'signin', icon: RefreshCw },
+  { name: 'Remove Background', slug: 'remove-background', description: 'Remove image backgrounds', imageSrc: '/images/tools/2.png', category: 'Design', access: 'free', icon: Image },
+  { name: 'Compress Image', slug: 'compress-image', description: 'Compress images to save space', imageSrc: '/images/tools/3.png', category: 'Design', access: 'free', icon: Image },
+  { name: 'Video to MP4', slug: 'video-to-mp4', description: 'Convert videos to MP4 format', imageSrc: '/images/tools/video-to-mp4.png', category: 'Video', access: 'free', icon: FileVideo },
+  { name: 'Audio to MP3', slug: 'audio-to-mp3', description: 'Convert audio files to MP3 format.', imageSrc: '/images/tools/audio-to-mp3.png', category: 'Workspace', access: 'signin', icon: FileAudio },
+  { name: 'Document to PDF', slug: 'document-to-pdf', description: 'Convert documents like Word, Excel, and PowerPoint to PDF format.', imageSrc: '/images/tools/document-to-pdf.png', category: 'Workspace', access: 'signin', icon: FileText },
+  { name: 'Image Crop', slug: 'image-crop', description: 'Crop images easily.', imageSrc: '/images/tools/crop.png', category: 'Design', access: 'premium', icon: Crop },
+  { name: 'Add Watermark', slug: 'add-watermark', description: 'Add watermark to images.', imageSrc: '/images/tools/add-watermark.png', category: 'Design', access: 'premium', icon: Stamp },
+  { name: 'QR Code Generator', slug: 'qr-code-generator', description: 'Create custom QR codes', imageSrc: '/images/tools/1.png', category: 'Productivity', access: 'free', icon: QrCode },
+  { name: 'Paraphraser', slug: 'paraphraser', description: 'Rephrase your text using AI.', imageSrc: '/images/tools/paraphraser.png', category: 'AI-powered', access: 'signin', icon: RefreshCw },
+  { name: 'Text Summarizer', slug: 'text-summarizer', description: 'Summarize long texts using AI.', imageSrc: '/images/tools/text-summarizer.png', category: 'AI-powered', access: 'signin', icon: Sparkles },
 ];
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [recentItems, setRecentItems] = useState<Item[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('lastModified');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -72,168 +82,56 @@ export default function DashboardPage() {
     setRecentItems([...projects, ...documents].sort((a, b) => b.createdAt.seconds - a.createdAt.seconds));
   };
 
-  const handleSort = (value: string) => {
-    setSortBy(value);
-    // Implement sorting logic here
-  };
-
-  const filteredItems = recentItems.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-background py-12">
-      <div className="container mx-auto px-4 py-8 sm:py-2 sm:px-0 md:px-2 lg:px-8">
-        <h1 className="text-xl font-semibold mb-6 text-foreground">👋 Welcome</h1>
+      <div className="container mx-auto px-4 sm:px-0 lg:px-8 md:px-2 md:px-4 py-4 sm:py-2 md:py-2 lg:py-2">
+        <div className="mb-8 p-6 rounded-lg bg-[url('/images/background.png')] bg-cover bg-center text-white shadow-lg text-center">
+          <h1 className="text-2xl font-bold mb-4">👋 Welcome</h1>
+          <ToolsSearch />
+        </div>
 
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground">What's New</h2>
-            <Link href="/dashboard/tools" passHref>
-              <Button variant="outline">View All Tools</Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="mb-8 overflow-x-auto scrollbar-hide">
+          <div className="flex space-x-6 pb-4">
             {tools.map((tool) => (
-              <Link key={tool.slug} href={`/dashboard/tools/${tool.slug}`} className="block">
-                <div className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200">
-                  <img src={tool.imageSrc} alt={tool.name} className="w-full h-32 object-cover" />
-                  <div className="p-2">
-                    <h3 className="text-sm font-medium text-center">{tool.name}</h3>
-                  </div>
+              <div key={tool.slug} className="flex flex-col items-center flex-shrink-0">
+                <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-2">
+                  <tool.icon className="w-8 h-8 text-accent-foreground" />
                 </div>
-              </Link>
+                <span className="text-sm text-center whitespace-nowrap text-foreground">{tool.name}</span>
+              </div>
             ))}
           </div>
         </div>
 
         {user && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Recent</h2>
-            <div className="mb-4 flex items-center w-full space-x-4">
-              <Input
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-grow"
-              />
-              <Select onValueChange={handleSort} defaultValue={sortBy}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lastModified">Last Modified</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex space-x-2">
-                <Button 
-                  variant={viewMode === 'list' ? 'default' : 'outline'} 
-                  onClick={() => setViewMode('list')}
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Recent Documents</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentItems.filter(item => item.type === 'document').map((doc) => (
+                <Card 
+                  key={doc.id} 
+                  className="cursor-pointer hover:shadow-md transition-shadow duration-200 bg-card"
+                  onClick={() => router.push(`/dashboard/documents/edit/${doc.id}`)}
                 >
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant={viewMode === 'grid' ? 'default' : 'outline'} 
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid className="h-4 w-4" />
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-card-foreground">
+                      <FileText className="mr-2" />
+                      {doc.name}
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      Created: {new Date(doc.createdAt.seconds * 1000).toLocaleDateString()}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+            {recentItems.filter(item => item.type === 'document').length === 0 && (
+              <div className="flex justify-center mt-4">
+                <Button onClick={() => router.push('/dashboard/documents/new')}>
+                  Create New Document
                 </Button>
               </div>
-            </div>
-            <Tabs defaultValue="all">
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-                <TabsTrigger value="projects">Projects</TabsTrigger>
-              </TabsList>
-              <TabsContent value="all">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Created At</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredItems.length > 0 ? (
-                      filteredItems.map(item => (
-                        <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/dashboard/${item.type}s/${item.id}`)}>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{new Date(item.createdAt.seconds * 1000).toLocaleDateString()}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={2} className="text-center">No recent items</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TabsContent>
-              <TabsContent value="documents">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Created At</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredItems.filter(item => item.type === 'document').length > 0 ? (
-                      filteredItems.filter(item => item.type === 'document').map(item => (
-                        <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/dashboard/documents/${item.id}`)}>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{new Date(item.createdAt.seconds * 1000).toLocaleDateString()}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={2} className="text-center">No recent documents</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                {filteredItems.filter(item => item.type === 'document').length === 0 && (
-                  <div className="flex justify-center mt-4">
-                    <Button onClick={() => router.push('/dashboard/documents/new')}>
-                      Create New Document
-                    </Button>
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="projects">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Created At</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredItems.filter(item => item.type === 'project').length > 0 ? (
-                      filteredItems.filter(item => item.type === 'project').map(item => (
-                        <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/dashboard/projects/${item.id}`)}>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{new Date(item.createdAt.seconds * 1000).toLocaleDateString()}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={2} className="text-center">No recent projects</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                {filteredItems.filter(item => item.type === 'project').length === 0 && (
-                  <div className="flex justify-center mt-4">
-                    <Button onClick={() => router.push('/dashboard/projects/new')}>
-                      Create New Project
-                    </Button>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+            )}
           </div>
         )}
       </div>

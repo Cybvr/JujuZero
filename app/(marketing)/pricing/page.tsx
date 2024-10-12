@@ -28,13 +28,6 @@ const freeTier = {
 }
 
 const paidTiers = {
-  monthly: {
-    title: "Pro",
-    price: "$12.00/mo",
-    description: "Billed monthly",
-    discountedPrice: "$30.00",
-    features: features
-  },
   annual: {
     title: "Pro",
     price: "$10.00/mo",
@@ -42,12 +35,19 @@ const paidTiers = {
     discountedPrice: "$12.00",
     savings: "Save 60%",
     features: features
+  },
+  monthly: {
+    title: "Pro",
+    price: "$12.00/mo",
+    description: "Billed monthly",
+    discountedPrice: "$15.00",
+    features: features
   }
 }
 
 export default function Component() {
   const router = useRouter()
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly')
+  const [billingPeriod, setBillingPeriod] = useState<'annual' | 'monthly'>('annual')
 
   const renderPricingCard = (option, index) => (
     <Card key={index} className={`flex flex-col ${index === 1 ? 'border-primary' : ''}`}>
@@ -95,21 +95,21 @@ export default function Component() {
     <div className="container mx-auto p-6 text-center bg-background">
       <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
       <p className="text-md text-muted-foreground mb-6">Select the perfect plan for your needs</p>
-      <Tabs defaultValue="monthly" onValueChange={(value) => setBillingPeriod(value as 'monthly' | 'annual')}>
+      <Tabs defaultValue="annual" onValueChange={(value) => setBillingPeriod(value as 'annual' | 'monthly')}>
         <TabsList className="grid w-full max-w-md grid-cols-2 mb-6 mx-auto">
-          <TabsTrigger value="monthly">Monthly Billing</TabsTrigger>
           <TabsTrigger value="annual">Annual Billing</TabsTrigger>
+          <TabsTrigger value="monthly">Monthly Billing</TabsTrigger>
         </TabsList>
-        <TabsContent value="monthly" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {renderPricingCard(freeTier, 0)}
-            {renderPricingCard(paidTiers.monthly, 1)}
-          </div>
-        </TabsContent>
         <TabsContent value="annual" className="mt-0">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {renderPricingCard(freeTier, 0)}
             {renderPricingCard(paidTiers.annual, 1)}
+          </div>
+        </TabsContent>
+        <TabsContent value="monthly" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {renderPricingCard(freeTier, 0)}
+            {renderPricingCard(paidTiers.monthly, 1)}
           </div>
         </TabsContent>
       </Tabs>

@@ -1,70 +1,52 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy, deleteDoc, doc, DocumentData, Query } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { File, FileText, Image, Video, Folder, Plus, Grid, List, Trash2 } from 'lucide-react';
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
-interface Document extends DocumentData {
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { ChevronDown, LayoutGrid, List, Star, MoreHorizontal, Plus, Check } from 'lucide-react';
+
+interface Document {
   id: string;
   title: string;
   content: string;
   userId: string;
   createdAt: { seconds: number; nanoseconds: number };
   lastModified: { seconds: number; nanoseconds: number };
-  type: 'document' | 'image' | 'video' | 'folder';
+  type: string;
+  thumbnail?: string;
 }
+
+const colorPalette = [
+  'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
+  'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'
+];
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'lastModified' | 'title'>('lastModified');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState('date');
   const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((authUser) => {
-      if (authUser) {
-        fetchDocuments(authUser.uid);
-      } else {
-        router.push('/login');
-      }
-    });
+    if (user) {
+      fetchDocuments();
+    }
+  }, [user]);
 
-    return () => unsubscribe();
-  }, [router]);
-
-  useEffect(() => {
-    const filtered = documents.filter(doc =>
-      doc.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredDocuments(filtered);
-  }, [documents, searchTerm]);
-
-  async function fetchDocuments(userId: string) {
+  const fetchDocuments = async () => {
+    if (!user) return;
     setIsLoading(true);
     setError(null);
     try {
-      const q: Query<DocumentData> = query(
+      const q = query(
         collection(db, "documents"),
-        where("userId", "==", userId),
+        where("userId", "==", user.uid),
         orderBy("lastModified", "desc")
       );
       const querySnapshot = await getDocs(q);
@@ -73,293 +55,139 @@ export default function DocumentsPage() {
         ...doc.data()
       } as Document));
       setDocuments(docs);
-      setFilteredDocuments(docs);
     } catch (error) {
       setError(`Failed to load documents. Please try again later.`);
       console.error("Error fetching documents:", error);
     } finally {
       setIsLoading(false);
     }
-  }
-
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case 'document':
-        return <FileText className="h-4 w-4" aria-label="Document" />;
-      case 'image':
-        return <Image className="h-4 w-4" aria-label="Image" />;
-      case 'video':
-        return <Video className="h-4 w-4" aria-label="Video" />;
-      case 'folder':
-        return <Folder className="h-4 w-4" aria-label="Folder" />;
-      default:
-        return <File className="h-4 w-4" aria-label="File" />;
-    }
   };
 
-  const handleSort = (value: 'lastModified' | 'title') => {
-    setSortBy(value);
-    const sorted = [...filteredDocuments].sort((a, b) => {
-      if (value === 'lastModified') {
-        return b.lastModified.seconds - a.lastModified.seconds;
-      } else {
-        return a.title.localeCompare(b.title);
-      }
-    });
-    setFilteredDocuments(sorted);
-  };
-
-  const toggleDocumentSelection = (docId: string, checked: boolean) => {
+  const toggleDocumentSelection = (docId: string) => {
     setSelectedDocuments(prev => {
       const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(docId);
-      } else {
+      if (newSet.has(docId)) {
         newSet.delete(docId);
+      } else {
+        newSet.add(docId);
       }
       return newSet;
     });
   };
 
-  const toggleAllDocuments = (checked: boolean) => {
-    if (checked) {
-      setSelectedDocuments(new Set(filteredDocuments.map(doc => doc.id)));
-    } else {
-      setSelectedDocuments(new Set());
-    }
+  const getColorForDocument = (docId: string) => {
+    const index = docId.charCodeAt(0) % colorPalette.length;
+    return colorPalette[index];
   };
 
-  const handleDeleteSelected = async () => {
-    if (!user) return;
-
-    try {
-      const deletePromises = Array.from(selectedDocuments).map(docId => deleteDoc(doc(db, "documents", docId)));
-      await Promise.all(deletePromises);
-      setDocuments(prev => prev.filter(doc => !selectedDocuments.has(doc.id)));
-      setFilteredDocuments(prev => prev.filter(doc => !selectedDocuments.has(doc.id)));
-      setSelectedDocuments(new Set());
-      console.log("Selected documents have been deleted successfully.");
-    } catch (error) {
-      console.error("Error deleting documents:", error);
-      setError("Failed to delete selected documents. Please try again.");
-    } finally {
-      setIsDeleteDialogOpen(false);
-    }
-  };
-
-  const handleDeleteSingleDocument = async () => {
-    if (!user || !documentToDelete) return;
-
-    try {
-      await deleteDoc(doc(db, "documents", documentToDelete));
-      setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete));
-      setFilteredDocuments(prev => prev.filter(doc => doc.id !== documentToDelete));
-      console.log("Document has been deleted successfully.");
-    } catch (error) {
-      console.error("Error deleting document:", error);
-      setError("Failed to delete document. Please try again.");
-    } finally {
-      setDocumentToDelete(null);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-8 w-64 mb-6" />
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead><Skeleton className="h-4 w-20" /></TableHead>
-                <TableHead><Skeleton className="h-4 w-20" /></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(5)].map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
-          <strong className="font-bold">Error:</strong>
-          <span className="block sm:inline"> {error}</span>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-xl font-bold">Your Documents</h1>
-        <div className="flex space-x-2">
-          {selectedDocuments.size > 0 && (
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon" onClick={() => setIsDeleteDialogOpen(true)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the selected documents.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </AlertDialogCancel>
-                  <AlertDialogAction asChild>
-                    <Button variant="destructive" onClick={handleDeleteSelected}>Yes, delete</Button>
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-          <Button onClick={() => router.push('/dashboard/documents/new')}>
-            <Plus className="mr-2 h-4 w-4" /> New Document
-          </Button>
+    <div className="container mx-auto px-4 py-16 lg:py-8 md:py-8 sm:py-8">
+      <h1 className="text-2xl font-normal mb-6 text-foreground">Documents</h1>
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+        <div className="w-full sm:w-auto">
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="w-full sm:w-auto px-4 py-2 bg-background border border-input rounded-md shadow-sm text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
+          >
+            <option value="date">Date modified</option>
+            <option value="name">Name</option>
+            <option value="type">Type</option>
+            <option value="relevant">Most relevant</option>
+          </select>
+        </div>
+        <div className="flex flex-wrap items-center space-x-2 w-full sm:w-auto">
+          <button onClick={() => setViewMode('grid')} className="p-2 bg-background border border-input rounded-md shadow-sm text-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring">
+            <LayoutGrid className="h-5 w-5" />
+          </button>
+          <button onClick={() => setViewMode('list')} className="p-2 bg-background border border-input rounded-md shadow-sm text-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring">
+            <List className="h-5 w-5" />
+          </button>
+          <button className="px-4 py-2 bg-primary border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring">
+            <Plus className="inline-block mr-2 h-4 w-4" /> Add new
+          </button>
         </div>
       </div>
-      <div className="mb-4 flex flex-wrap gap-4">
-        <Input
-          placeholder="Search documents..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-          aria-label="Search documents"
-        />
-        <Select onValueChange={handleSort} defaultValue={sortBy}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="lastModified">Last Modified</SelectItem>
-            <SelectItem value="title">Title</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex space-x-2">
-          <Button 
-            variant={viewMode === 'list' ? 'default' : 'outline'} 
-            onClick={() => setViewMode('list')}
-            aria-label="List view"
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant={viewMode === 'grid' ? 'default' : 'outline'} 
-            onClick={() => setViewMode('grid')}
-            aria-label="Grid view"
-          >
-            <Grid className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-      <div className="mb-4">
-        <span className="text-sm font-medium">
-          {selectedDocuments.size} {selectedDocuments.size === 1 ? 'file' : 'files'} selected
-        </span>
-      </div>
+
       {viewMode === 'list' ? (
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox 
-                    id="select-all"
-                    checked={selectedDocuments.size === filteredDocuments.length}
-                    onChange={(e) => toggleAllDocuments(e.target.checked)}
-                    aria-label="Select all documents"
-                  />
-                </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Last Modified</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDocuments.map((doc) => (
-                <TableRow key={doc.id}>
-                  <TableCell>
-                    <Checkbox
-                      id={`select-doc-${doc.id}`}
-                      checked={selectedDocuments.has(doc.id)}
-                      onChange={(e) => toggleDocumentSelection(doc.id, e.target.checked)}
-                      aria-label={`Select ${doc.title}`}
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <Link href={`/dashboard/documents/edit/${doc.id}`} className="flex items-center">
-                      {getFileIcon(doc.type)}
-                      <span className="ml-2">{doc.title}</span>
-                    </Link>
-                  </TableCell>
-                  <TableCell>{doc.lastModified ? new Date(doc.lastModified.seconds * 1000).toLocaleString() : 'N/A'}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredDocuments.map((doc) => (
-            <Card key={doc.id} className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Checkbox
-                  id={`select-doc-${doc.id}`}
-                  checked={selectedDocuments.has(doc.id)}
-                  onChange={(e) => toggleDocumentSelection(doc.id, e.target.checked)}
-                  aria-label={`Select ${doc.title}`}
-                />
-                {getFileIcon(doc.type)}
-              </div>
-              <Link href={`/dashboard/documents/edit/${doc.id}`}>
-                <h3 className="font-medium">{doc.title}</h3>
-              </Link>
-              <p className="text-sm text-muted-foreground">
-                {doc.lastModified ? new Date(doc.lastModified.seconds * 1000).toLocaleString() : 'N/A'}
-              </p>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="mt-2" onClick={() => setDocumentToDelete(doc.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the document "{doc.title}".
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                      <AlertDialogCancel asChild>
-                                            <Button variant="outline">Cancel</Button>
-                                          </AlertDialogCancel>
-                                          <AlertDialogAction asChild>
-                                            <Button variant="destructive" onClick={handleDeleteSingleDocument}>Delete</Button>
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </Card>
-                                ))}
-                              </div>
-                            )}
+        <div className="bg-card shadow overflow-hidden sm:rounded-md">
+          <ul className="divide-y divide-border">
+            {documents.map((doc) => (
+              <li key={doc.id}>
+                <div className="px-4 py-4 flex items-center sm:px-6">
+                  <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div className="flex items-center">
+                      <div className={`flex-shrink-0 h-12 w-12 ${getColorForDocument(doc.id)} rounded-md flex items-center justify-center`}>
+                        {doc.thumbnail ? (
+                          <img src={doc.thumbnail} alt="" className="h-10 w-10 rounded-md object-cover" />
+                        ) : (
+                          <div className="text-white font-semibold">{doc.title.charAt(0)}</div>
+                        )}
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-primary truncate">{doc.title}</div>
+                        <div className="mt-2 flex">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <span className="truncate">{doc.type}</span>
                           </div>
-                        );
-                      }
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex-shrink-0 sm:mt-0 sm:ml-5">
+                      <div className="flex -space-x-1 overflow-hidden">
+                        {/* Placeholder for user avatars */}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="ml-5 flex-shrink-0 flex items-center space-x-2">
+                    <button onClick={() => toggleDocumentSelection(doc.id)} className="text-muted-foreground hover:text-foreground">
+                      {selectedDocuments.has(doc.id) ? <Check className="h-5 w-5" /> : <Star className="h-5 w-5" />}
+                    </button>
+                    <button className="text-muted-foreground hover:text-foreground">
+                      <MoreHorizontal className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {documents.map((doc) => (
+            <div key={doc.id} className="bg-card overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className={`flex-shrink-0 h-40 w-full ${getColorForDocument(doc.id)} rounded-md flex items-center justify-center mb-4`}>
+                  {doc.thumbnail ? (
+                    <img src={doc.thumbnail} alt="" className="h-full w-full object-cover rounded-md" />
+                  ) : (
+                    <div className="text-white font-semibold text-4xl">{doc.title.charAt(0)}</div>
+                  )}
+                </div>
+                <h3 className="text-lg leading-6 font-medium text-foreground truncate">{doc.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{doc.type}</p>
+              </div>
+              <div className="bg-muted px-5 py-3 flex justify-between items-center">
+                <div className="flex -space-x-1 overflow-hidden">
+                  {/* Placeholder for user avatars */}
+                </div>
+                <div className="flex space-x-2">
+                  <button onClick={() => toggleDocumentSelection(doc.id)} className="text-muted-foreground hover:text-foreground">
+                    {selectedDocuments.has(doc.id) ? <Check className="h-5 w-5" /> : <Star className="h-5 w-5" />}
+                  </button>
+                  <button className="text-muted-foreground hover:text-foreground">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

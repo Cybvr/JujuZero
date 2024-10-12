@@ -6,7 +6,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from 'next-themes';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Wand2, User, Plus, MessageSquare, FolderIcon } from 'lucide-react';
+import { Home, Wand2, User, Plus, Rocket, FolderIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import QuestionButton from '@/components/dashboard/QuestionButton';
 import Script from 'next/script';
@@ -46,7 +46,7 @@ const FooterMenu = () => {
         <FooterMenuItem href="/dashboard" icon={Home} label="Home" />
         <FooterMenuItem href="/dashboard/tools" icon={Wand2} label="Apps" />
         <FooterMenuItem href="/dashboard/documents" icon={FolderIcon} label="Documents" />
-        <FooterMenuItem href="/dashboard/projects" icon={MessageSquare} label="Projects" />
+        <FooterMenuItem href="/dashboard/projects" icon={Rocket} label="BrandAI" />
       </div>
     </nav>
   );

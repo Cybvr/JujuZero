@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, PanelLeftOpen, PanelLeftClose, List, Briefcase, Moon, Sun, MessageSquare, Coins, User } from 'lucide-react'; 
+import { HomeIcon, CompassIcon, FolderIcon, MenuIcon, PanelLeftOpen, PanelLeftClose, List, Briefcase, Moon, Sun, MessageSquare, Coins, User, CreditCard } from 'lucide-react'; 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -122,12 +122,6 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
           <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">My Apps</span>
         </Button>
       </Link>
-      <Link href="/dashboard/sidekick" className={buttonClasses('/dashboard/sidekick')}>
-        <Button variant="ghost" className={buttonClasses('/dashboard/sidekick')}>
-          <MessageSquare className={iconClasses('/dashboard/sidekick')} />
-          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Sidekick</span>
-        </Button>
-      </Link>
       <Separator className="my-2" />
       {folders.map((item) => (
         <Link key={item.path} href={item.path} className={buttonClasses(item.path)}>
@@ -141,13 +135,6 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
         <Button variant="ghost" className={buttonClasses('/dashboard/projects')}>
           <Briefcase className={iconClasses('/dashboard/projects')} />
           <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">BrandAI</span>
-        </Button>
-      </Link>
-      <Separator className="my-2" />
-      <Link href="/dashboard/account" className={buttonClasses('/dashboard/account')}>
-        <Button variant="ghost" className={buttonClasses('/dashboard/account')}>
-          <User className={iconClasses('/dashboard/account')} />
-          <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">Account</span>
         </Button>
       </Link>
     </>
@@ -186,6 +173,18 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                     <CreditBalance />
                   </DialogContent>
                 </Dialog>
+                <Button variant="ghost" className="w-full justify-start">
+                  <CreditCard className={iconClasses('')} />
+                  <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">
+                    Billing
+                  </span>
+                </Button>
+                <Button variant="ghost" className="w-full justify-start">
+                  <User className={iconClasses('')} />
+                  <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-small">
+                    Account
+                  </span>
+                </Button>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
@@ -227,9 +226,6 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                   <Button variant="ghost" className="w-full justify-center" title="My Apps">
                     <List className={iconClasses('/dashboard/tools/myList')} />
                   </Button>
-                  <Button variant="ghost" className="w-full justify-center" title="Sidekick">
-                    <MessageSquare className={iconClasses('/dashboard/sidekick')} />
-                  </Button>
                   <Separator className="my-2" />
                   {folders.map((item) => (
                     <Button key={item.path} variant="ghost" className="w-full justify-center" title={item.name}>
@@ -262,6 +258,22 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProp
                 <CreditBalance />
               </DialogContent>
             </Dialog>
+            <Button variant="ghost" className="w-full justify-start mb-2">
+              <CreditCard className={iconClasses('')} />
+              {isSidebarOpen && (
+                <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-muted-foreground text-small">
+                  Billing
+                </span>
+              )}
+            </Button>
+            <Button variant="ghost" className="w-full justify-start mb-4">
+              <User className={iconClasses('')} />
+              {isSidebarOpen && (
+                <span className="ml-2 whitespace-nowrap overflow-hidden text-ellipsis text-muted-foreground text-small">
+                  Account
+                </span>
+              )}
+            </Button>
             <div className="flex items-center justify-between mt-2">
               {isSidebarOpen && (
                 <span className="text-sm text-muted-foreground">

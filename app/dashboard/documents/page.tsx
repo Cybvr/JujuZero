@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { ChevronDown, LayoutGrid, List, Star, MoreHorizontal, Plus, Check } from 'lucide-react';
+import Link from 'next/link';
 
 interface Document {
   id: string;
@@ -107,9 +108,11 @@ export default function DocumentsPage() {
           <button onClick={() => setViewMode('list')} className="p-2 bg-background border border-input rounded-md shadow-sm text-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring">
             <List className="h-5 w-5" />
           </button>
-          <button className="px-4 py-2 bg-primary border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring">
-            <Plus className="inline-block mr-2 h-4 w-4" /> Add new
-          </button>
+          <Link href="/dashboard/documents/new">
+            <button className="px-4 py-2 bg-primary border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring">
+              <Plus className="inline-block mr-2 h-4 w-4" /> Add new
+            </button>
+          </Link>
         </div>
       </div>
 
@@ -118,40 +121,46 @@ export default function DocumentsPage() {
           <ul className="divide-y divide-border">
             {documents.map((doc) => (
               <li key={doc.id}>
-                <div className="px-4 py-4 flex items-center sm:px-6">
-                  <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div className="flex items-center">
-                      <div className={`flex-shrink-0 h-12 w-12 ${getColorForDocument(doc.id)} rounded-md flex items-center justify-center`}>
-                        {doc.thumbnail ? (
-                          <img src={doc.thumbnail} alt="" className="h-10 w-10 rounded-md object-cover" />
-                        ) : (
-                          <div className="text-white font-semibold">{doc.title.charAt(0)}</div>
-                        )}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-primary truncate">{doc.title}</div>
-                        <div className="mt-2 flex">
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <span className="truncate">{doc.type}</span>
+                <Link href={`/dashboard/documents/edit/${doc.id}`}>
+                  <div className="px-4 py-4 flex items-center sm:px-6">
+                    <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
+                      <div className="flex items-center">
+                        <div className={`flex-shrink-0 h-12 w-12 ${getColorForDocument(doc.id)} rounded-md flex items-center justify-center`}>
+                          {doc.thumbnail ? (
+                            <img src={doc.thumbnail} alt="" className="h-10 w-10 rounded-md object-cover" />
+                          ) : (
+                            <div className="text-white font-semibold">{doc.title.charAt(0)}</div>
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-primary truncate">{doc.title}</div>
+                          <div className="mt-2 flex">
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <span className="truncate">{doc.type}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="mt-4 flex-shrink-0 sm:mt-0 sm:ml-5">
-                      <div className="flex -space-x-1 overflow-hidden">
-                        {/* Placeholder for user avatars */}
+                      <div className="mt-4 flex-shrink-0 sm:mt-0 sm:ml-5">
+                        <div className="flex -space-x-1 overflow-hidden">
+                          {/* Placeholder for user avatars */}
+                        </div>
                       </div>
                     </div>
+                    <div className="ml-5 flex-shrink-0 flex items-center space-x-2">
+                      <div onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleDocumentSelection(doc.id);
+                      }} className="cursor-pointer text-muted-foreground hover:text-foreground">
+                        {selectedDocuments.has(doc.id) ? <Check className="h-5 w-5" /> : <Star className="h-5 w-5" />}
+                      </div>
+                      <button className="text-muted-foreground hover:text-foreground">
+                        <MoreHorizontal className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="ml-5 flex-shrink-0 flex items-center space-x-2">
-                    <button onClick={() => toggleDocumentSelection(doc.id)} className="text-muted-foreground hover:text-foreground">
-                      {selectedDocuments.has(doc.id) ? <Check className="h-5 w-5" /> : <Star className="h-5 w-5" />}
-                    </button>
-                    <button className="text-muted-foreground hover:text-foreground">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
+                </Link>
               </li>
             ))}
           </ul>
@@ -159,32 +168,38 @@ export default function DocumentsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {documents.map((doc) => (
-            <div key={doc.id} className="bg-card overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className={`flex-shrink-0 h-40 w-full ${getColorForDocument(doc.id)} rounded-md flex items-center justify-center mb-4`}>
-                  {doc.thumbnail ? (
-                    <img src={doc.thumbnail} alt="" className="h-full w-full object-cover rounded-md" />
-                  ) : (
-                    <div className="text-white font-semibold text-4xl">{doc.title.charAt(0)}</div>
-                  )}
+            <Link href={`/dashboard/documents/edit/${doc.id}`} key={doc.id}>
+              <div className="bg-card overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <div className={`flex-shrink-0 h-40 w-full ${getColorForDocument(doc.id)} rounded-md flex items-center justify-center mb-4`}>
+                    {doc.thumbnail ? (
+                      <img src={doc.thumbnail} alt="" className="h-full w-full object-cover rounded-md" />
+                    ) : (
+                      <div className="text-white font-semibold text-4xl">{doc.title.charAt(0)}</div>
+                    )}
+                  </div>
+                  <h3 className="text-lg leading-6 font-medium text-foreground truncate">{doc.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{doc.type}</p>
                 </div>
-                <h3 className="text-lg leading-6 font-medium text-foreground truncate">{doc.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{doc.type}</p>
+                <div className="bg-muted px-5 py-3 flex justify-between items-center">
+                  <div className="flex -space-x-1 overflow-hidden">
+                    {/* Placeholder for user avatars */}
+                  </div>
+                  <div className="flex space-x-2">
+                    <div onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleDocumentSelection(doc.id);
+                    }} className="cursor-pointer text-muted-foreground hover:text-foreground">
+                      {selectedDocuments.has(doc.id) ? <Check className="h-5 w-5" /> : <Star className="h-5 w-5" />}
+                    </div>
+                    <button className="text-muted-foreground hover:text-foreground">
+                      <MoreHorizontal className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="bg-muted px-5 py-3 flex justify-between items-center">
-                <div className="flex -space-x-1 overflow-hidden">
-                  {/* Placeholder for user avatars */}
-                </div>
-                <div className="flex space-x-2">
-                  <button onClick={() => toggleDocumentSelection(doc.id)} className="text-muted-foreground hover:text-foreground">
-                    {selectedDocuments.has(doc.id) ? <Check className="h-5 w-5" /> : <Star className="h-5 w-5" />}
-                  </button>
-                  <button className="text-muted-foreground hover:text-foreground">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

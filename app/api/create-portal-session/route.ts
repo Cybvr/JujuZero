@@ -1,30 +1,22 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+// Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2022-11-15',
+  apiVersion: '2024-09-30.acacia', // Updated to the new API version
 });
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const { user } = await req.json();
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Assume you store Stripe customer ID in the user object
-    const stripeCustomerId = session.user.stripeCustomerId;
-
-    if (!stripeCustomerId) {
-      return NextResponse.json({ error: 'No Stripe customer found' }, { status: 400 });
+    if (!user || !user.stripeCustomerId) {
+      return NextResponse.json({ error: 'Unauthorized or No Stripe customer found' }, { status: 401 });
     }
 
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: stripeCustomerId,
-      return_url: `${process.env.NEXTAUTH_URL}/billing`,
+      customer: user.stripeCustomerId,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`,
     });
 
     return NextResponse.json({ url: portalSession.url });

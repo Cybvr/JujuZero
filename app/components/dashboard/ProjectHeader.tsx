@@ -69,19 +69,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button>
-                  <Edit className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Edit Brand</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit brand details</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+
         </div>
       </div>
     </>

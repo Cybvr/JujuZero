@@ -1,31 +1,28 @@
-// @app/api/check-payment-method/route.ts
-
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+// Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2022-11-15',
+  apiVersion: '2024-09-30.acacia', // Updated to the new API version
 });
 
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const { user } = await req.json();
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Assuming you store the Stripe customer ID in the user's session or database
-    const stripeCustomerId = session.user.stripeCustomerId;
-
-    if (!stripeCustomerId) {
+    if (!user || !user.stripeCustomerId) {
       return NextResponse.json({ hasPaymentMethod: false });
     }
 
-    const customer = await stripe.customers.retrieve(stripeCustomerId);
-    const hasPaymentMethod = customer.default_source !== null || (customer.sources?.data.length ?? 0) > 0;
+    const customerResponse = await stripe.customers.retrieve(user.stripeCustomerId);
+
+    // Type guard to check if the customer is not deleted
+    if ((customerResponse as Stripe.DeletedCustomer).deleted) {
+      return NextResponse.json({ hasPaymentMethod: false });
+    }
+
+    const customer = customerResponse as Stripe.Customer;
+    const hasPaymentMethod = !!customer.invoice_settings.default_payment_method;
 
     return NextResponse.json({ hasPaymentMethod });
   } catch (error) {

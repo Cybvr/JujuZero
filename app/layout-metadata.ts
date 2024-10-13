@@ -2,7 +2,7 @@
 import { Metadata, Viewport } from 'next'; 
 
 export const metadata: Metadata = {
-  title: 'Juju: Simple tools for simple tasks',
+  title: 'Juju Sidekick - All-in-one assistant',
   description: 'Juju is your all-in-one platform for file conversion and editing tasks. We offer a suite of tools including PDF conversion, image editing, text tools, data conversion, and AI-powered features.',
   icons: {
     icon: '/favicon.ico',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   openGraph: {
-    title: 'Juju: Simple tools for simple tasks',
+    title: 'Juju Sidekick - All-in-one assistant',
     description: 'Juju is your all-in-one platform for file conversion and editing tasks. We offer a suite of tools including PDF conversion, image editing, text tools, data conversion, and AI-powered features.',
     images: [{ url: 'https://jujuagi.com/images/logos/cover.png' }],
     url: 'https://jujuagi.com',

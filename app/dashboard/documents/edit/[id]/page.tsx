@@ -1,7 +1,6 @@
-// File: app/dashboard/projects/[id]/edit/page.tsx
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { doc, getDoc, updateDoc, setDoc, collection } from 'firebase/firestore';
@@ -10,7 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Breadcrumbs, BreadcrumbItem } from '@/components/ui/breadcrumbs'
-import { ChevronLeft, Save } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useToast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
@@ -70,15 +69,18 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
     }
   };
 
-  const handleEditorChange = (newContent: string) => {
+  const handleEditorChange = useCallback((newContent: string) => {
     setContent(newContent)
-  }
+    debouncedSave(newContent, title)
+  }, [title])
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value)
-  }
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value
+    setTitle(newTitle)
+    debouncedSave(content, newTitle)
+  }, [content])
 
-  const handleSave = async () => {
+  const saveDocument = async (contentToSave: string, titleToSave: string) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -95,23 +97,21 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
         : doc(db, "documents", id);
 
       const documentData = {
-        title,
-        content,
+        title: titleToSave,
+        content: contentToSave,
         userId: user.uid,
         lastModified: new Date().toISOString()
       };
 
       if (id === 'new') {
         await setDoc(docRef, documentData);
+        // Update the URL to include the new document ID
+        router.replace(`/dashboard/projects/${docRef.id}/edit`);
       } else {
         await updateDoc(docRef, documentData);
       }
 
-      toast({
-        title: "Success",
-        description: "Document saved successfully",
-      });
-      router.push('/dashboard/documents');
+      //Removed Success Toast
     } catch (error) {
       console.error("Error saving document:", error);
       toast({
@@ -122,41 +122,56 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
     }
   };
 
-  const handleBack = () => {
-    router.push('/dashboard/documents');
-  };
+  const debouncedSave = useCallback(
+    debounce((contentToSave: string, titleToSave: string) => saveDocument(contentToSave, titleToSave), 3000),
+    []
+  );
+
+  function debounce(func: Function, wait: number) {
+    let timeout: NodeJS.Timeout;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
 
   if (user === null) return null;
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex flex-col min-h-screen bg-background py-12">
         <Toaster />
         <header className="bg-card border-b border-border">
           <div className="container mx-auto flex justify-between items-center py-4 px-6">
-            <Breadcrumbs>
-              <BreadcrumbItem isActive={false}>
-                <Link href="/dashboard/documents" className="text-muted-foreground hover:text-foreground">Documents</Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem isActive>
-                <span className="text-foreground">{id === 'new' ? 'New Document' : title}</span>
-              </BreadcrumbItem>
-            </Breadcrumbs>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-foreground">
-                  <ChevronLeft className="mr-2 h-4 w-4" /> Back to Documents
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Return to documents list</p>
-              </TooltipContent>
-            </Tooltip>
+            <div className="flex items-center">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" onClick={() => router.push('/dashboard/documents')} className="text-muted-foreground hover:text-foreground mr-4">
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Back to Documents</p>
+                </TooltipContent>
+              </Tooltip>
+              <Breadcrumbs>
+                <BreadcrumbItem isActive={false}>
+                  <Link href="/dashboard/documents" className="text-muted-foreground hover:text-foreground">Documents</Link>
+                </BreadcrumbItem>
+                <BreadcrumbItem isActive>
+                  <span className="text-foreground">{id === 'new' ? 'New Document' : title}</span>
+                </BreadcrumbItem>
+              </Breadcrumbs>
+            </div>
           </div>
         </header>
 
         <main className="flex-grow container mx-auto py-4 px-6 bg-background rounded-md">
-          <div className="space-y-4">
+          <div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               {isLoading ? (
                 <Skeleton className="h-10 w-3/4" />
@@ -169,30 +184,9 @@ export default function DocumentEditPage({ params }: { params: { id: string } })
                   placeholder="Enter document title"
                 />
               )}
-              <div className="flex space-x-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" onClick={handleBack} className="text-muted-foreground hover:text-foreground">Cancel</Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Discard changes</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button onClick={handleSave} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                      Save
-                      <Save className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Save document</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
             </div>
-            <Card className="bg-card">
-              <CardContent className="p-4">
+            <Card className="bg-background mt-4">
+              <CardContent className="">
                 {isLoading ? (
                   <Skeleton className="h-[300px] w-full" />
                 ) : (

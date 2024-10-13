@@ -1,20 +1,20 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { useToast } from "@/components/ui/use-toast"
-import { getUserCredits } from '@/lib/credits'
-import { useAuth } from '@/context/AuthContext'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { loadStripe } from '@stripe/stripe-js';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui/use-toast";
+import { getUserCredits } from '@/lib/credits';
+import { useAuth } from '@/context/AuthContext';
 
 const MAX_CREDITS = 500;
 
-const features = "Access to all tools, 10 GB storage, Priority email support, Access to documents"
+const features = "Access to all tools, 10 GB storage, Priority email support, Access to documents";
 
 const freeTier = {
   title: "Free",
@@ -23,26 +23,37 @@ const freeTier = {
   features: "Access to 4 tools, 1 GB storage, Community support, No access to documents",
   isCurrent: true,
   credits: 200,
-  renewalDate: "Nov 5, 2024"
-}
-
+  renewalDate: "Nov 5, 2024",
+};
 const proTier = {
   title: "Pro",
   price: "$12.00/mo",
   description: "Billed monthly",
   features: features,
-  credits: "Unlimited"
+  isCurrent: false, // Assuming the user is currently on the free tier
+  credits: MAX_CREDITS, // Changed from "Unlimited" to a numerical value
+  renewalDate: "Nov 5, 2024", // Update with actual renewal date if applicable
+};
+
+
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
+
+interface Invoice {
+  id: string;
+  amount: number;
+  status: string;
+  date: string;
+  url: string;
 }
 
 export default function BillingPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [credits, setCredits] = useState<number | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(true);
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  const [hasPaymentMethod, setHasPaymentMethod] = useState(false);
 
   useEffect(() => {
     async function fetchCredits() {
@@ -62,7 +73,7 @@ export default function BillingPage() {
         if (!response.ok) {
           throw new Error('Failed to fetch invoices');
         }
-        const data = await response.json();
+        const data: Invoice[] = await response.json();
         setInvoices(data);
       } catch (error) {
         console.error('Error fetching invoices:', error);
@@ -79,32 +90,7 @@ export default function BillingPage() {
     fetchInvoices();
   }, [toast]);
 
-  useEffect(() => {
-    async function checkPaymentMethod() {
-      try {
-        const response = await fetch('/api/check-payment-method');
-        if (!response.ok) {
-          throw new Error('Failed to check payment method');
-        }
-        const data = await response.json();
-        setHasPaymentMethod(data.hasPaymentMethod);
-      } catch (error) {
-        console.error('Error checking payment method:', error);
-      }
-    }
-
-    checkPaymentMethod();
-  }, []);
-
   const handleUpgrade = async () => {
-    if (!hasPaymentMethod) {
-      setShowUpgradeDialog(true);
-    } else {
-      await initiateStripeCheckout();
-    }
-  };
-
-  const initiateStripeCheckout = async () => {
     try {
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
@@ -116,8 +102,20 @@ export default function BillingPage() {
       const session = await response.json();
 
       // Redirect to Stripe Checkout
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-      await stripe.redirectToCheckout({ sessionId: session.id });
+      const stripe = await stripePromise;
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
+        if (error) {
+          console.error('Error redirecting to checkout:', error);
+          toast({
+            title: "Error",
+            description: "Failed to redirect to checkout. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        throw new Error('Stripe object is null');
+      }
     } catch (error) {
       console.error('Error initiating checkout:', error);
       toast({
@@ -128,7 +126,7 @@ export default function BillingPage() {
     }
   };
 
-  const renderPricingCard = (option, index) => (
+  const renderPricingCard = (option: typeof freeTier, index: number) => (
     <Card key={index} className={`flex flex-col ${index === 1 ? 'border-primary' : ''}`}>
       <CardHeader className="pb-4">
         <CardTitle className="text-lg font-medium">{option.title}</CardTitle>
@@ -150,7 +148,7 @@ export default function BillingPage() {
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 
   const renderPlanSummaryCard = () => (
     <Card className="mb-6">
@@ -186,7 +184,7 @@ export default function BillingPage() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   const renderPaymentCard = () => (
     <Card>
@@ -195,19 +193,15 @@ export default function BillingPage() {
         <CardDescription>Manage your payment details</CardDescription>
       </CardHeader>
       <CardContent>
-        {hasPaymentMethod ? (
-          <p className="mb-4">Payment method added.</p>
-        ) : (
-          <p className="mb-4">No payment method added yet.</p>
-        )}
+        <p className="mb-4">Manage your payment method through Stripe.</p>
         <div className="flex justify-end">
-          <Button onClick={() => setShowUpgradeDialog(true)}>
-            {hasPaymentMethod ? "Update Payment Method" : "Add Payment Method"}
+          <Button onClick={handleUpgrade}>
+            Manage Payment Method
           </Button>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   const renderInvoicesTable = () => (
     <Card>
@@ -251,7 +245,7 @@ export default function BillingPage() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 
   return (
     <div className="container mx-auto p-6 bg-background">
@@ -267,22 +261,6 @@ export default function BillingPage() {
           {renderPricingCard(proTier, 1)}
         </div>
       </div>
-      <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{hasPaymentMethod ? "Update Payment Method" : "Add Payment Method"}</DialogTitle>
-            <DialogDescription>
-              {hasPaymentMethod
-                ? "Update your payment method to continue with the upgrade."
-                : "Add a payment method to upgrade your plan."}
-            </DialogDescription>
-          </DialogHeader>
-          {/* Add Stripe Elements or Stripe Checkout here */}
-          <Button onClick={initiateStripeCheckout}>
-            {hasPaymentMethod ? "Update and Continue" : "Add Payment Method"}
-          </Button>
-        </DialogContent>
-      </Dialog>
     </div>
-  )
+  );
 }

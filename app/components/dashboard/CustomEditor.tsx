@@ -43,15 +43,15 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
   };
 
   return (
-    <div>
-      <div className="flex flex-wrap mb-4 border-none bg-background">
-        <Button size="sm" variant="ghost" onClick={() => execCommand('bold')}><Bold size={16} /></Button>
-        <Button size="sm" variant="ghost" onClick={() => execCommand('italic')}><Italic size={16} /></Button>
-        <Button size="sm" variant="ghost" onClick={() => execCommand('insertUnorderedList')}><List size={16} /></Button>
-        <Button size="sm" variant="ghost" onClick={() => execCommand('justifyLeft')}><AlignLeft size={16} /></Button>
-        <Button size="sm" variant="ghost" onClick={() => execCommand('justifyCenter')}><AlignCenter size={16} /></Button>
-        <Button size="sm" variant="ghost" onClick={() => execCommand('justifyRight')}><AlignRight size={16} /></Button>
-        <Button size="sm" variant="ghost" onClick={() => {
+    <div className="bg-background">
+      <div className="flex">
+        <Button variant="ghost" onClick={() => execCommand('bold')}><Bold size={16} /></Button>
+        <Button variant="ghost" onClick={() => execCommand('italic')}><Italic size={16} /></Button>
+        <Button variant="ghost" onClick={() => execCommand('insertUnorderedList')}><List size={16} /></Button>
+        <Button variant="ghost" onClick={() => execCommand('justifyLeft')}><AlignLeft size={16} /></Button>
+        <Button variant="ghost" onClick={() => execCommand('justifyCenter')}><AlignCenter size={16} /></Button>
+        <Button variant="ghost" onClick={() => execCommand('justifyRight')}><AlignRight size={16} /></Button>
+        <Button variant="ghost" onClick={() => {
           const url = prompt('Enter URL:');
           if (url) execCommand('createLink', url);
         }}><Link size={16} /></Button>
@@ -59,7 +59,7 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
       <div
         ref={editorRef}
         contentEditable
-        className="min-h-[300px] focus:outline-none p-2 prose max-w-none bg-background"
+        className="min-h-[300px] focus:outline-none"
         onPaste={(e) => {
           e.preventDefault();
           const text = e.clipboardData.getData('text/plain');

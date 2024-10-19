@@ -46,7 +46,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     checkRedirectResult();
 
-    // Check if the current URL is a sign-in link
     if (isSignInWithEmailLink(auth, window.location.href)) {
       let email = window.localStorage.getItem('emailForSignIn');
       if (!email) {
@@ -78,7 +77,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       onClose();
     } catch (error) {
       console.error("Sign-up error:", error);
-      setError('Failed to create an account. Please try again.');
+      setError(`Failed to create an account: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +94,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       onClose();
     } catch (error) {
       console.error("Sign-in error:", error);
-      setError('Invalid email or password. Please try again.');
+      setError(`Invalid email or password: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -108,10 +107,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     try {
       await signInWithRedirect(auth, provider);
+      // The result will be handled in the useEffect hook
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError(`Failed to sign in with Google: ${error.message}`);
-    } finally {
       setIsLoading(false);
     }
   };

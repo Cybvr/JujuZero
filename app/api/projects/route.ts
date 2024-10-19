@@ -1,3 +1,5 @@
+// File: /app/dashboard/projects/route.ts
+
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
@@ -25,10 +27,25 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const projectData = await request.json();
-    const docRef = await addDoc(collection(db, "projects"), projectData);
-    return NextResponse.json({ id: docRef.id, ...projectData });
+
+    // Ensure seoInsights field is properly initialized
+    const newProject = {
+      ...projectData,
+      socialMedia: {
+        posts: projectData.socialMedia?.posts || [],
+      },
+      seoInsights: {
+        keywords: projectData.seoInsights?.keywords || [], // Ensure keywords is always an array
+        metaDescription: projectData.seoInsights?.metaDescription || '', // Ensure metaDescription is always a string
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const docRef = await addDoc(collection(db, "projects"), newProject);
+    return NextResponse.json({ id: docRef.id, ...newProject });
   } catch (error) {
     console.error("Error creating project:", error);
-    return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create project", details: error.toString() }, { status: 500 });
   }
 }

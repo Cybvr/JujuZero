@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Wand2, QrCode, Image, Video, FileAudio, FileText, Crop, Stamp, Search, FileVideo, PenTool, RefreshCw, Sparkles, FileSpreadsheet } from 'lucide-react';
+import { Wand2, QrCode, Image, Video, FileAudio, FileText, Crop, Stamp, Search, FileVideo, PenTool, RefreshCw, Sparkles, FileSpreadsheet, TrendingUp } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -40,6 +40,8 @@ const tools = [
   { name: 'Uncrop', slug: 'uncrop', description: 'Expand images beyond their original borders.', icon: Sparkles, category: 'Design', access: 'premium' },
   { name: 'Video to MP4', slug: 'video-to-mp4', description: 'Convert videos to MP4 format.', icon: Video, category: 'Video', access: 'free' },
   { name: 'Text Behind Image', slug: 'text-behind-image', description: 'Add text behind your images.', icon: Image, category: 'Design', access: 'free', isHot: true },
+  { name: 'Smart Background', slug: 'smart-background', description: 'Change image backgrounds using AI.', icon: Wand2, category: 'AI-Powered', access: 'premium', isNew: true },
+  { name: 'Trend Pulse', slug: 'trend-pulse', description: 'Monitor social trends and analyze online conversations with AI.', icon: TrendingUp, category: 'AI-Powered', access: 'premium', isNew: true },
 ];
 
 export default function ToolsSearch() {
@@ -80,17 +82,17 @@ export default function ToolsSearch() {
                     <tool.icon className="mr-2 h-4 w-4" />
                     <span>{tool.name}</span>
                     {tool.isNew && (
-                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white">
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500 text-primary">
                         NEW
                       </span>
                     )}
                     {tool.isHot && (
-                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-500 text-white">
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-500 text-primary">
                         HOT
                       </span>
                     )}
                     {tool.isFresh && (
-                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500 text-white">
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500 text-primary">
                         FRESH
                       </span>
                     )}

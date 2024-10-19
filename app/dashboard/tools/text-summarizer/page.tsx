@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,9 @@ import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/dashboard/AuthModal';
 import { useToast } from "@/components/ui/use-toast";
 import CustomEditor from '@/components/dashboard/CustomEditor';
+import { deductCredits, getUserCredits } from '@/lib/credits';
+
+const SUMMARIZE_COST = 10; // Set the credit cost for summarization
 
 export default function TextSummarizerPage() {
   const [text, setText] = useState<string>('');
@@ -18,6 +21,13 @@ export default function TextSummarizerPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const [userCredits, setUserCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      getUserCredits(user.uid).then(credits => setUserCredits(credits));
+    }
+  }, [user]);
 
   const handleTextChange = (content: string) => {
     setText(content);
@@ -31,26 +41,39 @@ export default function TextSummarizerPage() {
       setShowAuthModal(true);
       return;
     }
-
+    if (userCredits !== null && userCredits < SUMMARIZE_COST) {
+      setError("Not enough credits. Please purchase more credits to use this tool.");
+      return;
+    }
     setIsLoading(true);
     setError(null);
-
     try {
+      // Deduct credits
+      await deductCredits(user.uid, SUMMARIZE_COST);
+      setUserCredits(prevCredits => prevCredits !== null ? prevCredits - SUMMARIZE_COST : null);
+
       const response = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
       });
-
       if (!response.ok) {
         throw new Error('Summarization failed');
       }
-
       const data = await response.json();
       setSummary(data.summary);
+      toast({
+        title: "Summary Generated",
+        description: "Your text has been successfully summarized.",
+      });
     } catch (err) {
       console.error('Summarization failed:', err);
       setError('Summarization failed. Please try again.');
+      toast({
+        title: "Error",
+        description: "Failed to summarize text. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +83,10 @@ export default function TextSummarizerPage() {
     <div className="flex flex-col lg:flex-row">
       <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
         <h1 className="text-xl sm:text-xl font-bold mb-2">AI Text Summarizer</h1>
-        <p className="text-muted-foreground mb-4 sm:mb-6">Quickly summarize long texts with our AI-powered tool</p>
+        <p className="text-muted-foreground mb-4 sm:mb-6">Quickly summarize long texts with our AI-powered tool. Cost: {SUMMARIZE_COST} credits</p>
+        {user && userCredits !== null && (
+          <p className="text-sm text-muted-foreground mb-4">Your credits: {userCredits}</p>
+        )}
         <Card className="bg-card shadow-md rounded-lg overflow-hidden">
           <CardContent className="p-4 sm:p-6">
             <div className="space-y-4 sm:space-y-6">

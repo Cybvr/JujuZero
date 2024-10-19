@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useCallback } from 'react';
+
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,18 +9,35 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import Toolbar from '@/components/dashboard/toolbar';
 import { useDropzone } from 'react-dropzone';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import AuthModal from '@/components/dashboard/AuthModal';
+import { useToast } from "@/components/ui/use-toast";
+import { deductCredits, getUserCredits } from '@/lib/credits';
+
+const REPLICATE_API_TOKEN = process.env.NEXT_PUBLIC_REPLICATE_API_TOKEN;
+const UNCROP_COST = 25; // Set the credit cost for uncropping
 
 export default function UncropToolPage() {
   const [file, setFile] = useState<File | null>(null);
   const [extendValues, setExtendValues] = useState({
     left: 0,
     right: 0,
-    up: 0,
-    down: 0
+    top: 0,
+    bottom: 0
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resultImage, setResultImage] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [userCredits, setUserCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      getUserCredits(user.uid).then(credits => setUserCredits(credits));
+    }
+  }, [user]);
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles[0]) {
@@ -43,8 +61,18 @@ export default function UncropToolPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (!file) {
       setError("Please upload an image file.");
+      return;
+    }
+
+    if (userCredits !== null && userCredits < UNCROP_COST) {
+      setError("Not enough credits. Please purchase more credits to use this tool.");
       return;
     }
 
@@ -52,42 +80,99 @@ export default function UncropToolPage() {
     setError("");
     setResultImage(null);
 
-    const form = new FormData();
-    form.append('image_file', file);
-    Object.entries(extendValues).forEach(([key, value]) => {
-      if (value !== 0) {
-        form.append(`extend_${key}`, value.toString());
-      }
-    });
-
     try {
-      const response = await fetch('https://clipdrop-api.co/uncrop/v1', {
-        method: 'POST',
+      // Deduct credits
+      await deductCredits(user.uid, UNCROP_COST);
+      setUserCredits(prevCredits => prevCredits !== null ? prevCredits - UNCROP_COST : null);
+
+      // Convert file to base64
+      const base64Image = await fileToBase64(file);
+
+      // Calculate total dimensions
+      const totalWidth = extendValues.left + 512 + extendValues.right;
+      const totalHeight = extendValues.top + 512 + extendValues.bottom;
+
+      const response = await fetch("https://api.replicate.com/v1/predictions", {
+        method: "POST",
         headers: {
-          'x-api-key': process.env.NEXT_PUBLIC_CLIPDROP_API_KEY || '' },
-        
-        body: form
+          "Authorization": `Token ${REPLICATE_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          version: "30a5f7d90afd41f7c41f22a4900a21667b368a6e8da88937525bb2ad1e3eee6c",
+          input: {
+            image: base64Image,
+            prompt: "Extend this image",
+            width: totalWidth,
+            height: totalHeight,
+            outpainting_mode: true
+          },
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      let prediction = await response.json();
+      if (response.status !== 201) {
+        throw new Error(prediction.detail);
       }
 
-      const blob = await response.blob();
-      const imageUrl = URL.createObjectURL(blob);
-      setResultImage(imageUrl);
+      while (
+        prediction.status !== "succeeded" &&
+        prediction.status !== "failed"
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const response = await fetch(
+          "https://api.replicate.com/v1/predictions/" + prediction.id,
+          {
+            headers: {
+              Authorization: `Token ${REPLICATE_API_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        prediction = await response.json();
+        if (response.status !== 200) {
+          throw new Error(prediction.detail);
+        }
+      }
+
+      if (prediction.status === "succeeded") {
+        setResultImage(prediction.output[0]);
+        toast({
+          title: "Image Uncropped",
+          description: "Your image has been successfully uncropped.",
+        });
+      } else {
+        throw new Error("Image processing failed");
+      }
     } catch (error) {
       setError("An error occurred while processing the image: " + error.message);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Image uncropping failed. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
   };
 
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="flex-grow mb-6 lg:mb-0 lg:mr-6">
         <h1 className="text-2xl font-bold mb-2">Uncrop Tool</h1>
-        <p className="text-muted-foreground mb-6">Extend or crop your image using AI.</p>
+        <p className="text-muted-foreground mb-6">Extend or crop your image using AI. Cost: {UNCROP_COST} credits</p>
+        {user && userCredits !== null && (
+          <p className="text-sm text-muted-foreground mb-4">Your credits: {userCredits}</p>
+        )}
         <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-6">
           <Card className="flex-1 bg-background shadow-md rounded-lg overflow-hidden">
             <CardContent className="p-6">
@@ -106,7 +191,7 @@ export default function UncropToolPage() {
                 </div>
               )}
               <div className="mt-4 grid grid-cols-2 gap-4">
-                {['left', 'right', 'up', 'down'].map((direction) => (
+                {['left', 'right', 'top', 'bottom'].map((direction) => (
                   <div key={direction}>
                     <Label htmlFor={`extend-${direction}`} className="block text-sm font-medium mb-2">
                       Extend {direction}
@@ -155,6 +240,7 @@ export default function UncropToolPage() {
         </div>
       </div>
       <Toolbar />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }

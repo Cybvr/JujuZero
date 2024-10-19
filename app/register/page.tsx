@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { 
+  createUserWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithRedirect,
+  getRedirectResult,
+  getAuth,
+  UserCredential
+} from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,30 +48,70 @@ export default function Register() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    const auth = getAuth();
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          handleSuccessfulSignUp(result);
+        }
+      })
+      .catch((error) => {
+        console.error("Google sign-up error:", error);
+        handleAuthError(error);
+      });
+  }, []);
+
+  const handleSuccessfulSignUp = async (result: UserCredential) => {
+    console.log("Sign-up successful:", result.user);
+    await initializeUserCredits(result.user.uid);
+    router.push('/dashboard');
+  };
+
+  const handleAuthError = (error: any) => {
+    console.error("Authentication error:", error);
+    switch(error.code) {
+      case 'auth/email-already-in-use':
+        setError('An account with this email already exists. Please sign in or use a different email.');
+        break;
+      case 'auth/invalid-email':
+        setError('Invalid email address. Please check and try again.');
+        break;
+      case 'auth/weak-password':
+        setError('Password is too weak. Please use a stronger password.');
+        break;
+      case 'auth/operation-not-allowed':
+        setError('Account creation is currently disabled. Please contact support.');
+        break;
+      case 'auth/popup-closed-by-user':
+        setError('Sign-up cancelled. Please try again.');
+        break;
+      default:
+        setError('An error occurred during sign-up. Please try again.');
+    }
+  };
+
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('User registered:', userCredential.user);
-      await initializeUserCredits(userCredential.user.uid);
-      router.push('/dashboard');
+      await handleSuccessfulSignUp(userCredential);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred during registration.');
-      console.error("Registration error:", error);
+      handleAuthError(error);
     }
   };
 
   const handleGoogleSignUp = async () => {
     const provider = new GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+    provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+
     try {
-      const result = await signInWithPopup(auth, provider);
-      console.log("Google sign-up successful:", result.user);
-      await initializeUserCredits(result.user.uid);
-      router.push('/dashboard');
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      console.error("Google sign-up error:", error);
-      setError('Failed to sign up with Google. Please try again.');
+      console.error("Error initiating Google sign-up:", error);
+      setError('Error initiating Google sign-up. Please try again.');
     }
   };
 
@@ -85,9 +132,8 @@ export default function Register() {
 
             <Button
               onClick={handleGoogleSignUp}
-              className="w-full mb-4 flex items-center justify-center opacity-50 cursor-not-allowed"
+              className="w-full mb-4 flex items-center justify-center"
               variant="outline"
-              disabled
             >
               <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

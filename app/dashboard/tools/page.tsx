@@ -1,3 +1,4 @@
+// File: app/dashboard/tools/page.tsx
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -91,6 +92,8 @@ const tools: Tool[] = [
   { name: 'Image Crop', slug: 'image-crop', description: 'Crop images easily.', imageSrc: '/images/tools/crop.png', category: 'Design', access: 'premium' },
   { name: 'Add Watermark', slug: 'add-watermark', description: 'Add watermark to images.', imageSrc: '/images/tools/add-watermark.png', category: 'Design', access: 'premium' },
   { name: 'Visual Summarizer', slug: 'visual-summarizer', description: 'AI generates infographic-like summaries of long articles or reports.', imageSrc: '/images/tools/visual-summarizer.png', category: 'AI-powered', access: 'free' },
+  { name: 'Smart Background', slug: 'smart-background', description: 'Change image backgrounds using AI.', imageSrc: '/images/tools/smart-background.png', category: 'AI-powered', access: 'signin' },
+  { name: 'Trend Pulse', slug: 'trend-pulse', description: 'Monitor social trends and analyze online conversations with AI.', imageSrc: '/images/tools/trend-pulse.png', category: 'AI-powered', access: 'signin' },
 ]
 
 const getBadgeContent = (access: string): { icon: LucideIcon; variant: "default" | "secondary" | "destructive" | "outline"; tooltip: string } => {

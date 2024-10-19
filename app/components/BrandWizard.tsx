@@ -1,4 +1,3 @@
-// File: @app/components/BrandWizard.tsx
 'use client'
 
 import React, { useState } from 'react';
@@ -70,8 +69,7 @@ export default function BrandWizard() {
     setError('');
 
     try {
-      console.log('Generating brand...');
-      // Generate brand
+      // Generate brand using AI (call to your backend API)
       const generateResponse = await fetch('/api/openai/generateBrand', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,11 +81,9 @@ export default function BrandWizard() {
         throw new Error(`HTTP error! status: ${generateResponse.status}, message: ${errorText}`);
       }
 
-      console.log('Brand generated, parsing response...');
       const generatedData = await generateResponse.json();
-      console.log('Generated data:', generatedData);
 
-      // Prepare project data
+      // Prepare project data for Firestore
       const projectData = {
         ...generatedData,
         userId: user.uid,
@@ -98,17 +94,14 @@ export default function BrandWizard() {
         visualIdentity: generatedData.visualIdentity || {},
         brandVoice: generatedData.brandVoice || {},
         design: generatedData.design || {},
-        socialMedia: generatedData.socialMedia || {},
+        socialMedia: {
+          posts: generatedData.socialMedia?.posts || []  // Adjusted socialMedia structure to only include posts
+        },
         analytics: generatedData.analytics || {}
       };
 
-      console.log('Saving to Firestore...');
-      console.log('Project data:', projectData);
-
-      // Save to Firestore
+      // Save project to Firestore
       const docRef = await addDoc(collection(db, "projects"), projectData);
-
-      console.log('Brand saved successfully. Document ID:', docRef.id);
 
       toast({
         title: "Brand Created",

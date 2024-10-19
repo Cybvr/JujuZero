@@ -1,4 +1,4 @@
-// context/AuthContaext
+// context/AuthContext.tsx
 'use client'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged, User } from 'firebase/auth'
@@ -16,12 +16,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log("Setting up auth state listener");
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("Auth state changed. User:", user);
+      console.log("Auth state changed. User:", user ? user.uid : "null");
+      if (user) {
+        console.log("User email:", user.email);
+        console.log("User display name:", user.displayName);
+        // Be cautious about logging sensitive information
+      } else {
+        console.log("No user is signed in.");
+      }
       setUser(user)
       setLoading(false)
-    })
-    return () => unsubscribe()
+    }, (error) => {
+      console.error("Auth state change error:", error);
+      setLoading(false)
+    });
+
+    return () => {
+      console.log("Unsubscribing from auth state listener");
+      unsubscribe()
+    }
   }, [])
 
   return (

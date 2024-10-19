@@ -18,6 +18,8 @@ const toolCategories = {
     { name: 'Paraphraser', href: '/dashboard/tools/paraphraser' },
     { name: 'Text Summarizer', href: '/dashboard/tools/text-summarizer' },
     { name: 'Visual Summarizer', href: '/dashboard/tools/visual-summarizer', isFresh: true },
+    { name: 'Smart Background', href: '/dashboard/tools/smart-background', isNew: true },
+    { name: 'Trend Pulse', href: '/dashboard/tools/trend-pulse', isNew: true },
   ],
   "PRODUCTIVITY": [
     { name: 'Invoice Generator', href: '/dashboard/tools/invoice-generator' },
@@ -158,7 +160,7 @@ export default function Footer() {
           <p className="text-center text-sm text-muted-foreground">
             © 2024 Juju, Inc. All rights reserved. Powered by 
             <Link href="http://visual.ng">
-              <span style={{fontWeight: 'bold', textDecoration: 'underline'}}>VisualCore9Systems</span>
+              <span style={{fontWeight: 'bold', textDecoration: 'underline'}}> VisualCore9Systems</span>
             </Link>.
           </p>
         </div>

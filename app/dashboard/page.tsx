@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ import {
   Sparkles,
   FileVideo,
   Plus,
+  Rocket,
 } from "lucide-react";
 import ToolsSearch from "@/components/dashboard/ToolsSearch";
 
@@ -243,6 +244,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [recentItems, setRecentItems] = useState<Item[]>([]);
+  const [filter, setFilter] = useState<"All" | "Projects" | "Documents">("All");
 
   useEffect(() => {
     if (user) {
@@ -256,20 +258,20 @@ export default function DashboardPage() {
       collection(db, "projects"),
       where("userId", "==", user.uid),
       orderBy("createdAt", "desc"),
-      limit(5),
+      limit(5)
     );
     const documentsQuery = query(
       collection(db, "documents"),
       where("userId", "==", user.uid),
       orderBy("createdAt", "desc"),
-      limit(5),
+      limit(5)
     );
     const [projectsSnapshot, documentsSnapshot] = await Promise.all([
       getDocs(projectsQuery),
       getDocs(documentsQuery),
     ]);
     const projects = projectsSnapshot.docs.map(
-      (doc) => ({ id: doc.id, ...doc.data(), type: "project" }) as Item,
+      (doc) => ({ id: doc.id, ...doc.data(), type: "project" }) as Item
     );
     const documents = documentsSnapshot.docs.map(
       (doc) =>
@@ -278,14 +280,23 @@ export default function DashboardPage() {
           ...doc.data(),
           type: "document",
           name: doc.data().title,
-        }) as Item,
+        } as Item)
     );
     setRecentItems(
       [...projects, ...documents].sort(
-        (a, b) => b.createdAt.seconds - a.createdAt.seconds,
-      ),
+        (a, b) => b.createdAt.seconds - a.createdAt.seconds
+      )
     );
   };
+
+  const filteredItems = useMemo(() => {
+    return recentItems.filter((item) => {
+      if (filter === "All") return true;
+      if (filter === "Projects") return item.type === "project";
+      if (filter === "Documents") return item.type === "document";
+      return false;
+    });
+  }, [recentItems, filter]);
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -314,39 +325,65 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
-
         {user && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-foreground">
-              Recent Documents
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recentItems
-                .filter((item) => item.type === "document")
-                .map((doc) => (
-                  <Card
-                    key={doc.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow duration-200 bg-card"
-                    onClick={() =>
-                      router.push(`/dashboard/documents/edit/${doc.id}`)
-                    }
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-foreground">
+                Recent Items
+              </h2>
+              <div className="flex space-x-2">
+                {["All", "Projects", "Documents"].map((option) => (
+                  <Button
+                    key={option}
+                    onClick={() => setFilter(option as "All" | "Projects" | "Documents")}
+                    variant={filter === option ? "default" : "outline"}
+                    size="sm"
                   >
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-card-foreground">
-                        <FileText className="mr-2" />
-                        {doc.name}
-                      </CardTitle>
-                      <CardDescription className="text-muted-foreground">
-                        Created: {" "}
-                        {new Date(
-                          doc.createdAt.seconds * 1000,
-                        ).toLocaleDateString()}
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
+                    {option}
+                  </Button>
                 ))}
+              </div>
             </div>
-            <div className="flex justify-center mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredItems.map((item) => (
+                <Card
+                  key={item.id}
+                  className="cursor-pointer hover:shadow-md transition-shadow duration-200 bg-card"
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/${item.type}s/${
+                        item.type === "document" ? "edit/" : ""
+                      }${item.id}`
+                    )
+                  }
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-card-foreground">
+                      {item.type === "document" ? (
+                        <FileText className="mr-2" />
+                      ) : (
+                        <Rocket className="mr-2" />
+                      )}
+                      {item.name}
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      {item.type.charAt(0).toUpperCase() + item.type.slice(1)} •{" "}
+                      Created: {" "}
+                      {new Date(
+                        item.createdAt.seconds * 1000
+                      ).toLocaleDateString()}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+            <div className="flex justify-center mt-4 space-x-4">
+              <Button
+                onClick={() => router.push("/dashboard/projects/new")}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <Plus className="mr-2 h-3 w-3" /> New Project
+              </Button>
               <Button
                 onClick={() => router.push("/dashboard/documents/new")}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"

@@ -1,3 +1,5 @@
+// File: /app/dashboard/projects/[projectId]/route.ts
+
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -36,12 +38,26 @@ export async function PUT(
 
   try {
     const updateData = await request.json();
+
+    // Ensure seoInsights field is properly initialized when updating
+    const updatedProject = {
+      ...updateData,
+      socialMedia: {
+        posts: updateData.socialMedia?.posts || [],
+      },
+      seoInsights: {
+        keywords: updateData.seoInsights?.keywords || [], // Ensure keywords is always an array
+        metaDescription: updateData.seoInsights?.metaDescription || '', // Ensure metaDescription is always a string
+      },
+      updatedAt: new Date(),
+    };
+
     const projectRef = doc(db, "projects", projectId);
-    await updateDoc(projectRef, updateData);
+    await updateDoc(projectRef, updatedProject);
     return NextResponse.json({ message: "Project updated successfully" });
   } catch (error) {
     console.error("Error updating project:", error);
-    return NextResponse.json({ error: "Failed to update project" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update project", details: error.toString() }, { status: 500 });
   }
 }
 
@@ -57,6 +73,6 @@ export async function DELETE(
     return NextResponse.json({ message: "Project deleted successfully" });
   } catch (error) {
     console.error("Error deleting project:", error);
-    return NextResponse.json({ error: "Failed to delete project" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete project", details: error.toString() }, { status: 500 });
   }
 }

@@ -1,3 +1,5 @@
+// File: /app/api/openai/generateBrand.ts
+
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 
@@ -8,11 +10,12 @@ const openai = new OpenAI({
 export async function POST(request: Request) {
   try {
     const { name, description } = await request.json();
+
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4", // Use "gpt-3.5-turbo" if "gpt-4" is not available
       messages: [
-        { role: "system", content: "You are an expert brand strategist and designer. Generate a comprehensive brand profile based on the given name and description." },
-        { role: "user", content: `Create a full brand profile for a brand named "${name}" with the following description: "${description}"` }
+        { role: "system", content: "You are an expert brand strategist and designer. Generate a comprehensive brand profile based on the given name and description, including SEO insights and social media posts." },
+        { role: "user", content: `Create a full brand profile for a brand named "${name}" with the following description: "${description}". The profile should include brand strategy, visual identity, brand voice, social media posts, and SEO insights.` }
       ],
       functions: [
         {
@@ -56,20 +59,39 @@ export async function POST(request: Request) {
               socialMedia: {
                 type: "object",
                 properties: {
-                  suggestedPosts: { 
-                    type: "array", 
-                    items: { 
+                  posts: {
+                    type: "array",
+                    items: {
                       type: "object",
                       properties: {
-                        content: { type: "string" },
                         platform: { type: "string" },
+                        post: { type: "string" },
+                        hashtags: { type: "array", items: { type: "string" } },
+                        cta: { type: "string" },
                       },
                     },
                   },
                 },
               },
+              seoInsights: {
+                type: "object",
+                properties: {
+                  keywords: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        keyword: { type: "string" },
+                        volume: { type: "number" },
+                        difficulty: { type: "string" },
+                      },
+                    },
+                  },
+                  metaDescription: { type: "string" },
+                },
+              },
             },
-            required: ["name", "tagline", "brandStrategy", "visualIdentity", "brandVoice", "socialMedia"],
+            required: ["name", "tagline", "brandStrategy", "visualIdentity", "brandVoice", "socialMedia", "seoInsights"],
           },
         },
       ],
